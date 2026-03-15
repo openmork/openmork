@@ -28,6 +28,6 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo  [DEPRECATED COMPAT] Legacy command name 'hermes' is temporarily supported via alias after install.
+echo  Legacy command alias is temporarily supported after install.
 echo  Please migrate scripts and docs to use 'openmork'.
 echo.

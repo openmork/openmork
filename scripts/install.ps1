@@ -88,7 +88,7 @@ function Invoke-LegacyMigration {
     if ($OpenMorkHome -eq $legacyHome) { return }
 
     New-Item -ItemType Directory -Force -Path $OpenMorkHome | Out-Null
-    Write-Warn "Legacy Hermes path detected: $legacyHome"
+    Write-Warn "Legacy v1 path detected: $legacyHome"
 
     if (-not (Test-DirectoryHasFiles -Path $OpenMorkHome)) {
         Write-Info "Migrating data to $OpenMorkHome (non-destructive, no overwrite)..."
@@ -663,11 +663,11 @@ function Set-PathVariable {
     }
     $env:OPENMORK_HOME = $OpenMorkHome
 
-    # Temporary compat alias for legacy integrations expecting HERMES_HOME
-    $currentHermesHomeCompat = [Environment]::GetEnvironmentVariable("HERMES_HOME", "User")
-    if (-not $currentHermesHomeCompat) {
+    # Temporary compatibility env alias for legacy integrations
+    $currentLegacyHomeCompat = [Environment]::GetEnvironmentVariable("HERMES_HOME", "User")
+    if (-not $currentLegacyHomeCompat) {
         [Environment]::SetEnvironmentVariable("HERMES_HOME", $OpenMorkHome, "User")
-        Write-Warn "Set legacy HERMES_HOME compatibility alias -> $OpenMorkHome (deprecated)."
+        Write-Warn "Set legacy home compatibility env alias -> $OpenMorkHome (deprecated)."
     }
     
     # Update current session
@@ -678,7 +678,7 @@ function Set-PathVariable {
 
 function Install-LegacyCommandAlias {
     # Temporary compatibility shim for renamed CLI command.
-    # Remove after users migrate from `hermes` to `openmork` (target: next major release).
+    # Remove after migration to canonical command in a future major release.
     if ($NoVenv) { return }
 
     $scriptsDir = "$InstallDir\venv\Scripts"
@@ -688,17 +688,17 @@ function Install-LegacyCommandAlias {
     $legacyCmdPath = "$scriptsDir\hermes.cmd"
     @"
 @echo off
-echo [DEPRECATED] 'hermes' command is kept temporarily for compatibility. Please use 'openmork'. 1>&2
+echo [DEPRECATED] Legacy command alias is kept temporarily for compatibility. Please use 'openmork'. 1>&2
 ""%~dp0openmork.exe"" %*
 "@ | Set-Content -Path $legacyCmdPath -Encoding ASCII
 
     $legacyPs1Path = "$scriptsDir\hermes.ps1"
     @"
-Write-Warning "[DEPRECATED] 'hermes' command is kept temporarily for compatibility. Please use 'openmork'."
+Write-Warning "[DEPRECATED] Legacy command alias is kept temporarily for compatibility. Please use 'openmork'."
 & "$scriptsDir\openmork.exe" @args
 "@ | Set-Content -Path $legacyPs1Path -Encoding UTF8
 
-    Write-Warn "Installed temporary legacy command alias: hermes -> openmork"
+    Write-Warn "Installed temporary legacy command alias -> openmork"
 }
 
 function Copy-ConfigTemplates {
@@ -974,7 +974,7 @@ function Main {
     if (-not (Test-Git)) { throw "Git not found — install from https://git-scm.com/download/win" }
     Test-Node              # Auto-installs if missing
     Install-SystemPackages  # ripgrep + ffmpeg in one step
-    Invoke-LegacyMigration  # Non-destructive ~/.hermes -> ~/.openmork copy
+    Invoke-LegacyMigration  # Non-destructive legacy-home -> OPENMORK_HOME copy
     
     Install-Repository
     Install-Venv
