@@ -53,3 +53,10 @@ environments/benchmarks/evals/
 
 # Release script temp files
 .release_notes.md
+
+# OpenMork specific
+*.env.*
+-p /home/wosmim/projects/openmork/docs/architecture.env.example
+safety.yaml
+*.key
+*.pem
