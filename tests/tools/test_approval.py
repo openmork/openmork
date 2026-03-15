@@ -304,8 +304,8 @@ class TestTeePattern:
         assert dangerous is True
         assert key is not None
 
-    def test_tee_hermes_env(self):
-        dangerous, key, desc = detect_dangerous_command("echo x | tee ~/.hermes/.env")
+    def test_tee_openmork_env(self):
+        dangerous, key, desc = detect_dangerous_command("echo x | tee ~/.openmork/.env")
         assert dangerous is True
         assert key is not None
 

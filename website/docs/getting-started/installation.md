@@ -1,28 +1,28 @@
 ---
 sidebar_position: 2
 title: "Installation"
-description: "Install Hermes Agent on Linux, macOS, or WSL2"
+description: "Install OpenMork on Linux, macOS, or WSL2"
 ---
 
 # Installation
 
-Get Hermes Agent up and running in under two minutes with the one-line installer, or follow the manual steps for full control.
+Get OpenMork up and running in under two minutes with the one-line installer, or follow the manual steps for full control.
 
 ## Quick Install
 
 ### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
 ```
 
 :::warning Windows
-Native Windows is **not supported**. Please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run Hermes Agent from there. The install command above works inside WSL2.
+Native Windows is **not supported**. Please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run OpenMork from there. The install command above works inside WSL2.
 :::
 
 ### What the Installer Does
 
-The installer handles everything automatically — all dependencies (Python, Node.js, ripgrep, ffmpeg), the repo clone, virtual environment, global `hermes` command setup, and LLM provider configuration. By the end, you're ready to chat.
+The installer handles everything automatically — all dependencies (Python, Node.js, ripgrep, ffmpeg), the repo clone, virtual environment, global `openmork` command setup, and LLM provider configuration. By the end, you're ready to chat.
 
 ### After Installation
 
@@ -30,17 +30,17 @@ Reload your shell and start chatting:
 
 ```bash
 source ~/.bashrc   # or: source ~/.zshrc
-hermes             # Start chatting!
+openmork             # Start chatting!
 ```
 
 To reconfigure individual settings later, use the dedicated commands:
 
 ```bash
-hermes model          # Choose your LLM provider and model
-hermes tools          # Configure which tools are enabled
-hermes gateway setup  # Set up messaging platforms
-hermes config set     # Set individual config values
-hermes setup          # Or run the full setup wizard to configure everything at once
+openmork model          # Choose your LLM provider and model
+openmork tools          # Configure which tools are enabled
+openmork gateway setup  # Set up messaging platforms
+openmork config set     # Set individual config values
+openmork setup          # Or run the full setup wizard to configure everything at once
 ```
 
 ---
@@ -70,8 +70,8 @@ If you prefer full control over the installation process, follow these steps.
 Clone with `--recurse-submodules` to pull the required submodules:
 
 ```bash
-git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git
-cd hermes-agent
+git clone --recurse-submodules https://github.com/openmork/OpenMork.git
+cd OpenMork
 ```
 
 If you already cloned without `--recurse-submodules`:
@@ -90,7 +90,7 @@ uv venv venv --python 3.11
 ```
 
 :::tip
-You do **not** need to activate the venv to use `hermes`. The entry point has a hardcoded shebang pointing to the venv Python, so it works globally once symlinked.
+You do **not** need to activate the venv to use `openmork`. The entry point has a hardcoded shebang pointing to the venv Python, so it works globally once symlinked.
 :::
 
 ### Step 3: Install Python Dependencies
@@ -156,18 +156,18 @@ npm install
 
 ```bash
 # Create the directory structure
-mkdir -p ~/.hermes/{cron,sessions,logs,memories,skills,pairing,hooks,image_cache,audio_cache,whatsapp/session}
+mkdir -p ~/.openmork/{cron,sessions,logs,memories,skills,pairing,hooks,image_cache,audio_cache,whatsapp/session}
 
 # Copy the example config file
-cp cli-config.yaml.example ~/.hermes/config.yaml
+cp cli-config.yaml.example ~/.openmork/config.yaml
 
 # Create an empty .env file for API keys
-touch ~/.hermes/.env
+touch ~/.openmork/.env
 ```
 
 ### Step 7: Add Your API Keys
 
-Open `~/.hermes/.env` and add at minimum an LLM provider key:
+Open `~/.openmork/.env` and add at minimum an LLM provider key:
 
 ```bash
 # Required — at least one LLM provider:
@@ -180,14 +180,14 @@ FAL_KEY=your-fal-key                   # Image generation (FLUX)
 
 Or set them via the CLI:
 ```bash
-hermes config set OPENROUTER_API_KEY sk-or-v1-your-key-here
+openmork config set OPENROUTER_API_KEY sk-or-v1-your-key-here
 ```
 
-### Step 8: Add `hermes` to Your PATH
+### Step 8: Add `openmork` to Your PATH
 
 ```bash
 mkdir -p ~/.local/bin
-ln -sf "$(pwd)/venv/bin/hermes" ~/.local/bin/hermes
+ln -sf "$(pwd)/venv/bin/openmork" ~/.local/bin/openmork
 ```
 
 If `~/.local/bin` isn't on your PATH, add it to your shell config:
@@ -206,16 +206,16 @@ fish_add_path $HOME/.local/bin
 ### Step 9: Configure Your Provider
 
 ```bash
-hermes model       # Select your LLM provider and model
+openmork model       # Select your LLM provider and model
 ```
 
 ### Step 10: Verify the Installation
 
 ```bash
-hermes version    # Check that the command is available
-hermes doctor     # Run diagnostics to verify everything is working
-hermes status     # Check your configuration
-hermes chat -q "Hello! What tools do you have available?"
+openmork version    # Check that the command is available
+openmork doctor     # Run diagnostics to verify everything is working
+openmork status     # Check your configuration
+openmork chat -q "Hello! What tools do you have available?"
 ```
 
 ---
@@ -229,8 +229,8 @@ For those who just want the commands:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone & enter
-git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git
-cd hermes-agent
+git clone --recurse-submodules https://github.com/openmork/OpenMork.git
+cd OpenMork
 
 # Create venv with Python 3.11
 uv venv venv --python 3.11
@@ -243,18 +243,18 @@ uv pip install -e "./tinker-atropos"
 npm install  # optional, for browser tools and WhatsApp
 
 # Configure
-mkdir -p ~/.hermes/{cron,sessions,logs,memories,skills,pairing,hooks,image_cache,audio_cache,whatsapp/session}
-cp cli-config.yaml.example ~/.hermes/config.yaml
-touch ~/.hermes/.env
-echo 'OPENROUTER_API_KEY=sk-or-v1-your-key' >> ~/.hermes/.env
+mkdir -p ~/.openmork/{cron,sessions,logs,memories,skills,pairing,hooks,image_cache,audio_cache,whatsapp/session}
+cp cli-config.yaml.example ~/.openmork/config.yaml
+touch ~/.openmork/.env
+echo 'OPENROUTER_API_KEY=sk-or-v1-your-key' >> ~/.openmork/.env
 
-# Make hermes available globally
+# Make openmork available globally
 mkdir -p ~/.local/bin
-ln -sf "$(pwd)/venv/bin/hermes" ~/.local/bin/hermes
+ln -sf "$(pwd)/venv/bin/openmork" ~/.local/bin/openmork
 
 # Verify
-hermes doctor
-hermes
+openmork doctor
+openmork
 ```
 
 ---
@@ -263,8 +263,8 @@ hermes
 
 | Problem | Solution |
 |---------|----------|
-| `hermes: command not found` | Reload your shell (`source ~/.bashrc`) or check PATH |
-| `API key not set` | Run `hermes model` to configure your provider, or `hermes config set OPENROUTER_API_KEY your_key` |
-| Missing config after update | Run `hermes config check` then `hermes config migrate` |
+| `openmork: command not found` | Reload your shell (`source ~/.bashrc`) or check PATH |
+| `API key not set` | Run `openmork model` to configure your provider, or `openmork config set OPENROUTER_API_KEY your_key` |
+| Missing config after update | Run `openmork config check` then `openmork config migrate` |
 
-For more diagnostics, run `hermes doctor` — it will tell you exactly what's missing and how to fix it.
+For more diagnostics, run `openmork doctor` — it will tell you exactly what's missing and how to fix it.

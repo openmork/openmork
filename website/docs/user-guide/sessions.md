@@ -6,14 +6,14 @@ description: "Session persistence, resume, search, management, and per-platform 
 
 # Sessions
 
-Hermes Agent automatically saves every conversation as a session. Sessions enable conversation resume, cross-session search, and full conversation history management.
+OpenMork automatically saves every conversation as a session. Sessions enable conversation resume, cross-session search, and full conversation history management.
 
 ## How Sessions Work
 
 Every conversation — whether from the CLI, Telegram, Discord, WhatsApp, or Slack — is stored as a session with full message history. Sessions are tracked in two complementary systems:
 
-1. **SQLite database** (`~/.hermes/state.db`) — structured session metadata with FTS5 full-text search
-2. **JSONL transcripts** (`~/.hermes/sessions/`) — raw conversation transcripts including tool calls (gateway)
+1. **SQLite database** (`~/.openmork/state.db`) — structured session metadata with FTS5 full-text search
+2. **JSONL transcripts** (`~/.openmork/sessions/`) — raw conversation transcripts including tool calls (gateway)
 
 The SQLite database stores:
 - Session ID, source platform, user ID
@@ -31,7 +31,7 @@ Each session is tagged with its source platform:
 
 | Source | Description |
 |--------|-------------|
-| `cli` | Interactive CLI (`hermes` or `hermes chat`) |
+| `cli` | Interactive CLI (`openmork` or `openmork chat`) |
 | `telegram` | Telegram messenger |
 | `discord` | Discord server/DM |
 | `whatsapp` | WhatsApp messenger |
@@ -45,12 +45,12 @@ Resume previous conversations from the CLI using `--continue` or `--resume`:
 
 ```bash
 # Resume the most recent CLI session
-hermes --continue
-hermes -c
+openmork --continue
+openmork -c
 
 # Or with the chat subcommand
-hermes chat --continue
-hermes chat -c
+openmork chat --continue
+openmork chat -c
 ```
 
 This looks up the most recent `cli` session from the SQLite database and loads its full conversation history.
@@ -61,34 +61,34 @@ If you've given a session a title (see [Session Naming](#session-naming) below),
 
 ```bash
 # Resume a named session
-hermes -c "my project"
+openmork -c "my project"
 
 # If there are lineage variants (my project, my project #2, my project #3),
 # this automatically resumes the most recent one
-hermes -c "my project"   # → resumes "my project #3"
+openmork -c "my project"   # → resumes "my project #3"
 ```
 
 ### Resume Specific Session
 
 ```bash
 # Resume a specific session by ID
-hermes --resume 20250305_091523_a1b2c3d4
-hermes -r 20250305_091523_a1b2c3d4
+openmork --resume 20250305_091523_a1b2c3d4
+openmork -r 20250305_091523_a1b2c3d4
 
 # Resume by title
-hermes --resume "refactoring auth"
+openmork --resume "refactoring auth"
 
 # Or with the chat subcommand
-hermes chat --resume 20250305_091523_a1b2c3d4
+openmork chat --resume 20250305_091523_a1b2c3d4
 ```
 
-Session IDs are shown when you exit a CLI session, and can be found with `hermes sessions list`.
+Session IDs are shown when you exit a CLI session, and can be found with `openmork sessions list`.
 
 ### Conversation Recap on Resume
 
-When you resume a session, Hermes displays a compact recap of the previous conversation in a styled panel before the input prompt:
+When you resume a session, OPENMORK displays a compact recap of the previous conversation in a styled panel before the input prompt:
 
-<img className="docs-terminal-figure" src="/img/docs/session-recap.svg" alt="Stylized preview of the Previous Conversation recap panel shown when resuming a Hermes session." />
+<img className="docs-terminal-figure" src="/img/docs/session-recap.svg" alt="Stylized preview of the Previous Conversation recap panel shown when resuming a OPENMORK session." />
 <p className="docs-figure-caption">Resume mode shows a compact recap panel with recent user and assistant turns before returning you to the live prompt.</p>
 
 The recap:
@@ -99,7 +99,7 @@ The recap:
 - **Caps** at the last 10 exchanges with a "... N earlier messages ..." indicator
 - Uses **dim styling** to distinguish from the active conversation
 
-To disable the recap and keep the minimal one-liner behavior, set in `~/.hermes/config.yaml`:
+To disable the recap and keep the minimal one-liner behavior, set in `~/.openmork/config.yaml`:
 
 ```yaml
 display:
@@ -127,7 +127,7 @@ The title is applied immediately. If the session hasn't been created in the data
 You can also rename existing sessions from the command line:
 
 ```bash
-hermes sessions rename 20250305_091523_a1b2c3d4 "refactoring auth module"
+openmork sessions rename 20250305_091523_a1b2c3d4 "refactoring auth module"
 ```
 
 ### Title Rules
@@ -139,13 +139,13 @@ hermes sessions rename 20250305_091523_a1b2c3d4 "refactoring auth module"
 
 ### Auto-Lineage on Compression
 
-When a session's context is compressed (manually via `/compress` or automatically), Hermes creates a new continuation session. If the original had a title, the new session automatically gets a numbered title:
+When a session's context is compressed (manually via `/compress` or automatically), OPENMORK creates a new continuation session. If the original had a title, the new session automatically gets a numbered title:
 
 ```
 "my project" → "my project #2" → "my project #3"
 ```
 
-When you resume by name (`hermes -c "my project"`), it automatically picks the most recent session in the lineage.
+When you resume by name (`openmork -c "my project"`), it automatically picks the most recent session in the lineage.
 
 ### /title in Messaging Platforms
 
@@ -156,19 +156,19 @@ The `/title` command works in all gateway platforms (Telegram, Discord, Slack, W
 
 ## Session Management Commands
 
-Hermes provides a full set of session management commands via `hermes sessions`:
+OPENMORK provides a full set of session management commands via `openmork sessions`:
 
 ### List Sessions
 
 ```bash
 # List recent sessions (default: last 20)
-hermes sessions list
+openmork sessions list
 
 # Filter by platform
-hermes sessions list --source telegram
+openmork sessions list --source telegram
 
 # Show more sessions
-hermes sessions list --limit 50
+openmork sessions list --limit 50
 ```
 
 When sessions have titles, the output shows titles, previews, and relative timestamps:
@@ -194,13 +194,13 @@ What's the weather in Las Vegas?                    3d ago        tele   2025030
 
 ```bash
 # Export all sessions to a JSONL file
-hermes sessions export backup.jsonl
+openmork sessions export backup.jsonl
 
 # Export sessions from a specific platform
-hermes sessions export telegram-history.jsonl --source telegram
+openmork sessions export telegram-history.jsonl --source telegram
 
 # Export a single session
-hermes sessions export session.jsonl --session-id 20250305_091523_a1b2c3d4
+openmork sessions export session.jsonl --session-id 20250305_091523_a1b2c3d4
 ```
 
 Exported files contain one JSON object per line with full session metadata and all messages.
@@ -209,20 +209,20 @@ Exported files contain one JSON object per line with full session metadata and a
 
 ```bash
 # Delete a specific session (with confirmation)
-hermes sessions delete 20250305_091523_a1b2c3d4
+openmork sessions delete 20250305_091523_a1b2c3d4
 
 # Delete without confirmation
-hermes sessions delete 20250305_091523_a1b2c3d4 --yes
+openmork sessions delete 20250305_091523_a1b2c3d4 --yes
 ```
 
 ### Rename a Session
 
 ```bash
 # Set or change a session's title
-hermes sessions rename 20250305_091523_a1b2c3d4 "debugging auth flow"
+openmork sessions rename 20250305_091523_a1b2c3d4 "debugging auth flow"
 
 # Multi-word titles don't need quotes in the CLI
-hermes sessions rename 20250305_091523_a1b2c3d4 debugging auth flow
+openmork sessions rename 20250305_091523_a1b2c3d4 debugging auth flow
 ```
 
 If the title is already in use by another session, an error is shown.
@@ -231,16 +231,16 @@ If the title is already in use by another session, an error is shown.
 
 ```bash
 # Delete ended sessions older than 90 days (default)
-hermes sessions prune
+openmork sessions prune
 
 # Custom age threshold
-hermes sessions prune --older-than 30
+openmork sessions prune --older-than 30
 
 # Only prune sessions from a specific platform
-hermes sessions prune --source telegram --older-than 60
+openmork sessions prune --source telegram --older-than 60
 
 # Skip confirmation
-hermes sessions prune --older-than 30 --yes
+openmork sessions prune --older-than 30 --yes
 ```
 
 :::info
@@ -250,7 +250,7 @@ Pruning only deletes **ended** sessions (sessions that have been explicitly ende
 ### Session Statistics
 
 ```bash
-hermes sessions stats
+openmork sessions stats
 ```
 
 Output:
@@ -264,7 +264,7 @@ Total messages: 3847
 Database size: 12.4 MB
 ```
 
-For deeper analytics — token usage, cost estimates, tool breakdown, and activity patterns — use [`hermes insights`](/docs/reference/cli-commands#hermes-insights).
+For deeper analytics — token usage, cost estimates, tool breakdown, and activity patterns — use [`openmork insights`](/docs/reference/cli-commands#openmork-insights).
 
 ## Session Search Tool
 
@@ -328,9 +328,9 @@ Sessions with **active background processes** are never auto-reset, regardless o
 
 | What | Path | Description |
 |------|------|-------------|
-| SQLite database | `~/.hermes/state.db` | All session metadata + messages with FTS5 |
-| Gateway transcripts | `~/.hermes/sessions/` | JSONL transcripts per session + sessions.json index |
-| Gateway index | `~/.hermes/sessions/sessions.json` | Maps session keys to active session IDs |
+| SQLite database | `~/.openmork/state.db` | All session metadata + messages with FTS5 |
+| Gateway transcripts | `~/.openmork/sessions/` | JSONL transcripts per session + sessions.json index |
+| Gateway index | `~/.openmork/sessions/sessions.json` | Maps session keys to active session IDs |
 
 The SQLite database uses WAL mode for concurrent readers and a single writer, which suits the gateway's multi-platform architecture well.
 
@@ -354,14 +354,14 @@ Key tables in `state.db`:
 
 ```bash
 # Prune sessions older than 90 days
-hermes sessions prune
+openmork sessions prune
 
 # Delete a specific session
-hermes sessions delete <session_id>
+openmork sessions delete <session_id>
 
 # Export before pruning (backup)
-hermes sessions export backup.jsonl
-hermes sessions prune --older-than 30 --yes
+openmork sessions export backup.jsonl
+openmork sessions prune --older-than 30 --yes
 ```
 
 :::tip

@@ -4,7 +4,7 @@ Skill Manager Tool -- Agent-Managed Skill Creation & Editing
 
 Allows the agent to create, update, and delete skills, turning successful
 approaches into reusable procedural knowledge. New skills are created in
-~/.hermes/skills/. Existing skills (bundled, hub-installed, or user-created)
+~/.openmork/skills/. Existing skills (bundled, hub-installed, or user-created)
 can be modified or deleted wherever they live.
 
 Skills are the agent's procedural memory: they capture *how to do a specific
@@ -20,7 +20,7 @@ Actions:
   remove_file-- Remove a supporting file from a user skill
 
 Directory layout for user skills:
-    ~/.hermes/skills/
+    ~/.openmork/skills/
     ├── my-skill/
     │   ├── SKILL.md
     │   ├── references/
@@ -69,9 +69,9 @@ def _security_scan_skill(skill_dir: Path) -> Optional[str]:
 import yaml
 
 
-# All skills live in ~/.hermes/skills/ (single source of truth)
-HERMES_HOME = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes"))
-SKILLS_DIR = HERMES_HOME / "skills"
+# All skills live in ~/.openmork/skills/ (single source of truth)
+OPENMORK_HOME = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork"))
+SKILLS_DIR = OPENMORK_HOME / "skills"
 
 MAX_NAME_LENGTH = 64
 MAX_DESCRIPTION_LENGTH = 1024
@@ -154,7 +154,7 @@ def _resolve_skill_dir(name: str, category: str = None) -> Path:
 
 def _find_skill(name: str) -> Optional[Dict[str, Any]]:
     """
-    Find a skill by name in ~/.hermes/skills/.
+    Find a skill by name in ~/.openmork/skills/.
     Returns {"path": Path} or None.
     """
     if not SKILLS_DIR.exists():
@@ -552,7 +552,7 @@ SKILL_MANAGE_SCHEMA = {
     "description": (
         "Manage skills (create, update, delete). Skills are your procedural "
         "memory — reusable approaches for recurring task types. "
-        "New skills go to ~/.hermes/skills/; existing skills can be modified wherever they live.\n\n"
+        "New skills go to ~/.openmork/skills/; existing skills can be modified wherever they live.\n\n"
         "Actions: create (full SKILL.md + optional category), "
         "patch (old_string/new_string — preferred for fixes), "
         "edit (full SKILL.md rewrite — major overhauls only), "

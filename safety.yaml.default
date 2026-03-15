@@ -1,0 +1,89 @@
+# =============================================================================
+# WOSMIM Safety Configuration
+# =============================================================================
+# 
+# This file controls which shell commands trigger an approval prompt.
+# Edit this list to add, remove, or modify patterns.
+#
+# Each pattern has:
+#   - pattern:     A Python regex that matches dangerous commands
+#   - description: Human-readable label shown in the approval prompt
+#
+# If you DELETE a pattern from this list, WOSMIM will execute that command
+# without asking. If you ADD a pattern, WOSMIM will ask before running it.
+#
+# To disable ALL approval prompts, set the environment variable:
+#   WOSMIM_YOLO_MODE=1
+#
+# To disable only Tirith (the binary security scanner), set in config.yaml:
+#   security:
+#     tirith_enabled: false
+# =============================================================================
+
+dangerous_patterns:
+
+  # --- Filesystem destruction ---
+  - pattern: '\brm\s+(-[^\s]*\s+)*/'
+    description: "delete in root path"
+  - pattern: '\brm\s+-[^\s]*r'
+    description: "recursive delete"
+  - pattern: '\brm\s+--recursive\b'
+    description: "recursive delete (long flag)"
+  - pattern: '\bmkfs\b'
+    description: "format filesystem"
+  - pattern: '\bdd\s+.*if='
+    description: "disk copy"
+  - pattern: '>\s*/dev/sd'
+    description: "write to block device"
+
+  # --- Permissions ---
+  - pattern: '\bchmod\s+(-[^\s]*\s+)*777\b'
+    description: "world-writable permissions"
+  - pattern: '\bchmod\s+--recursive\b.*777'
+    description: "recursive world-writable (long flag)"
+  - pattern: '\bchown\s+(-[^\s]*)?R\s+root'
+    description: "recursive chown to root"
+  - pattern: '\bchown\s+--recursive\b.*root'
+    description: "recursive chown to root (long flag)"
+
+  # --- Database ---
+  - pattern: '\bDROP\s+(TABLE|DATABASE)\b'
+    description: "SQL DROP"
+  - pattern: '\bDELETE\s+FROM\b(?!.*\bWHERE\b)'
+    description: "SQL DELETE without WHERE"
+  - pattern: '\bTRUNCATE\s+(TABLE)?\s*\w'
+    description: "SQL TRUNCATE"
+
+  # --- System services ---
+  - pattern: '>\s*/etc/'
+    description: "overwrite system config"
+  - pattern: '\bsystemctl\s+(stop|disable|mask)\b'
+    description: "stop/disable system service"
+  - pattern: '\bkill\s+-9\s+-1\b'
+    description: "kill all processes"
+  - pattern: '\bpkill\s+-9\b'
+    description: "force kill processes"
+  - pattern: ':\(\)\s*\{\s*:\s*\|\s*:\s*\&\s*\}\s*;\s*:'
+    description: "fork bomb"
+
+  # --- Remote code execution ---
+  # NOTE: Comment these out if you want WOSMIM to freely run scripts.
+  # They are the most "restrictive" patterns for advanced users.
+  - pattern: '\b(bash|sh|zsh)\s+-c\s+'
+    description: "shell command via -c flag"
+  - pattern: '\b(python[23]?|perl|ruby|node)\s+-[ec]\s+'
+    description: "script execution via -e/-c flag"
+  - pattern: '\b(curl|wget)\b.*\|\s*(ba)?sh\b'
+    description: "pipe remote content to shell"
+  - pattern: '\b(bash|sh|zsh|ksh)\s+<\s*<?\s*\(\s*(curl|wget)\b'
+    description: "execute remote script via process substitution"
+
+  # --- File manipulation ---
+  - pattern: '\btee\b.*(/etc/|/dev/sd|\.ssh/|\.wosmim/\.env)'
+    description: "overwrite system file via tee"
+  - pattern: '\bxargs\s+.*\brm\b'
+    description: "xargs with rm"
+  - pattern: '\bfind\b.*-exec\s+(/\S*/)?rm\b'
+    description: "find -exec rm"
+  - pattern: '\bfind\b.*-delete\b'
+    description: "find -delete"

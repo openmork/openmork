@@ -1,58 +1,58 @@
 ---
 sidebar_position: 1
 title: "CLI Interface"
-description: "Master the Hermes Agent terminal interface — commands, keybindings, personalities, and more"
+description: "Master the OpenMork terminal interface — commands, keybindings, personalities, and more"
 ---
 
 # CLI Interface
 
-Hermes Agent's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
+OpenMork's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 ## Running the CLI
 
 ```bash
 # Start an interactive session (default)
-hermes
+openmork
 
 # Single query mode (non-interactive)
-hermes chat -q "Hello"
+openmork chat -q "Hello"
 
 # With a specific model
-hermes chat --model "anthropic/claude-sonnet-4"
+openmork chat --model "anthropic/claude-sonnet-4"
 
 # With a specific provider
-hermes chat --provider nous        # Use Nous Portal
-hermes chat --provider openrouter  # Force OpenRouter
+openmork chat --provider nous        # Use Nous Portal
+openmork chat --provider openrouter  # Force OpenRouter
 
 # With specific toolsets
-hermes chat --toolsets "web,terminal,skills"
+openmork chat --toolsets "web,terminal,skills"
 
 # Start with one or more skills preloaded
-hermes -s hermes-agent-dev,github-auth
-hermes chat -s github-pr-workflow -q "open a draft PR"
+openmork -s OpenMork-dev,github-auth
+openmork chat -s github-pr-workflow -q "open a draft PR"
 
 # Resume previous sessions
-hermes --continue             # Resume the most recent CLI session (-c)
-hermes --resume <session_id>  # Resume a specific session by ID (-r)
+openmork --continue             # Resume the most recent CLI session (-c)
+openmork --resume <session_id>  # Resume a specific session by ID (-r)
 
 # Verbose mode (debug output)
-hermes chat --verbose
+openmork chat --verbose
 
 # Isolated git worktree (for running multiple agents in parallel)
-hermes -w                         # Interactive mode in worktree
-hermes -w -q "Fix issue #123"     # Single query in worktree
+openmork -w                         # Interactive mode in worktree
+openmork -w -q "Fix issue #123"     # Single query in worktree
 ```
 
 ## Interface Layout
 
-<img className="docs-terminal-figure" src="/img/docs/cli-layout.svg" alt="Stylized preview of the Hermes CLI layout showing the banner, conversation area, and fixed input prompt." />
-<p className="docs-figure-caption">The Hermes CLI banner, conversation stream, and fixed input prompt rendered as a stable docs figure instead of fragile text art.</p>
+<img className="docs-terminal-figure" src="/img/docs/cli-layout.svg" alt="Stylized preview of the OPENMORK CLI layout showing the banner, conversation area, and fixed input prompt." />
+<p className="docs-figure-caption">The OPENMORK CLI banner, conversation stream, and fixed input prompt rendered as a stable docs figure instead of fragile text art.</p>
 
 The welcome banner shows your model, terminal backend, working directory, available tools, and installed skills at a glance.
 
 ### Session Resume Display
 
-When resuming a previous session (`hermes -c` or `hermes --resume <id>`), a "Previous Conversation" panel appears between the banner and the input prompt, showing a compact recap of the conversation history. See [Sessions — Conversation Recap on Resume](sessions.md#conversation-recap-on-resume) for details and configuration.
+When resuming a previous session (`openmork -c` or `openmork --resume <id>`), a "Previous Conversation" panel appears between the banner and the input prompt, showing a compact recap of the conversation history. See [Sessions — Conversation Recap on Resume](sessions.md#conversation-recap-on-resume) for details and configuration.
 
 ## Keybindings
 
@@ -69,7 +69,7 @@ When resuming a previous session (`hermes -c` or `hermes --resume <id>`), a "Pre
 
 ## Slash Commands
 
-Type `/` to see the autocomplete dropdown. Hermes supports a large set of CLI slash commands, dynamic skill commands, and user-defined quick commands.
+Type `/` to see the autocomplete dropdown. OPENMORK supports a large set of CLI slash commands, dynamic skill commands, and user-defined quick commands.
 
 Common examples:
 
@@ -82,7 +82,7 @@ Common examples:
 | `/background <prompt>` | Run a prompt in a separate background session |
 | `/skin` | Show or switch the active CLI skin |
 | `/voice on` | Enable CLI voice mode (press `Ctrl+B` to record) |
-| `/voice tts` | Toggle spoken playback for Hermes replies |
+| `/voice tts` | Toggle spoken playback for OPENMORK replies |
 | `/reasoning high` | Increase reasoning effort |
 | `/title My Session` | Name the current session |
 
@@ -99,11 +99,11 @@ Commands are case-insensitive — `/HELP` works the same as `/help`. Installed s
 You can define custom commands that run shell commands instantly without invoking the LLM. These work in both the CLI and messaging platforms (Telegram, Discord, etc.).
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.openmork/config.yaml
 quick_commands:
   status:
     type: exec
-    command: systemctl status hermes-agent
+    command: systemctl status OpenMork
   gpu:
     type: exec
     command: nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader
@@ -116,15 +116,15 @@ Then type `/status` or `/gpu` in any chat. See the [Configuration guide](/docs/u
 If you already know which skills you want active for the session, pass them at launch time:
 
 ```bash
-hermes -s hermes-agent-dev,github-auth
-hermes chat -s github-pr-workflow -s github-auth
+openmork -s OpenMork-dev,github-auth
+openmork chat -s github-pr-workflow -s github-auth
 ```
 
-Hermes loads each named skill into the session prompt before the first turn. The same flag works in interactive mode and single-query mode.
+OPENMORK loads each named skill into the session prompt before the first turn. The same flag works in interactive mode and single-query mode.
 
 ## Skill Slash Commands
 
-Every installed skill in `~/.hermes/skills/` is automatically registered as a slash command. The skill name becomes the command:
+Every installed skill in `~/.openmork/skills/` is automatically registered as a slash command. The skill name becomes the command:
 
 ```
 /gif-search funny cats
@@ -147,14 +147,14 @@ Set a predefined personality to change the agent's tone:
 
 Built-in personalities include: `helpful`, `concise`, `technical`, `creative`, `teacher`, `kawaii`, `catgirl`, `pirate`, `shakespeare`, `surfer`, `noir`, `uwu`, `philosopher`, `hype`.
 
-You can also define custom personalities in `~/.hermes/config.yaml`:
+You can also define custom personalities in `~/.openmork/config.yaml`:
 
 ```yaml
 agent:
   personalities:
     helpful: "You are a helpful, friendly AI assistant."
     kawaii: "You are a kawaii assistant! Use cute expressions..."
-    pirate: "Arrr! Ye be talkin' to Captain Hermes..."
+    pirate: "Arrr! Ye be talkin' to Captain OPENMORK..."
     # Add your own!
 ```
 
@@ -212,7 +212,7 @@ When you exit a CLI session, a resume command is printed:
 
 ```
 Resume this session with:
-  hermes --resume 20260225_143052_a1b2c3
+  openmork --resume 20260225_143052_a1b2c3
 
 Session:        20260225_143052_a1b2c3
 Duration:       12m 34s
@@ -222,21 +222,21 @@ Messages:       28 (5 user, 18 tool calls)
 Resume options:
 
 ```bash
-hermes --continue                          # Resume the most recent CLI session
-hermes -c                                  # Short form
-hermes -c "my project"                     # Resume a named session (latest in lineage)
-hermes --resume 20260225_143052_a1b2c3     # Resume a specific session by ID
-hermes --resume "refactoring auth"         # Resume by title
-hermes -r 20260225_143052_a1b2c3           # Short form
+openmork --continue                          # Resume the most recent CLI session
+openmork -c                                  # Short form
+openmork -c "my project"                     # Resume a named session (latest in lineage)
+openmork --resume 20260225_143052_a1b2c3     # Resume a specific session by ID
+openmork --resume "refactoring auth"         # Resume by title
+openmork -r 20260225_143052_a1b2c3           # Short form
 ```
 
 Resuming restores the full conversation history from SQLite. The agent sees all previous messages, tool calls, and responses — just as if you never left.
 
-Use `/title My Session Name` inside a chat to name the current session, or `hermes sessions rename <id> <title>` from the command line. Use `hermes sessions list` to browse past sessions.
+Use `/title My Session Name` inside a chat to name the current session, or `openmork sessions rename <id> <title>` from the command line. Use `openmork sessions list` to browse past sessions.
 
 ### Session Storage
 
-CLI sessions are stored in Hermes's SQLite state database under `~/.hermes/state.db`. The database keeps:
+CLI sessions are stored in OPENMORK's SQLite state database under `~/.openmork/state.db`. The database keeps:
 
 - session metadata (ID, title, timestamps, token counters)
 - message history
@@ -250,7 +250,7 @@ Some messaging adapters also keep per-platform transcript files alongside the da
 Long conversations are automatically summarized when approaching context limits:
 
 ```yaml
-# In ~/.hermes/config.yaml
+# In ~/.openmork/config.yaml
 compression:
   enabled: true
   threshold: 0.50    # Compress at 50% of context limit by default
@@ -267,7 +267,7 @@ Run a prompt in a separate background session while continuing to use the CLI fo
 /background Analyze the logs in /var/log and summarize any errors from today
 ```
 
-Hermes immediately confirms the task and gives you back the prompt:
+OPENMORK immediately confirms the task and gives you back the prompt:
 
 ```
 🔄 Background task #1 started: "Analyze the logs in /var/log and summarize..."
@@ -288,7 +288,7 @@ Each `/background` prompt spawns a **completely separate agent session** in a da
 When a background task finishes, the result appears as a panel in your terminal:
 
 ```
-╭─ ⚕ Hermes (background #1) ──────────────────────────────────╮
+╭─ ⚕ OPENMORK (background #1) ──────────────────────────────────╮
 │ Found 3 errors in syslog from today:                         │
 │ 1. OOM killer invoked at 03:22 — killed process nginx        │
 │ 2. Disk I/O error on /dev/sda1 at 07:15                      │
@@ -317,5 +317,5 @@ By default, the CLI runs in quiet mode which:
 
 For debug output:
 ```bash
-hermes chat --verbose
+openmork chat --verbose
 ```

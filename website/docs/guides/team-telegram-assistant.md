@@ -6,7 +6,7 @@ description: "Step-by-step guide to setting up a Telegram bot that your whole te
 
 # Set Up a Team Telegram Assistant
 
-This tutorial walks you through setting up a Telegram bot powered by Hermes Agent that multiple team members can use. By the end, your team will have a shared AI assistant they can message for help with code, research, system administration, and anything else — secured with per-user authorization.
+This tutorial walks you through setting up a Telegram bot powered by OpenMork that multiple team members can use. By the end, your team will have a shared AI assistant they can message for help with code, research, system administration, and anything else — secured with per-user authorization.
 
 ## What We're Building
 
@@ -24,12 +24,12 @@ A Telegram bot that:
 
 Before starting, make sure you have:
 
-- **Hermes Agent installed** on a server or VPS (not your laptop — the bot needs to stay running). Follow the [installation guide](/getting-started/learning-path) if you haven't yet.
+- **OpenMork installed** on a server or VPS (not your laptop — the bot needs to stay running). Follow the [installation guide](/getting-started/learning-path) if you haven't yet.
 - **A Telegram account** for yourself (the bot owner)
-- **An LLM provider configured** — at minimum, an API key for OpenAI, Anthropic, or another supported provider in `~/.hermes/.env`
+- **An LLM provider configured** — at minimum, an API key for OpenAI, Anthropic, or another supported provider in `~/.openmork/.env`
 
 :::tip
-A $5/month VPS is plenty for running the gateway. Hermes itself is lightweight — the LLM API calls are what cost money, and those happen remotely.
+A $5/month VPS is plenty for running the gateway. OPENMORK itself is lightweight — the LLM API calls are what cost money, and those happen remotely.
 :::
 
 ---
@@ -41,8 +41,8 @@ Every Telegram bot starts with **@BotFather** — Telegram's official bot for cr
 1. **Open Telegram** and search for `@BotFather`, or go to [t.me/BotFather](https://t.me/BotFather)
 
 2. **Send `/newbot`** — BotFather will ask you two things:
-   - **Display name** — what users see (e.g., `Team Hermes Assistant`)
-   - **Username** — must end in `bot` (e.g., `myteam_hermes_bot`)
+   - **Display name** — what users see (e.g., `Team OPENMORK Assistant`)
+   - **Username** — must end in `bot` (e.g., `myteam_openmork_bot`)
 
 3. **Copy the bot token** — BotFather replies with something like:
    ```
@@ -57,7 +57,7 @@ Every Telegram bot starts with **@BotFather** — Telegram's official bot for cr
    ```
    Choose your bot, then enter something like:
    ```
-   Team AI assistant powered by Hermes Agent. DM me for help with code, research, debugging, and more.
+   Team AI assistant powered by OpenMork. DM me for help with code, research, debugging, and more.
    ```
 
 5. **Set bot commands** (optional — gives users a command menu):
@@ -86,14 +86,14 @@ You have two options: the interactive setup wizard (recommended) or manual confi
 ### Option A: Interactive Setup (Recommended)
 
 ```bash
-hermes gateway setup
+openmork gateway setup
 ```
 
 This walks you through everything with arrow-key selection. Pick **Telegram**, paste your bot token, and enter your user ID when prompted.
 
 ### Option B: Manual Configuration
 
-Add these lines to `~/.hermes/.env`:
+Add these lines to `~/.openmork/.env`:
 
 ```bash
 # Telegram bot token from BotFather
@@ -124,13 +124,13 @@ Telegram user IDs are permanent numbers like `123456789`. They're different from
 Run the gateway in the foreground first to make sure everything works:
 
 ```bash
-hermes gateway
+openmork gateway
 ```
 
 You should see output like:
 
 ```
-[Gateway] Starting Hermes Gateway...
+[Gateway] Starting OPENMORK Gateway...
 [Gateway] Telegram adapter connected
 [Gateway] Cron scheduler started (tick every 60s)
 ```
@@ -142,41 +142,41 @@ Open Telegram, find your bot, and send it a message. If it replies, you're in bu
 For a persistent deployment that survives reboots:
 
 ```bash
-hermes gateway install
-sudo hermes gateway install --system   # Linux only: boot-time system service
+openmork gateway install
+sudo openmork gateway install --system   # Linux only: boot-time system service
 ```
 
 This creates a background service: a user-level **systemd** service on Linux by default, a **launchd** service on macOS, or a boot-time Linux system service if you pass `--system`.
 
 ```bash
 # Linux — manage the default user service
-hermes gateway start
-hermes gateway stop
-hermes gateway status
+openmork gateway start
+openmork gateway stop
+openmork gateway status
 
 # View live logs
-journalctl --user -u hermes-gateway -f
+journalctl --user -u openmork-gateway -f
 
 # Keep running after SSH logout
 sudo loginctl enable-linger $USER
 
 # Linux servers — explicit system-service commands
-sudo hermes gateway start --system
-sudo hermes gateway status --system
-journalctl -u hermes-gateway -f
+sudo openmork gateway start --system
+sudo openmork gateway status --system
+journalctl -u openmork-gateway -f
 ```
 
 ```bash
 # macOS — manage the service
-launchctl start ai.hermes.gateway
-launchctl stop ai.hermes.gateway
-tail -f ~/.hermes/logs/gateway.log
+launchctl start ai.openmork.gateway
+launchctl stop ai.openmork.gateway
+tail -f ~/.openmork/logs/gateway.log
 ```
 
 ### Verify It's Running
 
 ```bash
-hermes gateway status
+openmork gateway status
 ```
 
 Then send a test message to your bot on Telegram. You should get a response within a few seconds.
@@ -192,14 +192,14 @@ Now let's give your teammates access. There are two approaches.
 Collect each team member's Telegram user ID (have them message [@userinfobot](https://t.me/userinfobot)) and add them as a comma-separated list:
 
 ```bash
-# In ~/.hermes/.env
+# In ~/.openmork/.env
 TELEGRAM_ALLOWED_USERS=123456789,987654321,555555555
 ```
 
 Restart the gateway after changes:
 
 ```bash
-hermes gateway stop && hermes gateway start
+openmork gateway stop && openmork gateway start
 ```
 
 ### Approach B: DM Pairing (Recommended for Teams)
@@ -216,7 +216,7 @@ DM pairing is more flexible — you don't need to collect user IDs upfront. Here
 
 3. **You approve it** on the server:
    ```bash
-   hermes pairing approve telegram XKGH5N7P
+   openmork pairing approve telegram XKGH5N7P
    ```
 
 4. **They're in** — the bot immediately starts responding to their messages
@@ -225,13 +225,13 @@ DM pairing is more flexible — you don't need to collect user IDs upfront. Here
 
 ```bash
 # See all pending and approved users
-hermes pairing list
+openmork pairing list
 
 # Revoke someone's access
-hermes pairing revoke telegram 987654321
+openmork pairing revoke telegram 987654321
 
 # Clear expired pending codes
-hermes pairing clear-pending
+openmork pairing clear-pending
 ```
 
 :::tip
@@ -256,7 +256,7 @@ A **home channel** is where the bot delivers cron job results and proactive mess
 
 **Option 1:** Use the `/sethome` command in any Telegram group or chat where the bot is a member.
 
-**Option 2:** Set it manually in `~/.hermes/.env`:
+**Option 2:** Set it manually in `~/.openmork/.env`:
 
 ```bash
 TELEGRAM_HOME_CHANNEL=-1001234567890
@@ -267,7 +267,7 @@ To find a channel ID, add [@userinfobot](https://t.me/userinfobot) to the group 
 
 ### Configure Tool Progress Display
 
-Control how much detail the bot shows when using tools. In `~/.hermes/config.yaml`:
+Control how much detail the bot shows when using tools. In `~/.openmork/config.yaml`:
 
 ```yaml
 display:
@@ -285,9 +285,9 @@ Users can also change this per-session with the `/verbose` command in chat.
 
 ### Set Up a Personality with SOUL.md
 
-Customize how the bot communicates by editing `~/.hermes/SOUL.md`:
+Customize how the bot communicates by editing `~/.openmork/SOUL.md`:
 
-For a full guide, see [Use SOUL.md with Hermes](/docs/guides/use-soul-with-hermes).
+For a full guide, see [Use SOUL.md with OPENMORK](/docs/guides/use-soul-with-openmork).
 
 ```markdown
 # Soul
@@ -302,7 +302,7 @@ before guessing at solutions.
 If your team works on specific projects, create context files so the bot knows your stack:
 
 ```markdown
-<!-- ~/.hermes/AGENTS.md -->
+<!-- ~/.openmork/AGENTS.md -->
 # Team Context
 - We use Python 3.12 with FastAPI and SQLAlchemy
 - Frontend is React with TypeScript
@@ -348,8 +348,8 @@ partitions above 80%, containers that have restarted, or high memory usage.
 
 ```bash
 # From the CLI
-hermes cron list          # View all scheduled jobs
-hermes cron status        # Check if scheduler is running
+openmork cron list          # View all scheduled jobs
+openmork cron status        # Check if scheduler is running
 
 # From Telegram chat
 /cron list                # View jobs
@@ -369,12 +369,12 @@ Cron job prompts run in completely fresh sessions with no memory of prior conver
 On a shared team bot, use Docker as the terminal backend so agent commands run in a container instead of on your host:
 
 ```bash
-# In ~/.hermes/.env
+# In ~/.openmork/.env
 TERMINAL_BACKEND=docker
 TERMINAL_DOCKER_IMAGE=nikolaik/python-nodejs:python3.11-nodejs20
 ```
 
-Or in `~/.hermes/config.yaml`:
+Or in `~/.openmork/config.yaml`:
 
 ```yaml
 terminal:
@@ -390,33 +390,33 @@ This way, even if someone asks the bot to run something destructive, your host s
 
 ```bash
 # Check if the gateway is running
-hermes gateway status
+openmork gateway status
 
 # Watch live logs (Linux)
-journalctl --user -u hermes-gateway -f
+journalctl --user -u openmork-gateway -f
 
 # Watch live logs (macOS)
-tail -f ~/.hermes/logs/gateway.log
+tail -f ~/.openmork/logs/gateway.log
 ```
 
-### Keep Hermes Updated
+### Keep OPENMORK Updated
 
 From Telegram, send `/update` to the bot — it will pull the latest version and restart. Or from the server:
 
 ```bash
-hermes update
-hermes gateway stop && hermes gateway start
+openmork update
+openmork gateway stop && openmork gateway start
 ```
 
 ### Log Locations
 
 | What | Location |
 |------|----------|
-| Gateway logs | `journalctl --user -u hermes-gateway` (Linux) or `~/.hermes/logs/gateway.log` (macOS) |
-| Cron job output | `~/.hermes/cron/output/{job_id}/{timestamp}.md` |
-| Cron job definitions | `~/.hermes/cron/jobs.json` |
-| Pairing data | `~/.hermes/pairing/` |
-| Session history | `~/.hermes/sessions/` |
+| Gateway logs | `journalctl --user -u openmork-gateway` (Linux) or `~/.openmork/logs/gateway.log` (macOS) |
+| Cron job output | `~/.openmork/cron/output/{job_id}/{timestamp}.md` |
+| Cron job definitions | `~/.openmork/cron/jobs.json` |
+| Pairing data | `~/.openmork/pairing/` |
+| Session history | `~/.openmork/sessions/` |
 
 ---
 

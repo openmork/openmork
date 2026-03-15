@@ -1,32 +1,32 @@
 ---
 sidebar_position: 4
 title: "MCP (Model Context Protocol)"
-description: "Connect Hermes Agent to external tool servers via MCP — and control exactly which MCP tools Hermes loads"
+description: "Connect OpenMork to external tool servers via MCP — and control exactly which MCP tools OPENMORK loads"
 ---
 
 # MCP (Model Context Protocol)
 
-MCP lets Hermes Agent connect to external tool servers so the agent can use tools that live outside Hermes itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.
+MCP lets OpenMork connect to external tool servers so the agent can use tools that live outside OPENMORK itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.
 
-If you have ever wanted Hermes to use a tool that already exists somewhere else, MCP is usually the cleanest way to do it.
+If you have ever wanted OPENMORK to use a tool that already exists somewhere else, MCP is usually the cleanest way to do it.
 
 ## What MCP gives you
 
-- Access to external tool ecosystems without writing a native Hermes tool first
+- Access to external tool ecosystems without writing a native OPENMORK tool first
 - Local stdio servers and remote HTTP MCP servers in the same config
 - Automatic tool discovery and registration at startup
 - Utility wrappers for MCP resources and prompts when supported by the server
-- Per-server filtering so you can expose only the MCP tools you actually want Hermes to see
+- Per-server filtering so you can expose only the MCP tools you actually want OPENMORK to see
 
 ## Quick start
 
 1. Install MCP support:
 
 ```bash
-pip install hermes-agent[mcp]
+pip install OpenMork[mcp]
 ```
 
-2. Add an MCP server to `~/.hermes/config.yaml`:
+2. Add an MCP server to `~/.openmork/config.yaml`:
 
 ```yaml
 mcp_servers:
@@ -35,13 +35,13 @@ mcp_servers:
     args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"]
 ```
 
-3. Start Hermes:
+3. Start OPENMORK:
 
 ```bash
-hermes chat
+openmork chat
 ```
 
-4. Ask Hermes to use the MCP-backed capability.
+4. Ask OPENMORK to use the MCP-backed capability.
 
 For example:
 
@@ -49,7 +49,7 @@ For example:
 List the files in /home/user/projects and summarize the repo structure.
 ```
 
-Hermes will discover the MCP server's tools and use them like any other tool.
+OPENMORK will discover the MCP server's tools and use them like any other tool.
 
 ## Two kinds of MCP servers
 
@@ -73,7 +73,7 @@ Use stdio servers when:
 
 ### HTTP servers
 
-HTTP MCP servers are remote endpoints Hermes connects to directly.
+HTTP MCP servers are remote endpoints OPENMORK connects to directly.
 
 ```yaml
 mcp_servers:
@@ -86,11 +86,11 @@ mcp_servers:
 Use HTTP servers when:
 - the MCP server is hosted elsewhere
 - your organization exposes internal MCP endpoints
-- you do not want Hermes spawning a local subprocess for that integration
+- you do not want OPENMORK spawning a local subprocess for that integration
 
 ## Basic configuration reference
 
-Hermes reads MCP config from `~/.hermes/config.yaml` under `mcp_servers`.
+OPENMORK reads MCP config from `~/.openmork/config.yaml` under `mcp_servers`.
 
 ### Common keys
 
@@ -103,7 +103,7 @@ Hermes reads MCP config from `~/.hermes/config.yaml` under `mcp_servers`.
 | `headers` | mapping | HTTP headers for remote servers |
 | `timeout` | number | Tool call timeout |
 | `connect_timeout` | number | Initial connection timeout |
-| `enabled` | bool | If `false`, Hermes skips the server entirely |
+| `enabled` | bool | If `false`, OPENMORK skips the server entirely |
 | `tools` | mapping | Per-server tool filtering and utility policy |
 
 ### Minimal stdio example
@@ -125,9 +125,9 @@ mcp_servers:
       Authorization: "Bearer ***"
 ```
 
-## How Hermes registers MCP tools
+## How OPENMORK registers MCP tools
 
-Hermes prefixes MCP tools so they do not collide with built-in names:
+OPENMORK prefixes MCP tools so they do not collide with built-in names:
 
 ```text
 mcp_<server_name>_<tool_name>
@@ -141,11 +141,11 @@ Examples:
 | `github` | `create-issue` | `mcp_github_create_issue` |
 | `my-api` | `query.data` | `mcp_my_api_query_data` |
 
-In practice, you usually do not need to call the prefixed name manually — Hermes sees the tool and chooses it during normal reasoning.
+In practice, you usually do not need to call the prefixed name manually — OPENMORK sees the tool and chooses it during normal reasoning.
 
 ## MCP utility tools
 
-When supported, Hermes also registers utility tools around MCP resources and prompts:
+When supported, OPENMORK also registers utility tools around MCP resources and prompts:
 
 - `list_resources`
 - `read_resource`
@@ -160,8 +160,8 @@ These are registered per server with the same prefix pattern, for example:
 ### Important
 
 These utility tools are now capability-aware:
-- Hermes only registers resource utilities if the MCP session actually supports resource operations
-- Hermes only registers prompt utilities if the MCP session actually supports prompt operations
+- OPENMORK only registers resource utilities if the MCP session actually supports resource operations
+- OPENMORK only registers prompt utilities if the MCP session actually supports prompt operations
 
 So a server that exposes callable tools but no resources/prompts will not get those extra wrappers.
 
@@ -169,7 +169,7 @@ So a server that exposes callable tools but no resources/prompts will not get th
 
 This is the main feature added by the PR work.
 
-You can now control which tools each MCP server contributes to Hermes.
+You can now control which tools each MCP server contributes to OPENMORK.
 
 ### Disable a server entirely
 
@@ -180,7 +180,7 @@ mcp_servers:
     enabled: false
 ```
 
-If `enabled: false`, Hermes skips the server completely and does not even attempt a connection.
+If `enabled: false`, OPENMORK skips the server completely and does not even attempt a connection.
 
 ### Whitelist server tools
 
@@ -223,7 +223,7 @@ tools:
 
 ### Filter utility tools too
 
-You can also separately disable Hermes-added utility wrappers:
+You can also separately disable OPENMORK-added utility wrappers:
 
 ```yaml
 mcp_servers:
@@ -266,7 +266,7 @@ mcp_servers:
 
 ## What happens if everything is filtered out?
 
-If your config filters out all callable tools and disables or omits all supported utilities, Hermes does not create an empty runtime MCP toolset for that server.
+If your config filters out all callable tools and disables or omits all supported utilities, OPENMORK does not create an empty runtime MCP toolset for that server.
 
 That keeps the tool list clean.
 
@@ -274,7 +274,7 @@ That keeps the tool list clean.
 
 ### Discovery time
 
-Hermes discovers MCP servers at startup and registers their tools into the normal tool registry.
+OPENMORK discovers MCP servers at startup and registers their tools into the normal tool registry.
 
 ### Reloading
 
@@ -300,7 +300,7 @@ That makes MCP servers easier to reason about at the toolset level.
 
 ### Stdio env filtering
 
-For stdio servers, Hermes does not blindly pass your full shell environment.
+For stdio servers, OPENMORK does not blindly pass your full shell environment.
 
 Only explicitly configured `env` plus a safe baseline are passed through. This reduces accidental secret leakage.
 
@@ -374,12 +374,12 @@ Inspect the project root and explain the directory layout.
 Check:
 
 ```bash
-pip install hermes-agent[mcp]
+pip install OpenMork[mcp]
 node --version
 npx --version
 ```
 
-Then verify your config and restart Hermes.
+Then verify your config and restart OPENMORK.
 
 ### Tools not appearing
 
@@ -394,7 +394,7 @@ If you are intentionally filtering, this is expected.
 
 ### Why didn't resource or prompt utilities appear?
 
-Because Hermes now only registers those wrappers when both are true:
+Because OPENMORK now only registers those wrappers when both are true:
 1. your config allows them
 2. the server session actually supports the capability
 
@@ -402,7 +402,7 @@ This is intentional and keeps the tool list honest.
 
 ## Related docs
 
-- [Use MCP with Hermes](/docs/guides/use-mcp-with-hermes)
+- [Use MCP with OPENMORK](/docs/guides/use-mcp-with-openmork)
 - [CLI Commands](/docs/reference/cli-commands)
 - [Slash Commands](/docs/reference/slash-commands)
 - [FAQ](/docs/reference/faq)

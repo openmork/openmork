@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Hermes Agent WhatsApp Bridge
+ * OpenMork WhatsApp Bridge
  *
  * Standalone Node.js process that connects to WhatsApp via Baileys
  * and exposes HTTP endpoints for the Python gateway adapter.
@@ -15,7 +15,7 @@
  *   GET  /health         - Health check
  *
  * Usage:
- *   node bridge.js --port 3000 --session ~/.hermes/whatsapp/session
+ *   node bridge.js --port 3000 --session ~/.openmork/whatsapp/session
  */
 
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
@@ -34,7 +34,7 @@ function getArg(name, defaultVal) {
 }
 
 const PORT = parseInt(getArg('port', '3000'), 10);
-const SESSION_DIR = getArg('session', path.join(process.env.HOME || '~', '.hermes', 'whatsapp', 'session'));
+const SESSION_DIR = getArg('session', path.join(process.env.HOME || '~', '.openmork', 'whatsapp', 'session'));
 const PAIR_ONLY = args.includes('--pair-only');
 const WHATSAPP_MODE = getArg('mode', process.env.WHATSAPP_MODE || 'self-chat'); // "bot" or "self-chat"
 const ALLOWED_USERS = (process.env.WHATSAPP_ALLOWED_USERS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -59,7 +59,7 @@ async function startSocket() {
     auth: state,
     logger,
     printQRInTerminal: false,
-    browser: ['Hermes Agent', 'Chrome', '120.0'],
+    browser: ['OpenMork', 'Chrome', '120.0'],
     syncFullHistory: false,
     markOnlineOnConnect: false,
   });
@@ -210,7 +210,7 @@ app.post('/send', async (req, res) => {
   try {
     // Prefix responses so the user can distinguish agent replies from their
     // own messages (especially in self-chat / "Message Yourself").
-    const prefixed = `⚕ *Hermes Agent*\n────────────\n${message}`;
+    const prefixed = `⚕ *OpenMork*\n────────────\n${message}`;
     const sent = await sock.sendMessage(chatId, { text: prefixed });
     res.json({ success: true, messageId: sent?.key?.id });
   } catch (err) {
@@ -230,7 +230,7 @@ app.post('/edit', async (req, res) => {
   }
 
   try {
-    const prefixed = `⚕ *Hermes Agent*\n────────────\n${message}`;
+    const prefixed = `⚕ *OpenMork*\n────────────\n${message}`;
     const key = { id: messageId, fromMe: true, remoteJid: chatId };
     await sock.sendMessage(chatId, { text: prefixed, edit: key });
     res.json({ success: true });

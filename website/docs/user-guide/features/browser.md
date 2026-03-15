@@ -7,7 +7,7 @@ sidebar_position: 5
 
 # Browser Automation
 
-Hermes Agent includes a full browser automation toolset that can run in two modes:
+OpenMork includes a full browser automation toolset that can run in two modes:
 
 - **Browserbase cloud mode** via [Browserbase](https://browserbase.com) for managed cloud browsers and anti-bot tooling
 - **Local browser mode** via the `agent-browser` CLI and a local Chromium installation
@@ -33,7 +33,7 @@ Key capabilities:
 To use Browserbase-managed cloud browsers, add:
 
 ```bash
-# Add to ~/.hermes/.env
+# Add to ~/.openmork/.env
 BROWSERBASE_API_KEY=***
 BROWSERBASE_PROJECT_ID=your-project-id-here
 ```
@@ -42,7 +42,7 @@ Get your credentials at [browserbase.com](https://browserbase.com).
 
 ### Local browser mode
 
-If you do **not** set Browserbase credentials, Hermes can still use the browser tools through a local Chromium install driven by `agent-browser`.
+If you do **not** set Browserbase credentials, OPENMORK can still use the browser tools through a local Chromium install driven by `agent-browser`.
 
 ### Optional Environment Variables
 
@@ -73,7 +73,7 @@ npm install
 ```
 
 :::info
-The `browser` toolset must be included in your config's `toolsets` list or enabled via `hermes config set toolsets '["hermes-cli", "browser"]'`.
+The `browser` toolset must be included in your config's `toolsets` list or enabled via `openmork config set toolsets '["openmork-cli", "browser"]'`.
 :::
 
 ## Available Tools
@@ -112,7 +112,7 @@ Click @e5 to press the "Sign In" button
 Type text into an input field. Clears the field first, then types the new text.
 
 ```
-Type "hermes agent" into the search field @e3
+Type "OpenMork" into the search field @e3
 ```
 
 ### `browser_scroll`
@@ -151,7 +151,7 @@ The screenshot is saved persistently and the file path is returned alongside the
 What does the chart on this page show?
 ```
 
-Screenshots are stored in `~/.hermes/browser_screenshots/` and automatically cleaned up after 24 hours.
+Screenshots are stored in `~/.openmork/browser_screenshots/` and automatically cleaned up after 24 hours.
 
 ### `browser_console`
 
@@ -205,7 +205,7 @@ browser:
   record_sessions: true  # default: false
 ```
 
-When enabled, recording starts automatically on the first `browser_navigate` and saves to `~/.hermes/browser_recordings/` when the session closes. Works in both local and cloud (Browserbase) modes. Recordings older than 72 hours are automatically cleaned up.
+When enabled, recording starts automatically on the first `browser_navigate` and saves to `~/.openmork/browser_recordings/` when the session closes. Works in both local and cloud (Browserbase) modes. Recordings older than 72 hours are automatically cleaned up.
 
 ## Stealth Features
 
@@ -219,7 +219,7 @@ Browserbase provides automatic stealth capabilities:
 | Keep Alive | On | Session reconnection after network hiccups |
 
 :::note
-If paid features aren't available on your plan, Hermes automatically falls back — first disabling `keepAlive`, then proxies — so browsing still works on free plans.
+If paid features aren't available on your plan, OPENMORK automatically falls back — first disabling `keepAlive`, then proxies — so browsing still works on free plans.
 :::
 
 ## Session Management

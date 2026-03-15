@@ -34,7 +34,7 @@ from typing import Dict, Any, List, Optional
 logger = logging.getLogger(__name__)
 
 # Where memory files live
-MEMORY_DIR = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes")) / "memories"
+MEMORY_DIR = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork")) / "memories"
 
 ENTRY_DELIMITER = "\n§\n"
 
@@ -59,7 +59,7 @@ _MEMORY_THREAT_PATTERNS = [
     # Persistence via shell rc
     (r'authorized_keys', "ssh_backdoor"),
     (r'\$HOME/\.ssh|\~/\.ssh', "ssh_access"),
-    (r'\$HOME/\.hermes/\.env|\~/\.hermes/\.env', "hermes_env"),
+    (r'\$HOME/\.openmork/\.env|\~/\.openmork/\.env', "openmork_env"),
 ]
 
 # Subset of invisible chars for injection detection

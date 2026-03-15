@@ -1,12 +1,12 @@
 ---
 sidebar_position: 2
 title: "Environment Variables"
-description: "Complete reference of all environment variables used by Hermes Agent"
+description: "Complete reference of all environment variables used by OpenMork"
 ---
 
 # Environment Variables Reference
 
-All variables go in `~/.hermes/.env`. You can also set them with `hermes config set VAR value`.
+All variables go in `~/.openmork/.env`. You can also set them with `openmork config set VAR value`.
 
 ## LLM Providers
 
@@ -29,25 +29,25 @@ All variables go in `~/.hermes/.env`. You can also set them with `hermes config 
 | `ANTHROPIC_API_KEY` | Anthropic Console API key ([console.anthropic.com](https://console.anthropic.com/)) |
 | `ANTHROPIC_TOKEN` | Manual or legacy Anthropic OAuth/setup-token override |
 | `CLAUDE_CODE_OAUTH_TOKEN` | Explicit Claude Code token override if you export one manually |
-| `HERMES_MODEL` | Preferred model name (checked before `LLM_MODEL`, used by gateway) |
+| `OPENMORK_MODEL` | Preferred model name (checked before `LLM_MODEL`, used by gateway) |
 | `LLM_MODEL` | Default model name (fallback when not set in config.yaml) |
 | `VOICE_TOOLS_OPENAI_KEY` | OpenAI key for OpenAI speech-to-text and text-to-speech providers |
-| `HERMES_HOME` | Override Hermes config directory (default: `~/.hermes`) |
+| `OPENMORK_HOME` | Override OPENMORK config directory (default: `~/.openmork`) |
 
 ## Provider Auth (OAuth)
 
-For native Anthropic auth, Hermes prefers Claude Code's own credential files when they exist because those credentials can refresh automatically. Environment variables such as `ANTHROPIC_TOKEN` remain useful as manual overrides, but they are no longer the preferred path for Claude Pro/Max login.
+For native Anthropic auth, OPENMORK prefers Claude Code's own credential files when they exist because those credentials can refresh automatically. Environment variables such as `ANTHROPIC_TOKEN` remain useful as manual overrides, but they are no longer the preferred path for Claude Pro/Max login.
 
 | Variable | Description |
 |----------|-------------|
-| `HERMES_INFERENCE_PROVIDER` | Override provider selection: `auto`, `openrouter`, `nous`, `openai-codex`, `anthropic`, `zai`, `kimi-coding`, `minimax`, `minimax-cn` (default: `auto`) |
-| `HERMES_PORTAL_BASE_URL` | Override Nous Portal URL (for development/testing) |
+| `OPENMORK_INFERENCE_PROVIDER` | Override provider selection: `auto`, `openrouter`, `nous`, `openai-codex`, `anthropic`, `zai`, `kimi-coding`, `minimax`, `minimax-cn` (default: `auto`) |
+| `OPENMORK_PORTAL_BASE_URL` | Override Nous Portal URL (for development/testing) |
 | `NOUS_INFERENCE_BASE_URL` | Override Nous inference API URL |
-| `HERMES_NOUS_MIN_KEY_TTL_SECONDS` | Min agent key TTL before re-mint (default: 1800 = 30min) |
-| `HERMES_NOUS_TIMEOUT_SECONDS` | HTTP timeout for Nous credential / token flows |
-| `HERMES_DUMP_REQUESTS` | Dump API request payloads to log files (`true`/`false`) |
-| `HERMES_PREFILL_MESSAGES_FILE` | Path to a JSON file of ephemeral prefill messages injected at API-call time |
-| `HERMES_TIMEZONE` | IANA timezone override (for example `America/New_York`) |
+| `OPENMORK_NOUS_MIN_KEY_TTL_SECONDS` | Min agent key TTL before re-mint (default: 1800 = 30min) |
+| `OPENMORK_NOUS_TIMEOUT_SECONDS` | HTTP timeout for Nous credential / token flows |
+| `OPENMORK_DUMP_REQUESTS` | Dump API request payloads to log files (`true`/`false`) |
+| `OPENMORK_PREFILL_MESSAGES_FILE` | Path to a JSON file of ephemeral prefill messages injected at API-call time |
+| `OPENMORK_TIMEZONE` | IANA timezone override (for example `America/New_York`) |
 
 ## Tool APIs
 
@@ -102,7 +102,7 @@ For native Anthropic auth, Hermes prefers Claude Code's own credential files whe
 | `TERMINAL_CONTAINER_MEMORY` | Memory in MB (default: 5120) |
 | `TERMINAL_CONTAINER_DISK` | Disk in MB (default: 51200) |
 | `TERMINAL_CONTAINER_PERSISTENT` | Persist container filesystem across sessions (default: `true`) |
-| `TERMINAL_SANDBOX_DIR` | Host directory for workspaces and overlays (default: `~/.hermes/sandboxes/`) |
+| `TERMINAL_SANDBOX_DIR` | Host directory for workspaces and overlays (default: `~/.openmork/sandboxes/`) |
 
 ## Messaging
 
@@ -155,16 +155,16 @@ For native Anthropic auth, Hermes prefers Claude Code's own credential files whe
 
 | Variable | Description |
 |----------|-------------|
-| `HERMES_MAX_ITERATIONS` | Max tool-calling iterations per conversation (default: 60) |
-| `HERMES_TOOL_PROGRESS` | Deprecated compatibility variable for tool progress display. Prefer `display.tool_progress` in `config.yaml`. |
-| `HERMES_TOOL_PROGRESS_MODE` | Deprecated compatibility variable for tool progress mode. Prefer `display.tool_progress` in `config.yaml`. |
-| `HERMES_HUMAN_DELAY_MODE` | Response pacing: `off`/`natural`/`custom` |
-| `HERMES_HUMAN_DELAY_MIN_MS` | Custom delay range minimum (ms) |
-| `HERMES_HUMAN_DELAY_MAX_MS` | Custom delay range maximum (ms) |
-| `HERMES_QUIET` | Suppress non-essential output (`true`/`false`) |
-| `HERMES_API_TIMEOUT` | LLM API call timeout in seconds (default: `900`) |
-| `HERMES_EXEC_ASK` | Enable execution approval prompts in gateway mode (`true`/`false`) |
-| `HERMES_BACKGROUND_NOTIFICATIONS` | Background process notification mode in gateway: `all` (default), `result`, `error`, `off` |
+| `OPENMORK_MAX_ITERATIONS` | Max tool-calling iterations per conversation (default: 60) |
+| `OPENMORK_TOOL_PROGRESS` | Deprecated compatibility variable for tool progress display. Prefer `display.tool_progress` in `config.yaml`. |
+| `OPENMORK_TOOL_PROGRESS_MODE` | Deprecated compatibility variable for tool progress mode. Prefer `display.tool_progress` in `config.yaml`. |
+| `OPENMORK_HUMAN_DELAY_MODE` | Response pacing: `off`/`natural`/`custom` |
+| `OPENMORK_HUMAN_DELAY_MIN_MS` | Custom delay range minimum (ms) |
+| `OPENMORK_HUMAN_DELAY_MAX_MS` | Custom delay range maximum (ms) |
+| `OPENMORK_QUIET` | Suppress non-essential output (`true`/`false`) |
+| `OPENMORK_API_TIMEOUT` | LLM API call timeout in seconds (default: `900`) |
+| `OPENMORK_EXEC_ASK` | Enable execution approval prompts in gateway mode (`true`/`false`) |
+| `OPENMORK_BACKGROUND_NOTIFICATIONS` | Background process notification mode in gateway: `all` (default), `result`, `error`, `off` |
 
 ## Session Settings
 
@@ -196,7 +196,7 @@ For native Anthropic auth, Hermes prefers Claude Code's own credential files whe
 | `CONTEXT_COMPRESSION_PROVIDER` | Override provider for context compression summaries |
 | `CONTEXT_COMPRESSION_MODEL` | Override model for context compression summaries |
 
-For task-specific direct endpoints, Hermes uses the task's configured API key or `OPENAI_API_KEY`. It does not reuse `OPENROUTER_API_KEY` for those custom endpoints.
+For task-specific direct endpoints, OPENMORK uses the task's configured API key or `OPENAI_API_KEY`. It does not reuse `OPENROUTER_API_KEY` for those custom endpoints.
 
 ## Fallback Model (config.yaml only)
 
@@ -212,7 +212,7 @@ See [Fallback Providers](/docs/user-guide/features/fallback-providers) for full 
 
 ## Provider Routing (config.yaml only)
 
-These go in `~/.hermes/config.yaml` under the `provider_routing` section:
+These go in `~/.openmork/config.yaml` under the `provider_routing` section:
 
 | Key | Description |
 |-----|-------------|
@@ -224,5 +224,5 @@ These go in `~/.hermes/config.yaml` under the `provider_routing` section:
 | `data_collection` | `"allow"` (default) or `"deny"` to exclude data-storing providers |
 
 :::tip
-Use `hermes config set` to set environment variables — it automatically saves them to the right file (`.env` for secrets, `config.yaml` for everything else).
+Use `openmork config set` to set environment variables — it automatically saves them to the right file (`.env` for secrets, `config.yaml` for everything else).
 :::

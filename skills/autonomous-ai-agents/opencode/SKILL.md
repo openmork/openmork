@@ -2,17 +2,17 @@
 name: opencode
 description: Delegate coding tasks to OpenCode CLI agent for feature implementation, refactoring, PR review, and long-running autonomous sessions. Requires the opencode CLI installed and authenticated.
 version: 1.2.0
-author: Hermes Agent
+author: OpenMork
 license: MIT
 metadata:
-  hermes:
+  openmork:
     tags: [Coding-Agent, OpenCode, Autonomous, Refactoring, Code-Review]
-    related_skills: [claude-code, codex, hermes-agent]
+    related_skills: [claude-code, codex, OpenMork]
 ---
 
 # OpenCode CLI
 
-Use [OpenCode](https://opencode.ai) as an autonomous coding worker orchestrated by Hermes terminal/process tools. OpenCode is a provider-agnostic, open-source AI coding agent with a TUI and CLI.
+Use [OpenCode](https://opencode.ai) as an autonomous coding worker orchestrated by OPENMORK terminal/process tools. OpenCode is a provider-agnostic, open-source AI coding agent with a TUI and CLI.
 
 ## When to Use
 
@@ -31,7 +31,7 @@ Use [OpenCode](https://opencode.ai) as an autonomous coding worker orchestrated 
 
 ## Binary Resolution (Important)
 
-Shell environments may resolve different OpenCode binaries. If behavior differs between your terminal and Hermes, check:
+Shell environments may resolve different OpenCode binaries. If behavior differs between your terminal and OPENMORK, check:
 
 ```
 terminal(command="which -a opencode")

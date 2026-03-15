@@ -753,7 +753,7 @@ class TestVoiceChannelCommands:
         result = await runner._handle_voice_channel_join(event)
 
         assert "voice dependencies are missing" in result.lower()
-        assert "hermes-agent[messaging]" in result
+        assert "OpenMork[messaging]" in result
 
     # -- _handle_voice_channel_leave --
 
@@ -1880,7 +1880,7 @@ class TestSendVoiceReplyCleanup:
         runner._get_guild_id = MagicMock(return_value=None)
 
         # Create a fake audio file that TTS would produce
-        fake_audio = tmp_path / "hermes_voice"
+        fake_audio = tmp_path / "openmork_voice"
         fake_audio.mkdir()
         audio_file = fake_audio / "test.mp3"
         audio_file.write_bytes(b"fake audio")
@@ -1942,7 +1942,7 @@ class TestVoiceChannelAwareness:
         adapter._voice_text_channels = {}
         adapter._voice_receivers = {}
         adapter._client = MagicMock()
-        adapter._client.user = SimpleNamespace(id=99999, name="HermesBot")
+        adapter._client.user = SimpleNamespace(id=99999, name="OPENMORKBot")
         return adapter
 
     def _make_member(self, user_id, display_name, is_bot=False):
@@ -1965,7 +1965,7 @@ class TestVoiceChannelAwareness:
         adapter = self._make_adapter()
         vc = MagicMock()
         vc.is_connected.return_value = True
-        bot_member = self._make_member(99999, "HermesBot", is_bot=True)
+        bot_member = self._make_member(99999, "OPENMORKBot", is_bot=True)
         user_a = self._make_member(1001, "Alice")
         user_b = self._make_member(1002, "Bob")
         vc.channel.name = "general-voice"
@@ -1979,7 +1979,7 @@ class TestVoiceChannelAwareness:
         names = [m["display_name"] for m in info["members"]]
         assert "Alice" in names
         assert "Bob" in names
-        assert "HermesBot" not in names
+        assert "OPENMORKBot" not in names
 
     def test_speaking_detection(self):
         adapter = self._make_adapter()

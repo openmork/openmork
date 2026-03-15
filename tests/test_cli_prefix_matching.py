@@ -1,10 +1,10 @@
-"""Tests for slash command prefix matching in HermesCLI.process_command."""
+"""Tests for slash command prefix matching in OPENMORKCLI.process_command."""
 from unittest.mock import MagicMock, patch
-from cli import HermesCLI
+from cli import OPENMORKCLI
 
 
 def _make_cli():
-    cli_obj = HermesCLI.__new__(HermesCLI)
+    cli_obj = OPENMORKCLI.__new__(OPENMORKCLI)
     cli_obj.config = {}
     cli_obj.console = MagicMock()
     cli_obj.agent = None
@@ -49,7 +49,7 @@ class TestSlashCommandPrefixMatching:
         cli_obj = _make_cli()
         call_count = [0]
 
-        original_pc = HermesCLI.process_command
+        original_pc = OPENMORKCLI.process_command
 
         def guarded(self_inner, cmd):
             call_count[0] += 1
@@ -57,7 +57,7 @@ class TestSlashCommandPrefixMatching:
                 raise RecursionError("Infinite recursion detected")
             return original_pc(self_inner, cmd)
 
-        with patch.object(HermesCLI, 'process_command', guarded):
+        with patch.object(OPENMORKCLI, 'process_command', guarded):
             try:
                 cli_obj.process_command("/config set key value")
             except RecursionError:

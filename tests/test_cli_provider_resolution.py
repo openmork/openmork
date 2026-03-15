@@ -4,8 +4,8 @@ import types
 from contextlib import nullcontext
 from types import SimpleNamespace
 
-from hermes_cli.auth import AuthError
-from hermes_cli import main as hermes_main
+from openmork_cli.auth import AuthError
+from openmork_cli import main as openmork_main
 
 
 def _install_prompt_toolkit_stubs():
@@ -85,18 +85,18 @@ def _import_cli():
     return importlib.import_module("cli")
 
 
-def test_hermes_cli_init_does_not_eagerly_resolve_runtime_provider(monkeypatch):
+def test_openmork_cli_init_does_not_eagerly_resolve_runtime_provider(monkeypatch):
     cli = _import_cli()
     calls = {"count": 0}
 
     def _unexpected_runtime_resolve(**kwargs):
         calls["count"] += 1
-        raise AssertionError("resolve_runtime_provider should not be called in HermesCLI.__init__")
+        raise AssertionError("resolve_runtime_provider should not be called in OPENMORKCLI.__init__")
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _unexpected_runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _unexpected_runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
 
-    shell = cli.HermesCLI(model="gpt-5", compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(model="gpt-5", compact=True, max_turns=1)
 
     assert shell is not None
     assert calls["count"] == 0
@@ -122,11 +122,11 @@ def test_runtime_resolution_failure_is_not_sticky(monkeypatch):
         def __init__(self, *args, **kwargs):
             self.kwargs = kwargs
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
     monkeypatch.setattr(cli, "AIAgent", _DummyAgent)
 
-    shell = cli.HermesCLI(model="gpt-5", compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(model="gpt-5", compact=True, max_turns=1)
 
     assert shell._init_agent() is False
     assert shell._init_agent() is True
@@ -146,10 +146,10 @@ def test_runtime_resolution_rebuilds_agent_on_routing_change(monkeypatch):
             "source": "env/config",
         }
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
 
-    shell = cli.HermesCLI(model="gpt-5", compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(model="gpt-5", compact=True, max_turns=1)
     shell.provider = "openrouter"
     shell.api_mode = "chat_completions"
     shell.base_url = "https://same-endpoint.example/v1"
@@ -165,7 +165,7 @@ def test_runtime_resolution_rebuilds_agent_on_routing_change(monkeypatch):
 def test_cli_prefers_config_provider_over_stale_env_override(monkeypatch):
     cli = _import_cli()
 
-    monkeypatch.setenv("HERMES_INFERENCE_PROVIDER", "openrouter")
+    monkeypatch.setenv("OPENMORK_INFERENCE_PROVIDER", "openrouter")
     config_copy = dict(cli.CLI_CONFIG)
     model_copy = dict(config_copy.get("model", {}))
     model_copy["provider"] = "custom"
@@ -173,7 +173,7 @@ def test_cli_prefers_config_provider_over_stale_env_override(monkeypatch):
     config_copy["model"] = model_copy
     monkeypatch.setattr(cli, "CLI_CONFIG", config_copy)
 
-    shell = cli.HermesCLI(model="fireworks/minimax-m2p5", compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(model="fireworks/minimax-m2p5", compact=True, max_turns=1)
 
     assert shell.requested_provider == "custom"
 
@@ -201,14 +201,14 @@ def test_codex_provider_replaces_incompatible_default_model(monkeypatch):
             "source": "env/config",
         }
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
     monkeypatch.setattr(
-        "hermes_cli.codex_models.get_codex_model_ids",
+        "openmork_cli.codex_models.get_codex_model_ids",
         lambda access_token=None: ["gpt-5.2-codex", "gpt-5.1-codex-mini"],
     )
 
-    shell = cli.HermesCLI(compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(compact=True, max_turns=1)
 
     assert shell._model_is_default is True
     assert shell._ensure_runtime_credentials() is True
@@ -243,15 +243,15 @@ def test_codex_provider_uses_config_model(monkeypatch):
             "source": "env/config",
         }
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
     # Prevent live API call from overriding the config model
     monkeypatch.setattr(
-        "hermes_cli.codex_models.get_codex_model_ids",
+        "openmork_cli.codex_models.get_codex_model_ids",
         lambda access_token=None: ["gpt-5.2-codex"],
     )
 
-    shell = cli.HermesCLI(compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(compact=True, max_turns=1)
 
     assert shell._ensure_runtime_credentials() is True
     assert shell.provider == "openai-codex"
@@ -278,10 +278,10 @@ def test_codex_provider_preserves_explicit_codex_model(monkeypatch):
             "source": "env/config",
         }
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
 
-    shell = cli.HermesCLI(model="gpt-5.1-codex-mini", compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(model="gpt-5.1-codex-mini", compact=True, max_turns=1)
 
     assert shell._model_is_default is False
     assert shell._ensure_runtime_credentials() is True
@@ -305,10 +305,10 @@ def test_codex_provider_strips_provider_prefix_from_model(monkeypatch):
             "source": "env/config",
         }
 
-    monkeypatch.setattr("hermes_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
-    monkeypatch.setattr("hermes_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
+    monkeypatch.setattr("openmork_cli.runtime_provider.resolve_runtime_provider", _runtime_resolve)
+    monkeypatch.setattr("openmork_cli.runtime_provider.format_runtime_provider_error", lambda exc: str(exc))
 
-    shell = cli.HermesCLI(model="openai/gpt-5.3-codex", compact=True, max_turns=1)
+    shell = cli.OPENMORKCLI(model="openai/gpt-5.3-codex", compact=True, max_turns=1)
 
     assert shell._ensure_runtime_credentials() is True
     assert shell.model == "gpt-5.3-codex"
@@ -316,22 +316,22 @@ def test_codex_provider_strips_provider_prefix_from_model(monkeypatch):
 
 def test_cmd_model_falls_back_to_auto_on_invalid_provider(monkeypatch, capsys):
     monkeypatch.setattr(
-        "hermes_cli.config.load_config",
+        "openmork_cli.config.load_config",
         lambda: {"model": {"default": "gpt-5", "provider": "invalid-provider"}},
     )
-    monkeypatch.setattr("hermes_cli.config.save_config", lambda cfg: None)
-    monkeypatch.setattr("hermes_cli.config.get_env_value", lambda key: "")
-    monkeypatch.setattr("hermes_cli.config.save_env_value", lambda key, value: None)
+    monkeypatch.setattr("openmork_cli.config.save_config", lambda cfg: None)
+    monkeypatch.setattr("openmork_cli.config.get_env_value", lambda key: "")
+    monkeypatch.setattr("openmork_cli.config.save_env_value", lambda key, value: None)
 
     def _resolve_provider(requested, **kwargs):
         if requested == "invalid-provider":
             raise AuthError("Unknown provider 'invalid-provider'.", code="invalid_provider")
         return "openrouter"
 
-    monkeypatch.setattr("hermes_cli.auth.resolve_provider", _resolve_provider)
-    monkeypatch.setattr(hermes_main, "_prompt_provider_choice", lambda choices: len(choices) - 1)
+    monkeypatch.setattr("openmork_cli.auth.resolve_provider", _resolve_provider)
+    monkeypatch.setattr(openmork_main, "_prompt_provider_choice", lambda choices: len(choices) - 1)
 
-    hermes_main.cmd_model(SimpleNamespace())
+    openmork_main.cmd_model(SimpleNamespace())
     output = capsys.readouterr().out
 
     assert "Warning:" in output

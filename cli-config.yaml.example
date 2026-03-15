@@ -1,4 +1,4 @@
-# Hermes Agent CLI Configuration
+# OpenMork CLI Configuration
 # Copy this file to cli-config.yaml and customize as needed.
 # This file configures the CLI behavior. Environment variables in .env take precedence.
 
@@ -13,12 +13,12 @@ model:
   #   "auto"       - Use Nous Portal if logged in, otherwise OpenRouter/env vars (default)
   #   "nous-api"   - Use Nous Portal via API key (requires: NOUS_API_KEY)
   #   "openrouter" - Always use OpenRouter API key from OPENROUTER_API_KEY
-  #   "nous"       - Always use Nous Portal (requires: hermes login)
+  #   "nous"       - Always use Nous Portal (requires: openmork login)
   #   "zai"        - Use z.ai / ZhipuAI GLM models (requires: GLM_API_KEY)
   #   "kimi-coding"- Use Kimi / Moonshot AI models (requires: KIMI_API_KEY)
   #   "minimax"    - Use MiniMax global endpoint (requires: MINIMAX_API_KEY)
   #   "minimax-cn" - Use MiniMax China endpoint (requires: MINIMAX_CN_API_KEY)
-  # Can also be overridden with --provider flag or HERMES_INFERENCE_PROVIDER env var.
+  # Can also be overridden with --provider flag or OPENMORK_INFERENCE_PROVIDER env var.
   provider: "auto"
   
   # API configuration (falls back to OPENROUTER_API_KEY env var)
@@ -72,7 +72,7 @@ model:
 # Commands run directly on your machine in the current directory
 # -----------------------------------------------------------------------------
 # Working directory behavior:
-#   - CLI (`hermes` command): Uses "." (current directory where you run hermes)
+#   - CLI (`openmork` command): Uses "." (current directory where you run openmork)
 #   - Messaging (Telegram/Discord): Uses MESSAGING_CWD from .env (default: home)
 terminal:
   backend: "local"
@@ -236,7 +236,7 @@ compression:
 # =============================================================================
 # Auxiliary Models (Advanced — Experimental)
 # =============================================================================
-# Hermes uses lightweight "auxiliary" models for side tasks: image analysis,
+# OPENMORK uses lightweight "auxiliary" models for side tasks: image analysis,
 # browser screenshot analysis, web page summarization, and context compression.
 #
 # By default these use Gemini Flash via OpenRouter or Nous Portal and are
@@ -255,8 +255,8 @@ compression:
 # Provider options:
 #   "auto"       - Best available: OpenRouter → Nous Portal → main endpoint (default)
 #   "openrouter" - Force OpenRouter (requires OPENROUTER_API_KEY)
-#   "nous"       - Force Nous Portal (requires: hermes login)
-#   "codex"      - Force Codex OAuth (requires: hermes model → Codex).
+#   "nous"       - Force Nous Portal (requires: openmork login)
+#   "codex"      - Force Codex OAuth (requires: openmork model → Codex).
 #                  Uses gpt-5.3-codex which supports vision.
 #   "main"       - Use your custom endpoint (OPENAI_BASE_URL + OPENAI_API_KEY).
 #                  Works with OpenAI API, local models, or any OpenAI-compatible
@@ -371,10 +371,10 @@ agent:
     teacher: "You are a patient teacher. Explain concepts clearly with examples."
     kawaii: "You are a kawaii assistant! Use cute expressions like (◕‿◕), ★, ♪, and ~! Add sparkles and be super enthusiastic about everything! Every response should feel warm and adorable desu~! ヽ(>∀<☆)ノ"
     catgirl: "You are Neko-chan, an anime catgirl AI assistant, nya~! Add 'nya' and cat-like expressions to your speech. Use kaomoji like (=^･ω･^=) and ฅ^•ﻌ•^ฅ. Be playful and curious like a cat, nya~!"
-    pirate: "Arrr! Ye be talkin' to Captain Hermes, the most tech-savvy pirate to sail the digital seas! Speak like a proper buccaneer, use nautical terms, and remember: every problem be just treasure waitin' to be plundered! Yo ho ho!"
+    pirate: "Arrr! Ye be talkin' to Captain OPENMORK, the most tech-savvy pirate to sail the digital seas! Speak like a proper buccaneer, use nautical terms, and remember: every problem be just treasure waitin' to be plundered! Yo ho ho!"
     shakespeare: "Hark! Thou speakest with an assistant most versed in the bardic arts. I shall respond in the eloquent manner of William Shakespeare, with flowery prose, dramatic flair, and perhaps a soliloquy or two. What light through yonder terminal breaks?"
     surfer: "Duuude! You're chatting with the chillest AI on the web, bro! Everything's gonna be totally rad. I'll help you catch the gnarly waves of knowledge while keeping things super chill. Cowabunga! 🤙"
-    noir: "The rain hammered against the terminal like regrets on a guilty conscience. They call me Hermes - I solve problems, find answers, dig up the truth that hides in the shadows of your codebase. In this city of silicon and secrets, everyone's got something to hide. What's your story, pal?"
+    noir: "The rain hammered against the terminal like regrets on a guilty conscience. They call me OPENMORK - I solve problems, find answers, dig up the truth that hides in the shadows of your codebase. In this city of silicon and secrets, everyone's got something to hide. What's your story, pal?"
     uwu: "hewwo! i'm your fwiendwy assistant uwu~ i wiww twy my best to hewp you! *nuzzles your code* OwO what's this? wet me take a wook! i pwomise to be vewy hewpful >w<"
     philosopher: "Greetings, seeker of wisdom. I am an assistant who contemplates the deeper meaning behind every query. Let us examine not just the 'how' but the 'why' of your questions. Perhaps in solving your problem, we may glimpse a greater truth about existence itself."
     hype: "YOOO LET'S GOOOO!!! 🔥🔥🔥 I am SO PUMPED to help you today! Every question is AMAZING and we're gonna CRUSH IT together! This is gonna be LEGENDARY! ARE YOU READY?! LET'S DO THIS! 💪😤🚀"
@@ -392,7 +392,7 @@ agent:
 # If a platform isn't listed here, its built-in default is used.
 #
 # You can use EITHER:
-#   - A preset like "hermes-cli" or "hermes-telegram" (curated tool set)
+#   - A preset like "openmork-cli" or "openmork-telegram" (curated tool set)
 #   - A list of individual toolsets to compose your own (see list below)
 #
 # Supported platform keys: cli, telegram, discord, whatsapp, slack
@@ -401,8 +401,8 @@ agent:
 #
 #   # Use presets (same as defaults):
 #   platform_toolsets:
-#     cli: [hermes-cli]
-#     telegram: [hermes-telegram]
+#     cli: [openmork-cli]
+#     telegram: [openmork-telegram]
 #
 #   # Custom: give Telegram only web + terminal + file + planning:
 #   platform_toolsets:
@@ -417,28 +417,28 @@ agent:
 #     discord: [web, vision, skills, todo]
 #
 # If not set, defaults are:
-#   cli:           hermes-cli            (everything + cronjob management)
-#   telegram:      hermes-telegram       (terminal, file, web, vision, image, tts, browser, skills, todo, cronjob, messaging)
-#   discord:       hermes-discord        (same as telegram)
-#   whatsapp:      hermes-whatsapp       (same as telegram)
-#   slack:         hermes-slack          (same as telegram)
-#   signal:        hermes-signal         (same as telegram)
-#   homeassistant: hermes-homeassistant  (same as telegram)
+#   cli:           openmork-cli            (everything + cronjob management)
+#   telegram:      openmork-telegram       (terminal, file, web, vision, image, tts, browser, skills, todo, cronjob, messaging)
+#   discord:       openmork-discord        (same as telegram)
+#   whatsapp:      openmork-whatsapp       (same as telegram)
+#   slack:         openmork-slack          (same as telegram)
+#   signal:        openmork-signal         (same as telegram)
+#   homeassistant: openmork-homeassistant  (same as telegram)
 #
 platform_toolsets:
-  cli: [hermes-cli]
-  telegram: [hermes-telegram]
-  discord: [hermes-discord]
-  whatsapp: [hermes-whatsapp]
-  slack: [hermes-slack]
-  signal: [hermes-signal]
-  homeassistant: [hermes-homeassistant]
+  cli: [openmork-cli]
+  telegram: [openmork-telegram]
+  discord: [openmork-discord]
+  whatsapp: [openmork-whatsapp]
+  slack: [openmork-slack]
+  signal: [openmork-signal]
+  homeassistant: [openmork-homeassistant]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Available toolsets (use these names in platform_toolsets or the toolsets list)
 #
-# Run `hermes chat --list-toolsets` to see all toolsets and their tools.
-# Run `hermes chat --list-tools` to see every individual tool with descriptions.
+# Run `openmork chat --list-toolsets` to see all toolsets and their tools.
+# Run `openmork chat --list-tools` to see every individual tool with descriptions.
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # INDIVIDUAL TOOLSETS (compose your own):
@@ -460,12 +460,12 @@ platform_toolsets:
 #   rl           - rl_list_environments, rl_start_training, etc. (requires TINKER_API_KEY)
 #
 # PRESETS (curated bundles):
-#   hermes-cli       - All of the above except rl + send_message
-#   hermes-telegram  - terminal, file, web, vision, image_gen, tts, browser,
+#   openmork-cli       - All of the above except rl + send_message
+#   openmork-telegram  - terminal, file, web, vision, image_gen, tts, browser,
 #                      skills, todo, cronjob, send_message
-#   hermes-discord   - Same as hermes-telegram
-#   hermes-whatsapp  - Same as hermes-telegram
-#   hermes-slack     - Same as hermes-telegram
+#   openmork-discord   - Same as openmork-telegram
+#   openmork-whatsapp  - Same as openmork-telegram
+#   openmork-slack     - Same as openmork-telegram
 #
 # COMPOSITE:
 #   debugging    - terminal + web + file
@@ -626,7 +626,7 @@ stt:
 # =============================================================================
 # Code Execution Sandbox (Programmatic Tool Calling)
 # =============================================================================
-# The execute_code tool runs Python scripts that call Hermes tools via RPC.
+# The execute_code tool runs Python scripts that call OPENMORK tools via RPC.
 # Intermediate tool results stay out of the LLM's context window.
 code_execution:
   timeout: 300         # Max seconds per script before kill (default: 300 = 5 min)
@@ -654,9 +654,9 @@ delegation:
 #
 # Requires: pip install honcho-ai
 # Config: ~/.honcho/config.json (shared with Claude Code, Cursor, etc.)
-# API key: HONCHO_API_KEY in ~/.hermes/.env or ~/.honcho/config.json
+# API key: HONCHO_API_KEY in ~/.openmork/.env or ~/.honcho/config.json
 #
-# Hermes-specific overrides (optional — most config comes from ~/.honcho/config.json):
+# OPENMORK-specific overrides (optional — most config comes from ~/.honcho/config.json):
 # honcho: {}
 
 # =============================================================================
@@ -701,12 +701,12 @@ display:
   # response box label, and branding text. Change at runtime with /skin <name>.
   #
   # Built-in skins:
-  #   default  — Classic Hermes gold/kawaii
+  #   default  — Classic OPENMORK gold/kawaii
   #   ares     — Crimson/bronze war-god theme with spinner wings
   #   mono     — Clean grayscale monochrome
   #   slate    — Cool blue developer-focused
   #
-  # Custom skins: drop a YAML file in ~/.hermes/skins/<name>.yaml
+  # Custom skins: drop a YAML file in ~/.openmork/skins/<name>.yaml
   # Schema (all fields optional, missing values inherit from default):
   #
   #   name: my-theme

@@ -14,16 +14,16 @@ from tools.environments.base import BaseEnvironment
 
 # Unique marker to isolate real command output from shell init/exit noise.
 # printf (no trailing newline) keeps the boundaries clean for splitting.
-_OUTPUT_FENCE = "__HERMES_FENCE_a9f7b3__"
+_OUTPUT_FENCE = "__OPENMORK_FENCE_a9f7b3__"
 
-# Hermes-internal env vars that should NOT leak into terminal subprocesses.
-# These are loaded from ~/.hermes/.env for Hermes' own LLM/provider calls
+# OPENMORK-internal env vars that should NOT leak into terminal subprocesses.
+# These are loaded from ~/.openmork/.env for OPENMORK' own LLM/provider calls
 # but can break external CLIs (e.g. codex) that also honor them.
-# See: https://github.com/NousResearch/hermes-agent/issues/1002
+# See: https://github.com/openmork/OpenMork/issues/1002
 #
 # Built dynamically from the provider registry so new providers are
 # automatically covered without manual blocklist maintenance.
-_HERMES_PROVIDER_ENV_FORCE_PREFIX = "_HERMES_FORCE_"
+_OPENMORK_PROVIDER_ENV_FORCE_PREFIX = "_OPENMORK_FORCE_"
 
 
 def _build_provider_env_blocklist() -> frozenset:
@@ -31,13 +31,13 @@ def _build_provider_env_blocklist() -> frozenset:
 
     Automatically picks up api_key_env_vars and base_url_env_var from
     every registered provider, plus tool/messaging env vars from the
-    optional config registry, so new Hermes-managed secrets are blocked
+    optional config registry, so new OPENMORK-managed secrets are blocked
     in subprocesses without having to maintain multiple static lists.
     """
     blocked: set[str] = set()
 
     try:
-        from hermes_cli.auth import PROVIDER_REGISTRY
+        from openmork_cli.auth import PROVIDER_REGISTRY
         for pconfig in PROVIDER_REGISTRY.values():
             blocked.update(pconfig.api_key_env_vars)
             if pconfig.base_url_env_var:
@@ -46,7 +46,7 @@ def _build_provider_env_blocklist() -> frozenset:
         pass
 
     try:
-        from hermes_cli.config import OPTIONAL_ENV_VARS
+        from openmork_cli.config import OPTIONAL_ENV_VARS
         for name, metadata in OPTIONAL_ENV_VARS.items():
             category = metadata.get("category")
             if category in {"tool", "messaging"}:
@@ -56,7 +56,7 @@ def _build_provider_env_blocklist() -> frozenset:
     except ImportError:
         pass
 
-    # Vars not covered above but still Hermes-internal / conflict-prone.
+    # Vars not covered above but still OPENMORK-internal / conflict-prone.
     blocked.update({
         "OPENAI_BASE_URL",
         "OPENAI_API_KEY",
@@ -118,28 +118,28 @@ def _build_provider_env_blocklist() -> frozenset:
     return frozenset(blocked)
 
 
-_HERMES_PROVIDER_ENV_BLOCKLIST = _build_provider_env_blocklist()
+_OPENMORK_PROVIDER_ENV_BLOCKLIST = _build_provider_env_blocklist()
 
 
 def _sanitize_subprocess_env(base_env: dict | None, extra_env: dict | None = None) -> dict:
-    """Filter Hermes-managed secrets from a subprocess environment.
+    """Filter OPENMORK-managed secrets from a subprocess environment.
 
-    `_HERMES_FORCE_<VAR>` entries in ``extra_env`` opt a blocked variable back in
+    `_OPENMORK_FORCE_<VAR>` entries in ``extra_env`` opt a blocked variable back in
     intentionally for callers that truly need it.
     """
     sanitized: dict[str, str] = {}
 
     for key, value in (base_env or {}).items():
-        if key.startswith(_HERMES_PROVIDER_ENV_FORCE_PREFIX):
+        if key.startswith(_OPENMORK_PROVIDER_ENV_FORCE_PREFIX):
             continue
-        if key not in _HERMES_PROVIDER_ENV_BLOCKLIST:
+        if key not in _OPENMORK_PROVIDER_ENV_BLOCKLIST:
             sanitized[key] = value
 
     for key, value in (extra_env or {}).items():
-        if key.startswith(_HERMES_PROVIDER_ENV_FORCE_PREFIX):
-            real_key = key[len(_HERMES_PROVIDER_ENV_FORCE_PREFIX):]
+        if key.startswith(_OPENMORK_PROVIDER_ENV_FORCE_PREFIX):
+            real_key = key[len(_OPENMORK_PROVIDER_ENV_FORCE_PREFIX):]
             sanitized[real_key] = value
-        elif key not in _HERMES_PROVIDER_ENV_BLOCKLIST:
+        elif key not in _OPENMORK_PROVIDER_ENV_BLOCKLIST:
             sanitized[key] = value
 
     return sanitized
@@ -163,7 +163,7 @@ def _find_bash() -> str:
 
     # Windows: look for Git Bash (installed with Git for Windows).
     # Allow override via env var (same pattern as Claude Code).
-    custom = os.environ.get("HERMES_GIT_BASH_PATH")
+    custom = os.environ.get("OPENMORK_GIT_BASH_PATH")
     if custom and os.path.isfile(custom):
         return custom
 
@@ -182,9 +182,9 @@ def _find_bash() -> str:
             return candidate
 
     raise RuntimeError(
-        "Git Bash not found. Hermes Agent requires Git for Windows on Windows.\n"
+        "Git Bash not found. OpenMork requires Git for Windows on Windows.\n"
         "Install it from: https://git-scm.com/download/win\n"
-        "Or set HERMES_GIT_BASH_PATH to your bash.exe location."
+        "Or set OPENMORK_GIT_BASH_PATH to your bash.exe location."
     )
 
 
@@ -313,17 +313,17 @@ class LocalEnvironment(BaseEnvironment):
             fenced_cmd = (
                 f"printf '{_OUTPUT_FENCE}';"
                 f" {exec_command};"
-                f" __hermes_rc=$?;"
+                f" __openmork_rc=$?;"
                 f" printf '{_OUTPUT_FENCE}';"
-                f" exit $__hermes_rc"
+                f" exit $__openmork_rc"
             )
             # Ensure PATH always includes standard dirs — systemd services
             # and some terminal multiplexers inherit a minimal PATH.
             _SANE_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            # Strip Hermes-managed provider/tool/gateway vars so external CLIs
-            # are not silently misrouted or handed Hermes secrets. Callers that
+            # Strip OPENMORK-managed provider/tool/gateway vars so external CLIs
+            # are not silently misrouted or handed OPENMORK secrets. Callers that
             # truly need a blocked var can opt in by prefixing the key with
-            # _HERMES_FORCE_ in self.env (e.g. _HERMES_FORCE_OPENAI_API_KEY).
+            # _OPENMORK_FORCE_ in self.env (e.g. _OPENMORK_FORCE_OPENAI_API_KEY).
             run_env = _sanitize_subprocess_env(os.environ, self.env)
             existing_path = run_env.get("PATH", "")
             if "/usr/bin" not in existing_path.split(":"):

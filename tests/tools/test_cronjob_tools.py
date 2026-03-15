@@ -63,17 +63,17 @@ class TestScanCronPrompt:
 
 class TestCronjobRequirements:
     def test_requires_crontab_binary_even_in_interactive_mode(self, monkeypatch):
-        monkeypatch.setenv("HERMES_INTERACTIVE", "1")
-        monkeypatch.delenv("HERMES_GATEWAY_SESSION", raising=False)
-        monkeypatch.delenv("HERMES_EXEC_ASK", raising=False)
+        monkeypatch.setenv("OPENMORK_INTERACTIVE", "1")
+        monkeypatch.delenv("OPENMORK_GATEWAY_SESSION", raising=False)
+        monkeypatch.delenv("OPENMORK_EXEC_ASK", raising=False)
         monkeypatch.setattr("shutil.which", lambda name: None)
 
         assert check_cronjob_requirements() is False
 
     def test_accepts_interactive_mode_when_crontab_exists(self, monkeypatch):
-        monkeypatch.setenv("HERMES_INTERACTIVE", "1")
-        monkeypatch.delenv("HERMES_GATEWAY_SESSION", raising=False)
-        monkeypatch.delenv("HERMES_EXEC_ASK", raising=False)
+        monkeypatch.setenv("OPENMORK_INTERACTIVE", "1")
+        monkeypatch.delenv("OPENMORK_GATEWAY_SESSION", raising=False)
+        monkeypatch.delenv("OPENMORK_EXEC_ASK", raising=False)
         monkeypatch.setattr("shutil.which", lambda name: "/usr/bin/crontab")
 
         assert check_cronjob_requirements() is True
@@ -154,9 +154,9 @@ class TestScheduleCronjob:
         assert job["base_url"] == "http://127.0.0.1:4000/v1"
 
     def test_thread_id_captured_in_origin(self, monkeypatch):
-        monkeypatch.setenv("HERMES_SESSION_PLATFORM", "telegram")
-        monkeypatch.setenv("HERMES_SESSION_CHAT_ID", "123456")
-        monkeypatch.setenv("HERMES_SESSION_THREAD_ID", "42")
+        monkeypatch.setenv("OPENMORK_SESSION_PLATFORM", "telegram")
+        monkeypatch.setenv("OPENMORK_SESSION_CHAT_ID", "123456")
+        monkeypatch.setenv("OPENMORK_SESSION_THREAD_ID", "42")
         import cron.jobs as _jobs
         created = json.loads(schedule_cronjob(
             prompt="Thread test",
@@ -169,9 +169,9 @@ class TestScheduleCronjob:
         assert job["origin"]["thread_id"] == "42"
 
     def test_thread_id_absent_when_not_set(self, monkeypatch):
-        monkeypatch.setenv("HERMES_SESSION_PLATFORM", "telegram")
-        monkeypatch.setenv("HERMES_SESSION_CHAT_ID", "123456")
-        monkeypatch.delenv("HERMES_SESSION_THREAD_ID", raising=False)
+        monkeypatch.setenv("OPENMORK_SESSION_PLATFORM", "telegram")
+        monkeypatch.setenv("OPENMORK_SESSION_CHAT_ID", "123456")
+        monkeypatch.delenv("OPENMORK_SESSION_THREAD_ID", raising=False)
         import cron.jobs as _jobs
         created = json.loads(schedule_cronjob(
             prompt="No thread test",

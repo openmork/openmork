@@ -1,159 +1,298 @@
-<p align="center">
-  <img src="assets/banner.png" alt="Hermes Agent" width="100%">
-</p>
+<div align="center">
 
-# Hermes Agent ⚕
+<img src="assets/openmork-banner.png" alt="OpenMork" width="100%">
 
-<p align="center">
-  <a href="https://hermes-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/NousResearch/hermes-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
-</p>
+<br/>
+<br/>
 
-**The self-improving AI agent built by [Nous Research](https://nousresearch.com).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-yellow.svg?style=for-the-badge)](https://www.python.org/)
+[![Modular](https://img.shields.io/badge/🔩_modular-architecture-00ff41.svg?style=for-the-badge)](#-modular-architecture)
+[![Gateway](https://img.shields.io/badge/📡_gateway-telegram_|_discord_|_whatsapp-7289da.svg?style=for-the-badge)](#-quick-start)
 
-Use any model you want — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (200+ models), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), OpenAI, or your own endpoint. Switch with `hermes model` — no code changes, no lock-in.
+<br/>
+
+**Like an Ork building a Warbuggy — bolt on what you need, rip out what you don't.**
+
+<br/>
+
+[Quick Start](#-quick-start) · [Modular Arms](#-modular-architecture) · [Controllable Safety](#️-controllable-safety) · [Modes](#-modes) · [Roadmap](#️-roadmap)
+
+---
+
+</div>
+
+<br/>
+
+## ⚙️ What is OpenMork?
+
+OpenMork is a **modular AI agent platform** that you assemble yourself.
+
+Every piece is swappable. Memory, gateway, security, skills, personality — all of it.
+You control what goes in and what stays out.
+
+> **You decide what your agent can and cannot do. Not the developers.**
+
+<br/>
+
+<div align="center">
+
+```
+                          ┌──────────────────┐
+                          │  openmork-core   │
+                          │   (agent loop)   │
+                          └────────┬─────────┘
+                                   │
+            ┌──────────────────────┼──────────────────────┐
+            │                      │                      │
+   ┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
+   │  🧠 Memory      │   │  🔧 Tools       │   │  📡 Gateway     │
+   │  SQLite FTS5    │   │  bash, web,     │   │  Telegram,      │
+   │  → Supabase     │   │  files + yours  │   │  Discord,       │
+   │  → LanceDB      │   │                 │   │  WhatsApp...    │
+   └─────────────────┘   └─────────────────┘   └─────────────────┘
+            │                      │                      │
+   ┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
+   │  🛡️ Security    │   │  📚 Skills      │   │  🎭 Skins       │
+   │  safety.yaml    │   │  auto-learning  │   │  --heretic      │
+   │  YOU control    │   │  + community    │   │  --savage        │
+   │  the rules      │   │  packs          │   │  --chaos         │
+   └─────────────────┘   └─────────────────┘   └─────────────────┘
+```
+
+</div>
+
+<br/>
+
+---
+
+## 🔩 Modular Architecture
+
+Every component is an **"arm"** — swap it, extend it, or build your own:
+
+<br/>
 
 <table>
-<tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>
-<tr><td><b>Lives where you do</b></td><td>Telegram, Discord, Slack, WhatsApp, Signal, and CLI — all from a single gateway process. Voice memo transcription, cross-platform conversation continuity.</td></tr>
-<tr><td><b>A closed learning loop</b></td><td>Agent-curated memory with periodic nudges. Autonomous skill creation after complex tasks. Skills self-improve during use. FTS5 session search with LLM summarization for cross-session recall. <a href="https://github.com/plastic-labs/honcho">Honcho</a> dialectic user modeling. Compatible with the <a href="https://agentskills.io">agentskills.io</a> open standard.</td></tr>
-<tr><td><b>Scheduled automations</b></td><td>Built-in cron scheduler with delivery to any platform. Daily reports, nightly backups, weekly audits — all in natural language, running unattended.</td></tr>
-<tr><td><b>Delegates and parallelizes</b></td><td>Spawn isolated subagents for parallel workstreams. Write Python scripts that call tools via RPC, collapsing multi-step pipelines into zero-context-cost turns.</td></tr>
-<tr><td><b>Runs anywhere, not just your laptop</b></td><td>Six terminal backends — local, Docker, SSH, Daytona, Singularity, and Modal. Daytona and Modal offer serverless persistence — your agent's environment hibernates when idle and wakes on demand, costing nearly nothing between sessions. Run it on a $5 VPS or a GPU cluster.</td></tr>
-<tr><td><b>Research-ready</b></td><td>Batch trajectory generation, Atropos RL environments, trajectory compression for training the next generation of tool-calling models.</td></tr>
+<tr>
+<td width="33%">
+
+### 🧠 Memory
+**Default:** SQLite FTS5<br/>
+Fast, local, zero dependencies<br/>
+**Swap for:** Supabase pgvector, LanceDB, Chroma
+
+</td>
+<td width="33%">
+
+### 📡 Gateway
+**Default:** Telegram<br/>
+Native multi-platform<br/>
+**Also:** Discord, WhatsApp, Slack, Email, Home Assistant
+
+</td>
+<td width="33%">
+
+### 🛡️ Security
+**Default:** `safety.yaml` + Tirith<br/>
+User-controlled rules<br/>
+**Options:** YOLO mode, Lockdown, Custom
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 📚 Skills
+**Default:** 100+ built-in<br/>
+Auto-learning from usage<br/>
+**Extend:** Community skill packs
+
+</td>
+<td>
+
+### 🎭 Skins
+**Default:** Standard<br/>
+Change personality with a flag<br/>
+**Custom:** `--heretic`, `--savage`, `--chaos`
+
+</td>
+<td>
+
+### 🤖 Models
+**Default:** Any provider<br/>
+OpenAI, Claude, Grok, Qwen<br/>
+**Also:** OpenRouter (200+), local endpoints
+
+</td>
+</tr>
 </table>
 
+<br/>
+
 ---
 
-## Quick Install
+## 🚀 Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+# Clone
+git clone https://github.com/openmork/OpenMork.git
+cd OpenMork
+
+# Install
+bash setup-openmork.sh
+
+# Configure your safety rules
+mkdir -p ~/.openmork
+cp safety.yaml.default ~/.openmork/safety.yaml
+
+# Start
+openmork
 ```
 
-Works on Linux, macOS, and WSL2. The installer handles everything — Python, Node.js, dependencies, and the `hermes` command. No prerequisites except git.
-
-> **Windows:** Native Windows is not supported. Please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run the command above.
-
-After installation:
+<details>
+<summary><strong>📡 Connect to Telegram</strong></summary>
 
 ```bash
-source ~/.bashrc    # reload shell (or: source ~/.zshrc)
-hermes              # start chatting!
+openmork gateway --telegram
 ```
+</details>
 
----
-
-## Getting Started
+<details>
+<summary><strong>🤖 Switch models</strong></summary>
 
 ```bash
-hermes              # Interactive CLI — start a conversation
-hermes model        # Choose your LLM provider and model
-hermes tools        # Configure which tools are enabled
-hermes config set   # Set individual config values
-hermes gateway      # Start the messaging gateway (Telegram, Discord, etc.)
-hermes setup        # Run the full setup wizard (configures everything at once)
-hermes claw migrate # Migrate from OpenClaw (if coming from OpenClaw)
-hermes update       # Update to the latest version
-hermes doctor       # Diagnose any issues
+openmork model set gpt-4o        # OpenAI
+openmork model set claude-sonnet  # Anthropic  
+openmork model set grok-3         # xAI
+openmork model set deepseek-r1    # DeepSeek
 ```
+</details>
 
-📖 **[Full documentation →](https://hermes-agent.nousresearch.com/docs/)**
-
----
-
-## Documentation
-
-All documentation lives at **[hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs/)**:
-
-| Section | What's Covered |
-|---------|---------------|
-| [Quickstart](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart) | Install → setup → first conversation in 2 minutes |
-| [CLI Usage](https://hermes-agent.nousresearch.com/docs/user-guide/cli) | Commands, keybindings, personalities, sessions |
-| [Configuration](https://hermes-agent.nousresearch.com/docs/user-guide/configuration) | Config file, providers, models, all options |
-| [Messaging Gateway](https://hermes-agent.nousresearch.com/docs/user-guide/messaging) | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
-| [Security](https://hermes-agent.nousresearch.com/docs/user-guide/security) | Command approval, DM pairing, container isolation |
-| [Tools & Toolsets](https://hermes-agent.nousresearch.com/docs/user-guide/features/tools) | 40+ tools, toolset system, terminal backends |
-| [Skills System](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills) | Procedural memory, Skills Hub, creating skills |
-| [Memory](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) | Persistent memory, user profiles, best practices |
-| [MCP Integration](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp) | Connect any MCP server for extended capabilities |
-| [Cron Scheduling](https://hermes-agent.nousresearch.com/docs/user-guide/features/cron) | Scheduled tasks with platform delivery |
-| [Context Files](https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files) | Project context that shapes every conversation |
-| [Architecture](https://hermes-agent.nousresearch.com/docs/developer-guide/architecture) | Project structure, agent loop, key classes |
-| [Contributing](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing) | Development setup, PR process, code style |
-| [CLI Reference](https://hermes-agent.nousresearch.com/docs/reference/cli-commands) | All commands and flags |
-| [Environment Variables](https://hermes-agent.nousresearch.com/docs/reference/environment-variables) | Complete env var reference |
-
----
-
-## Migrating from OpenClaw
-
-If you're coming from OpenClaw, Hermes can automatically import your settings, memories, skills, and API keys.
-
-**During first-time setup:** The setup wizard (`hermes setup`) automatically detects `~/.openclaw` and offers to migrate before configuration begins.
-
-**Anytime after install:**
+<details>
+<summary><strong>🔄 Migrate from OpenClaw</strong></summary>
 
 ```bash
-hermes claw migrate              # Interactive migration (full preset)
-hermes claw migrate --dry-run    # Preview what would be migrated
-hermes claw migrate --preset user-data   # Migrate without secrets
-hermes claw migrate --overwrite  # Overwrite existing conflicts
+openmork claw migrate             # Import settings, memories, skills
+openmork claw migrate --dry-run   # Preview (nothing is modified)
 ```
+</details>
 
-What gets imported:
-- **SOUL.md** — persona file
-- **Memories** — MEMORY.md and USER.md entries
-- **Skills** — user-created skills → `~/.hermes/skills/openclaw-imports/`
-- **Command allowlist** — approval patterns
-- **Messaging settings** — platform configs, allowed users, working directory
-- **API keys** — allowlisted secrets (Telegram, OpenRouter, OpenAI, Anthropic, ElevenLabs)
-- **TTS assets** — workspace audio files
-- **Workspace instructions** — AGENTS.md (with `--workspace-target`)
-
-See `hermes claw migrate --help` for all options, or use the `openclaw-migration` skill for an interactive agent-guided migration with dry-run previews.
+<br/>
 
 ---
 
-## Contributing
+## 🛡️ Controllable Safety
 
-We welcome contributions! See the [Contributing Guide](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing) for development setup, code style, and PR process.
+OpenMork **never** silently blocks you. Every security decision goes through you.
 
-Quick start for contributors:
+```yaml
+# ~/.openmork/safety.yaml — YOUR rules, YOUR control
+dangerous_patterns:
+  - pattern: '\brm\s+-[^\s]*r'
+    description: "recursive delete"
+  # Remove what you don't want
+  # Add your own patterns
+```
+
+<div align="center">
+
+| ⚡ YOLO | 🛡️ Guided | 🔒 Lockdown |
+|:---:|:---:|:---:|
+| `OPENMORK_YOLO_MODE=1` | `safety.yaml` active | Tirith + strict rules |
+| No questions asked | **You decide** | For public-facing bots |
+
+</div>
+
+<br/>
+
+---
+
+## 🎭 Modes
 
 ```bash
-git clone https://github.com/NousResearch/hermes-agent.git
-cd hermes-agent
-git submodule update --init mini-swe-agent   # required terminal backend
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv venv .venv --python 3.11
-source .venv/bin/activate
-uv pip install -e ".[all,dev]"
-uv pip install -e "./mini-swe-agent"
-python -m pytest tests/ -q
+openmork --heretic    # 🔥 Fully uncensored, local models only
+openmork --savage     # ⚔️  Aggressive problem-solving
+openmork --based      # 💬 Opinionated, no-BS responses
+openmork --genius     # 🧪 Deep analytical mode
+openmork --chaos      # 🌀 Experimental, creative, unpredictable
 ```
 
-> **RL Training (optional):** To work on the RL/Tinker-Atropos integration, also run:
-> ```bash
-> git submodule update --init tinker-atropos
-> uv pip install -e "./tinker-atropos"
-> ```
+<br/>
 
 ---
 
-## Community
+## 🧠 Features
 
-- 💬 [Discord](https://discord.gg/NousResearch)
-- 📚 [Skills Hub](https://agentskills.io)
-- 🐛 [Issues](https://github.com/NousResearch/hermes-agent/issues)
-- 💡 [Discussions](https://github.com/NousResearch/hermes-agent/discussions)
+<div align="center">
+
+| | Feature | Description |
+|---|---|---|
+| 💾 | **Self-improving memory** | SQLite FTS5 — remembers everything, searchable, local |
+| 📖 | **Skills auto-learning** | Creates skills from experience, improves on use |
+| 📡 | **Multi-platform** | Telegram, Discord, WhatsApp, Slack, Email — native |
+| 🤖 | **Any model** | OpenAI, Claude, Grok, Qwen, OpenRouter (200+), local |
+| 🎭 | **Skins** | Change personality with a single flag |
+| ⏰ | **Cron** | Automated tasks on schedule |
+| 🔒 | **Controllable security** | You control every safety decision |
+
+</div>
+
+<br/>
 
 ---
 
-## License
+## 🗺️ Roadmap
+
+- [x] Controllable safety (`safety.yaml` + Tirith warn-only)
+- [x] Modular architecture
+- [ ] Port modes as skins (`--heretic`, `--savage`, etc.)
+- [ ] Semantic vector search (Ollama + pgvector)
+- [ ] Community skill packs
+- [ ] Plugin system for arms
+- [ ] Multi-agent orchestration
+- [ ] Web dashboard
+
+---
+
+## 🤝 Contributing
+
+Every **arm** is an opportunity:
+
+| | What to build |
+|---|---|
+| 🧠 | Memory backends — vector search, graph DBs |
+| 🔧 | Tools — integrate your favorite services |
+| 📡 | Gateways — new platforms, voice, IoT |
+| 📚 | Skill packs — curated collections |
+| 🎭 | Skins — new personalities and modes |
+
+```bash
+git checkout -b arm/my-new-feature
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+---
+
+## 🙏 Acknowledgements
+
+OpenMork is built on the shoulders of great open-source projects:
+
+- [Hermes-Agent](https://github.com/NousResearch/hermes-agent) by Nous Research
+- [OpenClaw](https://github.com/anthropics/claude-code)
+- [Superpowers](https://github.com/obra/superpowers)
+- [MetaClaw](https://github.com/aiming-lab/MetaClaw)
+
+## 📄 License
 
 MIT — see [LICENSE](LICENSE).
 
-Built by [Nous Research](https://nousresearch.com).
+---
+
+<div align="center">
+
+**Build your agent. Piece by piece. No limits.**
+
+*WAAAGH!* ⚙️
+
+</div>

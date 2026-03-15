@@ -1,17 +1,17 @@
 ---
 sidebar_position: 2
 title: "Configuration"
-description: "Configure Hermes Agent — config.yaml, providers, models, API keys, and more"
+description: "Configure OpenMork — config.yaml, providers, models, API keys, and more"
 ---
 
 # Configuration
 
-All settings are stored in the `~/.hermes/` directory for easy access.
+All settings are stored in the `~/.openmork/` directory for easy access.
 
 ## Directory Structure
 
 ```text
-~/.hermes/
+~/.openmork/
 ├── config.yaml     # Settings (model, terminal, TTS, compression, etc.)
 ├── .env            # API keys and secrets
 ├── auth.json       # OAuth provider credentials (Nous Portal, etc.)
@@ -26,29 +26,29 @@ All settings are stored in the `~/.hermes/` directory for easy access.
 ## Managing Configuration
 
 ```bash
-hermes config              # View current configuration
-hermes config edit         # Open config.yaml in your editor
-hermes config set KEY VAL  # Set a specific value
-hermes config check        # Check for missing options (after updates)
-hermes config migrate      # Interactively add missing options
+openmork config              # View current configuration
+openmork config edit         # Open config.yaml in your editor
+openmork config set KEY VAL  # Set a specific value
+openmork config check        # Check for missing options (after updates)
+openmork config migrate      # Interactively add missing options
 
 # Examples:
-hermes config set model anthropic/claude-opus-4
-hermes config set terminal.backend docker
-hermes config set OPENROUTER_API_KEY sk-or-...  # Saves to .env
+openmork config set model anthropic/claude-opus-4
+openmork config set terminal.backend docker
+openmork config set OPENROUTER_API_KEY sk-or-...  # Saves to .env
 ```
 
 :::tip
-The `hermes config set` command automatically routes values to the right file — API keys are saved to `.env`, everything else to `config.yaml`.
+The `openmork config set` command automatically routes values to the right file — API keys are saved to `.env`, everything else to `config.yaml`.
 :::
 
 ## Configuration Precedence
 
 Settings are resolved in this order (highest priority first):
 
-1. **CLI arguments** — e.g., `hermes chat --model anthropic/claude-sonnet-4` (per-invocation override)
-2. **`~/.hermes/config.yaml`** — the primary config file for all non-secret settings
-3. **`~/.hermes/.env`** — fallback for env vars; **required** for secrets (API keys, tokens, passwords)
+1. **CLI arguments** — e.g., `openmork chat --model anthropic/claude-sonnet-4` (per-invocation override)
+2. **`~/.openmork/config.yaml`** — the primary config file for all non-secret settings
+3. **`~/.openmork/.env`** — fallback for env vars; **required** for secrets (API keys, tokens, passwords)
 4. **Built-in defaults** — hardcoded safe defaults when nothing else is set
 
 :::info Rule of Thumb
@@ -57,22 +57,22 @@ Secrets (API keys, bot tokens, passwords) go in `.env`. Everything else (model, 
 
 ## Inference Providers
 
-You need at least one way to connect to an LLM. Use `hermes model` to switch providers and models interactively, or configure directly:
+You need at least one way to connect to an LLM. Use `openmork model` to switch providers and models interactively, or configure directly:
 
 | Provider | Setup |
 |----------|-------|
-| **Nous Portal** | `hermes model` (OAuth, subscription-based) |
-| **OpenAI Codex** | `hermes model` (ChatGPT OAuth, uses Codex models) |
-| **Anthropic** | `hermes model` (Claude Pro/Max via Claude Code auth, Anthropic API key, or manual setup-token) |
-| **OpenRouter** | `OPENROUTER_API_KEY` in `~/.hermes/.env` |
-| **z.ai / GLM** | `GLM_API_KEY` in `~/.hermes/.env` (provider: `zai`) |
-| **Kimi / Moonshot** | `KIMI_API_KEY` in `~/.hermes/.env` (provider: `kimi-coding`) |
-| **MiniMax** | `MINIMAX_API_KEY` in `~/.hermes/.env` (provider: `minimax`) |
-| **MiniMax China** | `MINIMAX_CN_API_KEY` in `~/.hermes/.env` (provider: `minimax-cn`) |
-| **Custom Endpoint** | `hermes model` (saved in `config.yaml`) or `OPENAI_BASE_URL` + `OPENAI_API_KEY` in `~/.hermes/.env` |
+| **Nous Portal** | `openmork model` (OAuth, subscription-based) |
+| **OpenAI Codex** | `openmork model` (ChatGPT OAuth, uses Codex models) |
+| **Anthropic** | `openmork model` (Claude Pro/Max via Claude Code auth, Anthropic API key, or manual setup-token) |
+| **OpenRouter** | `OPENROUTER_API_KEY` in `~/.openmork/.env` |
+| **z.ai / GLM** | `GLM_API_KEY` in `~/.openmork/.env` (provider: `zai`) |
+| **Kimi / Moonshot** | `KIMI_API_KEY` in `~/.openmork/.env` (provider: `kimi-coding`) |
+| **MiniMax** | `MINIMAX_API_KEY` in `~/.openmork/.env` (provider: `minimax`) |
+| **MiniMax China** | `MINIMAX_CN_API_KEY` in `~/.openmork/.env` (provider: `minimax-cn`) |
+| **Custom Endpoint** | `openmork model` (saved in `config.yaml`) or `OPENAI_BASE_URL` + `OPENAI_API_KEY` in `~/.openmork/.env` |
 
 :::info Codex Note
-The OpenAI Codex provider authenticates via device code (open a URL, enter a code). Hermes stores the resulting credentials in its own auth store under `~/.hermes/auth.json` and can import existing Codex CLI credentials from `~/.codex/auth.json` when present. No Codex CLI installation is required.
+The OpenAI Codex provider authenticates via device code (open a URL, enter a code). OPENMORK stores the resulting credentials in its own auth store under `~/.openmork/auth.json` and can import existing Codex CLI credentials from `~/.codex/auth.json` when present. No Codex CLI installation is required.
 :::
 
 :::warning
@@ -86,21 +86,21 @@ Use Claude models directly through the Anthropic API — no OpenRouter proxy nee
 ```bash
 # With an API key (pay-per-token)
 export ANTHROPIC_API_KEY=***
-hermes chat --provider anthropic --model claude-sonnet-4-6
+openmork chat --provider anthropic --model claude-sonnet-4-6
 
-# Preferred: authenticate through `hermes model`
-# Hermes will use Claude Code's credential store directly when available
-hermes model
+# Preferred: authenticate through `openmork model`
+# OPENMORK will use Claude Code's credential store directly when available
+openmork model
 
 # Manual override with a setup-token (fallback / legacy)
 export ANTHROPIC_TOKEN=***  # setup-token or manual OAuth token
-hermes chat --provider anthropic
+openmork chat --provider anthropic
 
 # Auto-detect Claude Code credentials (if you already use Claude Code)
-hermes chat --provider anthropic  # reads Claude Code credential files automatically
+openmork chat --provider anthropic  # reads Claude Code credential files automatically
 ```
 
-When you choose Anthropic OAuth through `hermes model`, Hermes prefers Claude Code's own credential store over copying the token into `~/.hermes/.env`. That keeps refreshable Claude credentials refreshable.
+When you choose Anthropic OAuth through `openmork model`, OPENMORK prefers Claude Code's own credential store over copying the token into `~/.openmork/.env`. That keeps refreshable Claude credentials refreshable.
 
 Or set it permanently:
 ```yaml
@@ -119,20 +119,20 @@ These providers have built-in support with dedicated provider IDs. Set the API k
 
 ```bash
 # z.ai / ZhipuAI GLM
-hermes chat --provider zai --model glm-4-plus
-# Requires: GLM_API_KEY in ~/.hermes/.env
+openmork chat --provider zai --model glm-4-plus
+# Requires: GLM_API_KEY in ~/.openmork/.env
 
 # Kimi / Moonshot AI
-hermes chat --provider kimi-coding --model moonshot-v1-auto
-# Requires: KIMI_API_KEY in ~/.hermes/.env
+openmork chat --provider kimi-coding --model moonshot-v1-auto
+# Requires: KIMI_API_KEY in ~/.openmork/.env
 
 # MiniMax (global endpoint)
-hermes chat --provider minimax --model MiniMax-Text-01
-# Requires: MINIMAX_API_KEY in ~/.hermes/.env
+openmork chat --provider minimax --model MiniMax-Text-01
+# Requires: MINIMAX_API_KEY in ~/.openmork/.env
 
 # MiniMax (China endpoint)
-hermes chat --provider minimax-cn --model MiniMax-Text-01
-# Requires: MINIMAX_CN_API_KEY in ~/.hermes/.env
+openmork chat --provider minimax-cn --model MiniMax-Text-01
+# Requires: MINIMAX_CN_API_KEY in ~/.openmork/.env
 ```
 
 Or set the provider permanently in `config.yaml`:
@@ -146,7 +146,7 @@ Base URLs can be overridden with `GLM_BASE_URL`, `KIMI_BASE_URL`, `MINIMAX_BASE_
 
 ## Custom & Self-Hosted LLM Providers
 
-Hermes Agent works with **any OpenAI-compatible API endpoint**. If a server implements `/v1/chat/completions`, you can point Hermes at it. This means you can use local models, GPU inference servers, multi-provider routers, or any third-party API.
+OpenMork works with **any OpenAI-compatible API endpoint**. If a server implements `/v1/chat/completions`, you can point OPENMORK at it. This means you can use local models, GPU inference servers, multi-provider routers, or any third-party API.
 
 ### General Setup
 
@@ -154,20 +154,20 @@ Two ways to configure a custom endpoint:
 
 **Interactive (recommended):**
 ```bash
-hermes model
+openmork model
 # Select "Custom endpoint (self-hosted / VLLM / etc.)"
 # Enter: API base URL, API key, Model name
 ```
 
 **Manual (`.env` file):**
 ```bash
-# Add to ~/.hermes/.env
+# Add to ~/.openmork/.env
 OPENAI_BASE_URL=http://localhost:8000/v1
 OPENAI_API_KEY=***
 LLM_MODEL=your-model-name
 ```
 
-`hermes model` and the manual `.env` approach end up in the same runtime path. If you save a custom endpoint through `hermes model`, Hermes persists the provider + base URL in `config.yaml` so later sessions keep using that endpoint even if `OPENAI_BASE_URL` is not exported in your current shell.
+`openmork model` and the manual `.env` approach end up in the same runtime path. If you save a custom endpoint through `openmork model`, OPENMORK persists the provider + base URL in `config.yaml` so later sessions keep using that endpoint even if `OPENAI_BASE_URL` is not exported in your current shell.
 
 Everything below follows this same pattern — just change the URL, key, and model name.
 
@@ -182,7 +182,7 @@ Everything below follows this same pattern — just change the URL, key, and mod
 ollama pull llama3.1:70b
 ollama serve   # Starts on port 11434
 
-# Configure Hermes
+# Configure OPENMORK
 OPENAI_BASE_URL=http://localhost:11434/v1
 OPENAI_API_KEY=ollama           # Any non-empty string
 LLM_MODEL=llama3.1:70b
@@ -207,13 +207,13 @@ vllm serve meta-llama/Llama-3.1-70B-Instruct \
   --port 8000 \
   --tensor-parallel-size 2    # Multi-GPU
 
-# Configure Hermes
+# Configure OPENMORK
 OPENAI_BASE_URL=http://localhost:8000/v1
 OPENAI_API_KEY=dummy
 LLM_MODEL=meta-llama/Llama-3.1-70B-Instruct
 ```
 
-vLLM supports tool calling, structured output, and multi-modal models. Use `--enable-auto-tool-choice` and `--tool-call-parser hermes` for Hermes-format tool calling with NousResearch models.
+vLLM supports tool calling, structured output, and multi-modal models. Use `--enable-auto-tool-choice` and `--tool-call-parser openmork` for OPENMORK-format tool calling with NousResearch models.
 
 ---
 
@@ -229,7 +229,7 @@ python -m sglang.launch_server \
   --port 8000 \
   --tp 2
 
-# Configure Hermes
+# Configure OPENMORK
 OPENAI_BASE_URL=http://localhost:8000/v1
 OPENAI_API_KEY=dummy
 LLM_MODEL=meta-llama/Llama-3.1-70B-Instruct
@@ -248,7 +248,7 @@ cmake -B build && cmake --build build --config Release
   -m models/llama-3.1-8b-instruct-Q4_K_M.gguf \
   --port 8080 --host 0.0.0.0
 
-# Configure Hermes
+# Configure OPENMORK
 OPENAI_BASE_URL=http://localhost:8080/v1
 OPENAI_API_KEY=dummy
 LLM_MODEL=llama-3.1-8b-instruct
@@ -272,7 +272,7 @@ litellm --model anthropic/claude-sonnet-4 --port 4000
 # Or with a config file for multiple models:
 litellm --config litellm_config.yaml --port 4000
 
-# Configure Hermes
+# Configure OPENMORK
 OPENAI_BASE_URL=http://localhost:4000/v1
 OPENAI_API_KEY=sk-your-litellm-key
 LLM_MODEL=anthropic/claude-sonnet-4
@@ -303,7 +303,7 @@ router_settings:
 # Install and start
 npx @blockrun/clawrouter    # Starts on port 8402
 
-# Configure Hermes
+# Configure OPENMORK
 OPENAI_BASE_URL=http://localhost:8402/v1
 OPENAI_API_KEY=dummy
 LLM_MODEL=blockrun/auto     # or: blockrun/eco, blockrun/premium, blockrun/agentic
@@ -365,7 +365,7 @@ LLM_MODEL=meta-llama/Llama-3.1-70B-Instruct-Turbo
 | **Chinese AI models** | z.ai (GLM), Kimi/Moonshot, or MiniMax (first-class providers) |
 
 :::tip
-You can switch between providers at any time with `hermes model` — no restart required. Your conversation history, memory, and skills carry over regardless of which provider you use.
+You can switch between providers at any time with `openmork model` — no restart required. Your conversation history, memory, and skills carry over regardless of which provider you use.
 :::
 
 ## Optional API Keys
@@ -382,7 +382,7 @@ You can switch between providers at any time with `hermes model` — no restart 
 
 ### Self-Hosting Firecrawl
 
-By default, Hermes uses the [Firecrawl cloud API](https://firecrawl.dev/) for web search and scraping. If you prefer to run Firecrawl locally, you can point Hermes at a self-hosted instance instead.
+By default, OPENMORK uses the [Firecrawl cloud API](https://firecrawl.dev/) for web search and scraping. If you prefer to run Firecrawl locally, you can point OPENMORK at a self-hosted instance instead.
 
 **What you get:** No API key required, no rate limits, no per-page costs, full data sovereignty.
 
@@ -398,16 +398,16 @@ By default, Hermes uses the [Firecrawl cloud API](https://firecrawl.dev/) for we
    docker compose up -d
    ```
 
-2. Point Hermes at your instance (no API key needed):
+2. Point OPENMORK at your instance (no API key needed):
    ```bash
-   hermes config set FIRECRAWL_API_URL http://localhost:3002
+   openmork config set FIRECRAWL_API_URL http://localhost:3002
    ```
 
 You can also set both `FIRECRAWL_API_KEY` and `FIRECRAWL_API_URL` if your self-hosted instance has authentication enabled.
 
 ## OpenRouter Provider Routing
 
-When using OpenRouter, you can control how requests are routed across providers. Add a `provider_routing` section to `~/.hermes/config.yaml`:
+When using OpenRouter, you can control how requests are routed across providers. Add a `provider_routing` section to `~/.openmork/config.yaml`:
 
 ```yaml
 provider_routing:
@@ -423,7 +423,7 @@ provider_routing:
 
 ## Fallback Model
 
-Configure a backup provider:model that Hermes switches to automatically when your primary model fails (rate limits, server errors, auth failures):
+Configure a backup provider:model that OPENMORK switches to automatically when your primary model fails (rate limits, server errors, auth failures):
 
 ```yaml
 fallback_model:
@@ -473,13 +473,13 @@ If terminal commands fail immediately or the terminal tool is reported as disabl
 
 - **Docker backend**
   - Ensure Docker Desktop (or the Docker daemon) is installed and running.
-  - Hermes needs to be able to find the `docker` CLI. It checks your `$PATH` first and also probes common Docker Desktop install locations on macOS. Run:
+  - OPENMORK needs to be able to find the `docker` CLI. It checks your `$PATH` first and also probes common Docker Desktop install locations on macOS. Run:
     ```bash
     docker version
     ```
     If this fails, fix your Docker installation or switch back to the local backend:
     ```bash
-    hermes config set terminal.backend local
+    openmork config set terminal.backend local
     ```
 
 - **SSH backend**
@@ -489,11 +489,11 @@ If terminal commands fail immediately or the terminal tool is reported as disabl
     export TERMINAL_SSH_HOST=my-server.example.com
     export TERMINAL_SSH_USER=ubuntu
     ```
-  - If either value is missing, Hermes will log a clear error and refuse to use the SSH backend.
+  - If either value is missing, OPENMORK will log a clear error and refuse to use the SSH backend.
 
 - **Modal backend**
   - You need either a `MODAL_TOKEN_ID` environment variable or a `~/.modal.toml` config file.
-  - If neither is present, the backend check fails and Hermes will report that the Modal backend is not available.
+  - If neither is present, the backend check fails and OPENMORK will report that the Modal backend is not available.
 
 When in doubt, set `terminal.backend` back to `local` and verify that commands run there first.
 
@@ -534,7 +534,7 @@ memory:
 Enable isolated git worktrees for running multiple agents in parallel on the same repo:
 
 ```yaml
-worktree: true    # Always create a worktree (same as hermes -w)
+worktree: true    # Always create a worktree (same as openmork -w)
 # worktree: false # Default — only when -w flag is passed
 ```
 
@@ -581,9 +581,9 @@ Budget pressure is enabled by default. The agent sees warnings naturally as part
 
 ## Auxiliary Models
 
-Hermes uses lightweight "auxiliary" models for side tasks like image analysis, web page summarization, and browser screenshot analysis. By default, these use **Gemini Flash** via OpenRouter or Nous Portal — you don't need to configure anything.
+OPENMORK uses lightweight "auxiliary" models for side tasks like image analysis, web page summarization, and browser screenshot analysis. By default, these use **Gemini Flash** via OpenRouter or Nous Portal — you don't need to configure anything.
 
-To use a different model, add an `auxiliary` section to `~/.hermes/config.yaml`:
+To use a different model, add an `auxiliary` section to `~/.openmork/config.yaml`:
 
 ```yaml
 auxiliary:
@@ -612,7 +612,7 @@ auxiliary:
     model: "openai/gpt-4o"
 ```
 
-Or via environment variable (in `~/.hermes/.env`):
+Or via environment variable (in `~/.openmork/.env`):
 
 ```bash
 AUXILIARY_VISION_MODEL=openai/gpt-4o
@@ -624,9 +624,9 @@ AUXILIARY_VISION_MODEL=openai/gpt-4o
 |----------|-------------|-------------|
 | `"auto"` | Best available (default). Vision tries OpenRouter → Nous → Codex. | — |
 | `"openrouter"` | Force OpenRouter — routes to any model (Gemini, GPT-4o, Claude, etc.) | `OPENROUTER_API_KEY` |
-| `"nous"` | Force Nous Portal | `hermes login` |
-| `"codex"` | Force Codex OAuth (ChatGPT account). Supports vision (gpt-5.3-codex). | `hermes model` → Codex |
-| `"main"` | Use your active custom/main endpoint. This can come from `OPENAI_BASE_URL` + `OPENAI_API_KEY` or from a custom endpoint saved via `hermes model` / `config.yaml`. Works with OpenAI, local models, or any OpenAI-compatible API. | Custom endpoint credentials + base URL |
+| `"nous"` | Force Nous Portal | `openmork login` |
+| `"codex"` | Force Codex OAuth (ChatGPT account). Supports vision (gpt-5.3-codex). | `openmork model` → Codex |
+| `"main"` | Use your active custom/main endpoint. This can come from `OPENAI_BASE_URL` + `OPENAI_API_KEY` or from a custom endpoint saved via `openmork model` / `config.yaml`. Works with OpenAI, local models, or any OpenAI-compatible API. | Custom endpoint credentials + base URL |
 
 ### Common Setups
 
@@ -639,11 +639,11 @@ auxiliary:
     model: "qwen2.5-vl"
 ```
 
-`base_url` takes precedence over `provider`, so this is the most explicit way to route an auxiliary task to a specific endpoint. For direct endpoint overrides, Hermes uses the configured `api_key` or falls back to `OPENAI_API_KEY`; it does not reuse `OPENROUTER_API_KEY` for that custom endpoint.
+`base_url` takes precedence over `provider`, so this is the most explicit way to route an auxiliary task to a specific endpoint. For direct endpoint overrides, OPENMORK uses the configured `api_key` or falls back to `OPENAI_API_KEY`; it does not reuse `OPENROUTER_API_KEY` for that custom endpoint.
 
 **Using OpenAI API key for vision:**
 ```yaml
-# In ~/.hermes/.env:
+# In ~/.openmork/.env:
 # OPENAI_BASE_URL=https://api.openai.com/v1
 # OPENAI_API_KEY=sk-...
 
@@ -677,7 +677,7 @@ auxiliary:
     model: "my-local-model"
 ```
 
-`provider: "main"` follows the same custom endpoint Hermes uses for normal chat. That endpoint can be set directly with `OPENAI_BASE_URL`, or saved once through `hermes model` and persisted in `config.yaml`.
+`provider: "main"` follows the same custom endpoint OPENMORK uses for normal chat. That endpoint can be set directly with `OPENAI_BASE_URL`, or saved once through `openmork model` and persisted in `config.yaml`.
 
 :::tip
 If you use Codex OAuth as your main model provider, vision works automatically — no extra configuration needed. Codex is included in the auto-detection chain for vision.
@@ -701,7 +701,7 @@ You can also configure auxiliary models via environment variables instead of `co
 | Compression model | `CONTEXT_COMPRESSION_MODEL` |
 
 :::tip
-Run `hermes config` to see your current auxiliary model settings. Overrides only show up when they differ from the defaults.
+Run `openmork config` to see your current auxiliary model settings. Overrides only show up when they differ from the defaults.
 :::
 
 ## Reasoning Effort
@@ -781,7 +781,7 @@ Provider behavior:
 - `groq` uses Groq's Whisper-compatible endpoint and reads `GROQ_API_KEY`.
 - `openai` uses the OpenAI speech API and reads `VOICE_TOOLS_OPENAI_KEY`.
 
-If the requested provider is unavailable, Hermes falls back automatically in this order: `local` → `groq` → `openai`.
+If the requested provider is unavailable, OPENMORK falls back automatically in this order: `local` → `groq` → `openai`.
 
 Groq and OpenAI model overrides are environment-driven:
 
@@ -813,13 +813,13 @@ Define custom commands that run shell commands without invoking the LLM — zero
 quick_commands:
   status:
     type: exec
-    command: systemctl status hermes-agent
+    command: systemctl status OpenMork
   disk:
     type: exec
     command: df -h /
   update:
     type: exec
-    command: cd ~/.hermes/hermes-agent && git pull && pip install -e .
+    command: cd ~/.openmork/OpenMork && git pull && pip install -e .
   gpu:
     type: exec
     command: nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total --format=csv,noheader
@@ -861,7 +861,7 @@ Configure browser automation behavior:
 ```yaml
 browser:
   inactivity_timeout: 120        # Seconds before auto-closing idle sessions
-  record_sessions: false         # Auto-record browser sessions as WebM videos to ~/.hermes/browser_recordings/
+  record_sessions: false         # Auto-record browser sessions as WebM videos to ~/.openmork/browser_recordings/
 ```
 
 ## Checkpoints
@@ -870,7 +870,7 @@ Automatic filesystem snapshots before destructive file operations. See the [Chec
 
 ```yaml
 checkpoints:
-  enabled: false                 # Enable automatic checkpoints (also: hermes --checkpoints)
+  enabled: false                 # Enable automatic checkpoints (also: openmork --checkpoints)
   max_snapshots: 50              # Max checkpoints to keep per directory
 ```
 
@@ -894,7 +894,7 @@ delegation:
 
 **Subagent provider:model override:** By default, subagents inherit the parent agent's provider and model. Set `delegation.provider` and `delegation.model` to route subagents to a different provider:model pair — e.g., use a cheap/fast model for narrowly-scoped subtasks while your primary agent runs an expensive reasoning model.
 
-**Direct endpoint override:** If you want the obvious custom-endpoint path, set `delegation.base_url`, `delegation.api_key`, and `delegation.model`. That sends subagents directly to that OpenAI-compatible endpoint and takes precedence over `delegation.provider`. If `delegation.api_key` is omitted, Hermes falls back to `OPENAI_API_KEY` only.
+**Direct endpoint override:** If you want the obvious custom-endpoint path, set `delegation.base_url`, `delegation.api_key`, and `delegation.model`. That sends subagents directly to that OpenAI-compatible endpoint and takes precedence over `delegation.provider`. If `delegation.api_key` is omitted, OPENMORK falls back to `OPENAI_API_KEY` only.
 
 The delegation provider uses the same credential resolution as CLI/gateway startup. All configured providers are supported: `openrouter`, `nous`, `zai`, `kimi-coding`, `minimax`, `minimax-cn`. When a provider is set, the system automatically resolves the correct base URL, API key, and API mode — no manual credential wiring needed.
 
@@ -911,18 +911,18 @@ clarify:
 
 ## Context Files (SOUL.md, AGENTS.md)
 
-Hermes uses two different context scopes:
+OPENMORK uses two different context scopes:
 
 | File | Purpose | Scope |
 |------|---------|-------|
 | `AGENTS.md` | Project-specific instructions, coding conventions | Working directory / project tree |
-| `SOUL.md` | Default persona for this Hermes instance | `~/.hermes/SOUL.md` or `$HERMES_HOME/SOUL.md` |
+| `SOUL.md` | Default persona for this OPENMORK instance | `~/.openmork/SOUL.md` or `$OPENMORK_HOME/SOUL.md` |
 | `.cursorrules` | Cursor IDE rules (also detected) | Working directory |
 | `.cursor/rules/*.mdc` | Cursor rule files (also detected) | Working directory |
 
 - **AGENTS.md** is hierarchical: if subdirectories also have AGENTS.md, all are combined.
-- **SOUL.md** is now global to the Hermes instance and is loaded only from `HERMES_HOME`.
-- Hermes automatically seeds a default `SOUL.md` if one does not already exist.
+- **SOUL.md** is now global to the OPENMORK instance and is loaded only from `OPENMORK_HOME`.
+- OPENMORK automatically seeds a default `SOUL.md` if one does not already exist.
 - An empty `SOUL.md` contributes nothing to the system prompt.
 - All loaded context files are capped at 20,000 characters with smart truncation.
 
@@ -934,13 +934,13 @@ See also:
 
 | Context | Default |
 |---------|---------|
-| **CLI (`hermes`)** | Current directory where you run the command |
+| **CLI (`openmork`)** | Current directory where you run the command |
 | **Messaging gateway** | Home directory `~` (override with `MESSAGING_CWD`) |
 | **Docker / Singularity / Modal / SSH** | User's home directory inside the container or remote machine |
 
 Override the working directory:
 ```bash
-# In ~/.hermes/.env or ~/.hermes/config.yaml:
+# In ~/.openmork/.env or ~/.openmork/config.yaml:
 MESSAGING_CWD=/home/myuser/projects    # Gateway sessions
 TERMINAL_CWD=/workspace                # All terminal sessions
 ```

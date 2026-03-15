@@ -210,7 +210,7 @@ class DockerEnvironment(BaseEnvironment):
             resource_args.append("--network=none")
 
         # Persistent workspace via bind mounts from a configurable host directory
-        # (TERMINAL_SANDBOX_DIR, default ~/.hermes/sandboxes/). Non-persistent
+        # (TERMINAL_SANDBOX_DIR, default ~/.openmork/sandboxes/). Non-persistent
         # mode uses tmpfs (ephemeral, fast, gone on cleanup).
         from tools.environments.base import get_sandbox_dir
 

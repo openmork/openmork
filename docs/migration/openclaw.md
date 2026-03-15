@@ -1,20 +1,20 @@
-# Migrating from OpenClaw to Hermes Agent
+# Migrating from OpenClaw to OpenMork
 
-This guide covers how to import your OpenClaw settings, memories, skills, and API keys into Hermes Agent.
+This guide covers how to import your OpenClaw settings, memories, skills, and API keys into OpenMork.
 
 ## Three Ways to Migrate
 
 ### 1. Automatic (during first-time setup)
 
-When you run `hermes setup` for the first time and Hermes detects `~/.openclaw`, it automatically offers to import your OpenClaw data before configuration begins. Just accept the prompt and everything is handled for you.
+When you run `openmork setup` for the first time and OPENMORK detects `~/.openclaw`, it automatically offers to import your OpenClaw data before configuration begins. Just accept the prompt and everything is handled for you.
 
 ### 2. CLI Command (quick, scriptable)
 
 ```bash
-hermes claw migrate                      # Full migration with confirmation prompt
-hermes claw migrate --dry-run            # Preview what would happen
-hermes claw migrate --preset user-data   # Migrate without API keys/secrets
-hermes claw migrate --yes                # Skip confirmation prompt
+openmork claw migrate                      # Full migration with confirmation prompt
+openmork claw migrate --dry-run            # Preview what would happen
+openmork claw migrate --preset user-data   # Migrate without API keys/secrets
+openmork claw migrate --yes                # Skip confirmation prompt
 ```
 
 **All options:**
@@ -35,7 +35,7 @@ hermes claw migrate --yes                # Skip confirmation prompt
 Ask the agent to run the migration for you:
 
 ```
-> Migrate my OpenClaw setup to Hermes
+> Migrate my OpenClaw setup to OPENMORK
 ```
 
 The agent will use the `openclaw-migration` skill to:
@@ -50,33 +50,33 @@ The agent will use the `openclaw-migration` skill to:
 ### `user-data` preset
 | Item | Source | Destination |
 |------|--------|-------------|
-| SOUL.md | `~/.openclaw/workspace/SOUL.md` | `~/.hermes/SOUL.md` |
-| Memory entries | `~/.openclaw/workspace/MEMORY.md` | `~/.hermes/memories/MEMORY.md` |
-| User profile | `~/.openclaw/workspace/USER.md` | `~/.hermes/memories/USER.md` |
-| Skills | `~/.openclaw/workspace/skills/` | `~/.hermes/skills/openclaw-imports/` |
-| Command allowlist | `~/.openclaw/workspace/exec_approval_patterns.yaml` | Merged into `~/.hermes/config.yaml` |
-| Messaging settings | `~/.openclaw/config.yaml` (TELEGRAM_ALLOWED_USERS, MESSAGING_CWD) | `~/.hermes/.env` |
-| TTS assets | `~/.openclaw/workspace/tts/` | `~/.hermes/tts/` |
+| SOUL.md | `~/.openclaw/workspace/SOUL.md` | `~/.openmork/SOUL.md` |
+| Memory entries | `~/.openclaw/workspace/MEMORY.md` | `~/.openmork/memories/MEMORY.md` |
+| User profile | `~/.openclaw/workspace/USER.md` | `~/.openmork/memories/USER.md` |
+| Skills | `~/.openclaw/workspace/skills/` | `~/.openmork/skills/openclaw-imports/` |
+| Command allowlist | `~/.openclaw/workspace/exec_approval_patterns.yaml` | Merged into `~/.openmork/config.yaml` |
+| Messaging settings | `~/.openclaw/config.yaml` (TELEGRAM_ALLOWED_USERS, MESSAGING_CWD) | `~/.openmork/.env` |
+| TTS assets | `~/.openclaw/workspace/tts/` | `~/.openmork/tts/` |
 
 ### `full` preset (adds to `user-data`)
 | Item | Source | Destination |
 |------|--------|-------------|
-| Telegram bot token | `~/.openclaw/config.yaml` | `~/.hermes/.env` |
-| OpenRouter API key | `~/.openclaw/.env` or config | `~/.hermes/.env` |
-| OpenAI API key | `~/.openclaw/.env` or config | `~/.hermes/.env` |
-| Anthropic API key | `~/.openclaw/.env` or config | `~/.hermes/.env` |
-| ElevenLabs API key | `~/.openclaw/.env` or config | `~/.hermes/.env` |
+| Telegram bot token | `~/.openclaw/config.yaml` | `~/.openmork/.env` |
+| OpenRouter API key | `~/.openclaw/.env` or config | `~/.openmork/.env` |
+| OpenAI API key | `~/.openclaw/.env` or config | `~/.openmork/.env` |
+| Anthropic API key | `~/.openclaw/.env` or config | `~/.openmork/.env` |
+| ElevenLabs API key | `~/.openclaw/.env` or config | `~/.openmork/.env` |
 
 Only these 6 allowlisted secrets are ever imported. Other credentials are skipped and reported.
 
 ## Conflict Handling
 
-By default, the migration **will not overwrite** existing Hermes data:
+By default, the migration **will not overwrite** existing OPENMORK data:
 
-- **SOUL.md** — skipped if one already exists in `~/.hermes/`
+- **SOUL.md** — skipped if one already exists in `~/.openmork/`
 - **Memory entries** — skipped if memories already exist (to avoid duplicates)
 - **Skills** — skipped if a skill with the same name already exists
-- **API keys** — skipped if the key is already set in `~/.hermes/.env`
+- **API keys** — skipped if the key is already set in `~/.openmork/.env`
 
 To overwrite conflicts, use `--overwrite`. The migration creates backups before overwriting.
 
@@ -90,21 +90,21 @@ Every migration (including dry runs) produces a report showing:
 - **Skipped items** — items not found in the source
 - **Errors** — items that failed to import
 
-For execute runs, the full report is saved to `~/.hermes/migration/openclaw/<timestamp>/`.
+For execute runs, the full report is saved to `~/.openmork/migration/openclaw/<timestamp>/`.
 
 ## Troubleshooting
 
 ### "OpenClaw directory not found"
 The migration looks for `~/.openclaw` by default. If your OpenClaw is installed elsewhere, use `--source`:
 ```bash
-hermes claw migrate --source /path/to/.openclaw
+openmork claw migrate --source /path/to/.openclaw
 ```
 
 ### "Migration script not found"
-The migration script ships with Hermes Agent. If you installed via pip (not git clone), the `optional-skills/` directory may not be present. Install the skill from the Skills Hub:
+The migration script ships with OpenMork. If you installed via pip (not git clone), the `optional-skills/` directory may not be present. Install the skill from the Skills Hub:
 ```bash
-hermes skills install openclaw-migration
+openmork skills install openclaw-migration
 ```
 
 ### Memory overflow
-If your OpenClaw MEMORY.md or USER.md exceeds Hermes' character limits, excess entries are exported to an overflow file in the migration report directory. You can manually review and add the most important ones.
+If your OpenClaw MEMORY.md or USER.md exceeds OPENMORK' character limits, excess entries are exported to an overflow file in the migration report directory. You can manually review and add the most important ones.

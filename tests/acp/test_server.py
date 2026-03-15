@@ -1,4 +1,4 @@
-"""Tests for acp_adapter.server — HermesACPAgent ACP server."""
+"""Tests for acp_adapter.server — OPENMORKACPAgent ACP server."""
 
 import asyncio
 import os
@@ -21,7 +21,7 @@ from acp.schema import (
     TextContentBlock,
     Usage,
 )
-from acp_adapter.server import HermesACPAgent, HERMES_VERSION
+from acp_adapter.server import OPENMORKACPAgent, OPENMORK_VERSION
 from acp_adapter.session import SessionManager
 
 
@@ -33,8 +33,8 @@ def mock_manager():
 
 @pytest.fixture()
 def agent(mock_manager):
-    """HermesACPAgent backed by a mock session manager."""
-    return HermesACPAgent(session_manager=mock_manager)
+    """OPENMORKACPAgent backed by a mock session manager."""
+    return OPENMORKACPAgent(session_manager=mock_manager)
 
 
 # ---------------------------------------------------------------------------
@@ -54,8 +54,8 @@ class TestInitialize:
         resp = await agent.initialize(protocol_version=1)
         assert resp.agent_info is not None
         assert isinstance(resp.agent_info, Implementation)
-        assert resp.agent_info.name == "hermes-agent"
-        assert resp.agent_info.version == HERMES_VERSION
+        assert resp.agent_info.name == "OpenMork"
+        assert resp.agent_info.version == OPENMORK_VERSION
 
     @pytest.mark.asyncio
     async def test_initialize_returns_capabilities(self, agent):

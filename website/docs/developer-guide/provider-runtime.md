@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "Provider Runtime Resolution"
-description: "How Hermes resolves providers, credentials, API modes, and auxiliary models at runtime"
+description: "How OPENMORK resolves providers, credentials, API modes, and auxiliary models at runtime"
 ---
 
 # Provider Runtime Resolution
 
-Hermes has a shared provider runtime resolver used across:
+OPENMORK has a shared provider runtime resolver used across:
 
 - CLI
 - gateway
@@ -16,8 +16,8 @@ Hermes has a shared provider runtime resolver used across:
 
 Primary implementation:
 
-- `hermes_cli/runtime_provider.py`
-- `hermes_cli/auth.py`
+- `openmork_cli/runtime_provider.py`
+- `openmork_cli/auth.py`
 - `agent/auxiliary_client.py`
 
 If you are trying to add a new first-class inference provider, read [Adding Providers](./adding-providers.md) alongside this page.
@@ -31,7 +31,7 @@ At a high level, provider resolution uses:
 3. environment variables
 4. provider-specific defaults or auto resolution
 
-That ordering matters because Hermes treats the saved model/provider choice as the source of truth for normal runs. This prevents a stale shell export from silently overriding the endpoint a user last selected in `hermes model`.
+That ordering matters because OPENMORK treats the saved model/provider choice as the source of truth for normal runs. This prevents a stale shell export from silently overriding the endpoint a user last selected in `openmork model`.
 
 ## Providers
 
@@ -60,9 +60,9 @@ The runtime resolver returns data such as:
 
 ## Why this matters
 
-This resolver is the main reason Hermes can share auth/runtime logic between:
+This resolver is the main reason OPENMORK can share auth/runtime logic between:
 
-- `hermes chat`
+- `openmork chat`
 - gateway message handling
 - cron jobs running in fresh sessions
 - ACP editor sessions
@@ -70,7 +70,7 @@ This resolver is the main reason Hermes can share auth/runtime logic between:
 
 ## OpenRouter vs custom OpenAI-compatible base URLs
 
-Hermes contains logic to avoid leaking the wrong API key to a custom endpoint when both `OPENROUTER_API_KEY` and `OPENAI_API_KEY` exist.
+OPENMORK contains logic to avoid leaking the wrong API key to a custom endpoint when both `OPENROUTER_API_KEY` and `OPENAI_API_KEY` exist.
 
 It also distinguishes between:
 
@@ -88,7 +88,7 @@ That distinction is especially important for:
 
 Anthropic is not just "via OpenRouter" anymore.
 
-When provider resolution selects `anthropic`, Hermes uses:
+When provider resolution selects `anthropic`, OPENMORK uses:
 
 - `api_mode = anthropic_messages`
 - the native Anthropic Messages API
@@ -98,8 +98,8 @@ Credential resolution for native Anthropic now prefers refreshable Claude Code c
 
 - Claude Code credential files are treated as the preferred source when they include refreshable auth
 - manual `ANTHROPIC_TOKEN` / `CLAUDE_CODE_OAUTH_TOKEN` values still work as explicit overrides
-- Hermes preflights Anthropic credential refresh before native Messages API calls
-- Hermes still retries once on a 401 after rebuilding the Anthropic client, as a fallback path
+- OPENMORK preflights Anthropic credential refresh before native Messages API calls
+- OPENMORK still retries once on a 401 after rebuilding the Anthropic client, as a fallback path
 
 ## OpenAI Codex path
 
@@ -122,15 +122,15 @@ Auxiliary tasks such as:
 
 can use their own provider/model routing rather than the main conversational model.
 
-When an auxiliary task is configured with provider `main`, Hermes resolves that through the same shared runtime path as normal chat. In practice that means:
+When an auxiliary task is configured with provider `main`, OPENMORK resolves that through the same shared runtime path as normal chat. In practice that means:
 
 - env-driven custom endpoints still work
-- custom endpoints saved via `hermes model` / `config.yaml` also work
+- custom endpoints saved via `openmork model` / `config.yaml` also work
 - auxiliary routing can tell the difference between a real saved custom endpoint and the OpenRouter fallback
 
 ## Fallback models
 
-Hermes supports a configured fallback model/provider pair, allowing runtime failover when the primary model encounters errors.
+OPENMORK supports a configured fallback model/provider pair, allowing runtime failover when the primary model encounters errors.
 
 ### How it works internally
 

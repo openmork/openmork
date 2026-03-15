@@ -1,25 +1,25 @@
 # Filesystem Checkpoints
 
-Hermes can automatically snapshot your working directory before making file changes, giving you a safety net to roll back if something goes wrong.
+OPENMORK can automatically snapshot your working directory before making file changes, giving you a safety net to roll back if something goes wrong.
 
 ## How It Works
 
-When enabled, Hermes takes a **one-time snapshot** at the start of each conversation turn before the first file-modifying operation (`write_file` or `patch`). This creates a point-in-time backup you can restore to at any time.
+When enabled, OPENMORK takes a **one-time snapshot** at the start of each conversation turn before the first file-modifying operation (`write_file` or `patch`). This creates a point-in-time backup you can restore to at any time.
 
-Under the hood, checkpoints use a **shadow git repository** stored at `~/.hermes/checkpoints/`. This is completely separate from your project's git — no `.git` directory is created in your project, and your own git history is never touched.
+Under the hood, checkpoints use a **shadow git repository** stored at `~/.openmork/checkpoints/`. This is completely separate from your project's git — no `.git` directory is created in your project, and your own git history is never touched.
 
 ## Enabling Checkpoints
 
 ### Per-session (CLI flag)
 
 ```bash
-hermes --checkpoints
+openmork --checkpoints
 ```
 
 ### Permanently (config.yaml)
 
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.openmork/config.yaml
 checkpoints:
   enabled: true
   max_snapshots: 50  # max checkpoints per directory (default: 50)
@@ -48,7 +48,7 @@ Example output:
 Use /rollback <number> to restore, e.g. /rollback 1
 ```
 
-When you restore, Hermes automatically takes a **pre-rollback snapshot** first — so you can always undo your undo.
+When you restore, OPENMORK automatically takes a **pre-rollback snapshot** first — so you can always undo your undo.
 
 ## What Gets Checkpointed
 
@@ -72,7 +72,7 @@ Checkpoints are designed to be lightweight:
 
 ## How It Determines the Project Root
 
-When you write to a file like `src/components/Button.tsx`, Hermes walks up the directory tree looking for project markers (`.git`, `pyproject.toml`, `package.json`, `Cargo.toml`, etc.) to find the project root. This ensures the entire project is checkpointed, not just the file's parent directory.
+When you write to a file like `src/components/Button.tsx`, OPENMORK walks up the directory tree looking for project markers (`.git`, `pyproject.toml`, `package.json`, `Cargo.toml`, etc.) to find the project root. This ensures the entire project is checkpointed, not just the file's parent directory.
 
 ## Platforms
 
@@ -94,4 +94,4 @@ Git is very efficient at storing diffs. For most projects, checkpoint data is ne
 No — git must be available on your PATH. If it's not installed, checkpoints silently disable.
 
 **Can I roll back across sessions?**
-Yes! Checkpoints persist in `~/.hermes/checkpoints/` and survive across sessions. You can roll back to a checkpoint from yesterday.
+Yes! Checkpoints persist in `~/.openmork/checkpoints/` and survive across sessions. You can roll back to a checkpoint from yesterday.

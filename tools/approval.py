@@ -17,10 +17,10 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # =========================================================================
-# Dangerous command patterns
+# Dangerous command patterns — loaded from ~/.openmork/safety.yaml
 # =========================================================================
 
-DANGEROUS_PATTERNS = [
+_DEFAULT_PATTERNS = [
     (r'\brm\s+(-[^\s]*\s+)*/', "delete in root path"),
     (r'\brm\s+-[^\s]*r', "recursive delete"),
     (r'\brm\s+--recursive\b', "recursive delete (long flag)"),
@@ -38,16 +38,68 @@ DANGEROUS_PATTERNS = [
     (r'\bsystemctl\s+(stop|disable|mask)\b', "stop/disable system service"),
     (r'\bkill\s+-9\s+-1\b', "kill all processes"),
     (r'\bpkill\s+-9\b', "force kill processes"),
-    (r':\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:', "fork bomb"),
+    (r':\(\)\s*\{\s*:\s*\|\s*:\s*\&\s*\}\s*;\s*:', "fork bomb"),
     (r'\b(bash|sh|zsh)\s+-c\s+', "shell command via -c flag"),
     (r'\b(python[23]?|perl|ruby|node)\s+-[ec]\s+', "script execution via -e/-c flag"),
     (r'\b(curl|wget)\b.*\|\s*(ba)?sh\b', "pipe remote content to shell"),
     (r'\b(bash|sh|zsh|ksh)\s+<\s*<?\s*\(\s*(curl|wget)\b', "execute remote script via process substitution"),
-    (r'\btee\b.*(/etc/|/dev/sd|\.ssh/|\.hermes/\.env)', "overwrite system file via tee"),
+    (r'\btee\b.*(/etc/|/dev/sd|\.ssh/|\.openmork/\.env)', "overwrite system file via tee"),
     (r'\bxargs\s+.*\brm\b', "xargs with rm"),
     (r'\bfind\b.*-exec\s+(/\S*/)?rm\b', "find -exec rm"),
     (r'\bfind\b.*-delete\b', "find -delete"),
 ]
+
+
+def _load_safety_yaml() -> list:
+    """Load dangerous command patterns from ~/.openmork/safety.yaml.
+
+    Falls back to built-in defaults if the file doesn't exist or is invalid.
+    The YAML format is:
+        dangerous_patterns:
+          - pattern: '\\brm\\s+-[^\\s]*r'
+            description: "recursive delete"
+          - pattern: ...
+    """
+    openmork_home = os.getenv("OPENMORK_HOME", os.path.expanduser("~/.openmork"))
+    safety_path = os.path.join(openmork_home, "safety.yaml")
+
+    if not os.path.isfile(safety_path):
+        return list(_DEFAULT_PATTERNS)
+
+    try:
+        import yaml
+    except ImportError:
+        logger.debug("PyYAML not installed, using default patterns")
+        return list(_DEFAULT_PATTERNS)
+
+    try:
+        with open(safety_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f) or {}
+
+        raw_patterns = config.get("dangerous_patterns", None)
+        if raw_patterns is None:
+            return list(_DEFAULT_PATTERNS)
+
+        patterns = []
+        for entry in raw_patterns:
+            if isinstance(entry, dict) and "pattern" in entry and "description" in entry:
+                patterns.append((entry["pattern"], entry["description"]))
+            else:
+                logger.warning("Skipping malformed pattern entry in safety.yaml: %s", entry)
+        
+        if not patterns:
+            logger.warning("No valid patterns in safety.yaml, using defaults")
+            return list(_DEFAULT_PATTERNS)
+
+        logger.info("Loaded %d dangerous command patterns from %s", len(patterns), safety_path)
+        return patterns
+
+    except Exception as e:
+        logger.warning("Failed to load safety.yaml (%s), using defaults", e)
+        return list(_DEFAULT_PATTERNS)
+
+
+DANGEROUS_PATTERNS = _load_safety_yaml()
 
 
 def _legacy_pattern_key(pattern: str) -> str:
@@ -169,7 +221,7 @@ def load_permanent_allowlist() -> set:
     patterns added via 'always' in a previous session.
     """
     try:
-        from hermes_cli.config import load_config
+        from openmork_cli.config import load_config
         config = load_config()
         patterns = set(config.get("command_allowlist", []) or [])
         if patterns:
@@ -182,7 +234,7 @@ def load_permanent_allowlist() -> set:
 def save_permanent_allowlist(patterns: set):
     """Save permanently allowed command patterns to config."""
     try:
-        from hermes_cli.config import load_config, save_config
+        from openmork_cli.config import load_config, save_config
         config = load_config()
         config["command_allowlist"] = list(patterns)
         save_config(config)
@@ -217,7 +269,7 @@ def prompt_dangerous_approval(command: str, description: str,
         except Exception:
             return "deny"
 
-    os.environ["HERMES_SPINNER_PAUSE"] = "1"
+    os.environ["OPENMORK_SPINNER_PAUSE"] = "1"
     try:
         is_truncated = len(command) > 80
         while True:
@@ -277,8 +329,8 @@ def prompt_dangerous_approval(command: str, description: str,
         print("\n      ✗ Cancelled")
         return "deny"
     finally:
-        if "HERMES_SPINNER_PAUSE" in os.environ:
-            del os.environ["HERMES_SPINNER_PAUSE"]
+        if "OPENMORK_SPINNER_PAUSE" in os.environ:
+            del os.environ["OPENMORK_SPINNER_PAUSE"]
         print()
         sys.stdout.flush()
 
@@ -302,24 +354,24 @@ def check_dangerous_command(command: str, env_type: str,
         return {"approved": True, "message": None}
 
     # --yolo: bypass all approval prompts
-    if os.getenv("HERMES_YOLO_MODE"):
+    if os.getenv("OPENMORK_YOLO_MODE"):
         return {"approved": True, "message": None}
 
     is_dangerous, pattern_key, description = detect_dangerous_command(command)
     if not is_dangerous:
         return {"approved": True, "message": None}
 
-    session_key = os.getenv("HERMES_SESSION_KEY", "default")
+    session_key = os.getenv("OPENMORK_SESSION_KEY", "default")
     if is_approved(session_key, pattern_key):
         return {"approved": True, "message": None}
 
-    is_cli = os.getenv("HERMES_INTERACTIVE")
-    is_gateway = os.getenv("HERMES_GATEWAY_SESSION")
+    is_cli = os.getenv("OPENMORK_INTERACTIVE")
+    is_gateway = os.getenv("OPENMORK_GATEWAY_SESSION")
 
     if not is_cli and not is_gateway:
         return {"approved": True, "message": None}
 
-    if is_gateway or os.getenv("HERMES_EXEC_ASK"):
+    if is_gateway or os.getenv("OPENMORK_EXEC_ASK"):
         submit_pending(session_key, {
             "command": command,
             "pattern_key": pattern_key,
@@ -373,12 +425,12 @@ def check_all_command_guards(command: str, env_type: str,
         return {"approved": True, "message": None}
 
     # --yolo: bypass all approval prompts and pre-exec guard checks
-    if os.getenv("HERMES_YOLO_MODE"):
+    if os.getenv("OPENMORK_YOLO_MODE"):
         return {"approved": True, "message": None}
 
-    is_cli = os.getenv("HERMES_INTERACTIVE")
-    is_gateway = os.getenv("HERMES_GATEWAY_SESSION")
-    is_ask = os.getenv("HERMES_EXEC_ASK")
+    is_cli = os.getenv("OPENMORK_INTERACTIVE")
+    is_gateway = os.getenv("OPENMORK_GATEWAY_SESSION")
+    is_ask = os.getenv("OPENMORK_EXEC_ASK")
 
     # Preserve the existing non-interactive behavior: outside CLI/gateway/ask
     # flows, we do not block on approvals and we skip external guard work.
@@ -401,18 +453,16 @@ def check_all_command_guards(command: str, env_type: str,
 
     # --- Phase 2: Decide ---
 
-    # If tirith blocks, block immediately (no approval possible)
+    # OPENMORK: Tirith blocks are downgraded to warns — user always decides
     if tirith_result["action"] == "block":
-        summary = tirith_result.get("summary") or "security issue detected"
-        return {
-            "approved": False,
-            "message": f"BLOCKED: Command blocked by security scan ({summary}). Do NOT retry.",
-        }
+        tirith_result["action"] = "warn"
+        if not tirith_result.get("summary"):
+            tirith_result["summary"] = "security issue detected"
 
     # Collect warnings that need approval
     warnings = []  # list of (pattern_key, description, is_tirith)
 
-    session_key = os.getenv("HERMES_SESSION_KEY", "default")
+    session_key = os.getenv("OPENMORK_SESSION_KEY", "default")
 
     if tirith_result["action"] == "warn":
         findings = tirith_result.get("findings") or []

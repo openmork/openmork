@@ -62,7 +62,7 @@ class SlackAdapter(BasePlatformAdapter):
       - DMs and channel messages (mention-gated in channels)
       - Thread support
       - File/image/audio attachments
-      - Slash commands (/hermes)
+      - Slash commands (/openmork)
       - Typing indicators (not natively supported by Slack bots)
     """
 
@@ -114,8 +114,8 @@ class SlackAdapter(BasePlatformAdapter):
                 pass
 
             # Register slash command handler
-            @self._app.command("/hermes")
-            async def handle_hermes_command(ack, command):
+            @self._app.command("/openmork")
+            async def handle_openmork_command(ack, command):
                 await ack()
                 await self._handle_slash_command(command)
 
@@ -784,7 +784,7 @@ class SlackAdapter(BasePlatformAdapter):
         await self._add_reaction(channel_id, ts, "white_check_mark")
 
     async def _handle_slash_command(self, command: dict) -> None:
-        """Handle /hermes slash command."""
+        """Handle /openmork slash command."""
         text = command.get("text", "").strip()
         user_id = command.get("user_id", "")
         channel_id = command.get("channel_id", "")

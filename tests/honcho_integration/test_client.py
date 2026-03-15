@@ -19,8 +19,8 @@ from honcho_integration.client import (
 class TestHonchoClientConfigDefaults:
     def test_default_values(self):
         config = HonchoClientConfig()
-        assert config.host == "hermes"
-        assert config.workspace_id == "hermes"
+        assert config.host == "openmork"
+        assert config.workspace_id == "openmork"
         assert config.api_key is None
         assert config.environment == "production"
         assert config.enabled is False
@@ -76,7 +76,7 @@ class TestFromGlobalConfig:
             "workspace": "my-workspace",
             "environment": "staging",
             "peerName": "alice",
-            "aiPeer": "hermes-custom",
+            "aiPeer": "openmork-custom",
             "enabled": True,
             "saveMessages": False,
             "contextTokens": 2000,
@@ -84,7 +84,7 @@ class TestFromGlobalConfig:
             "sessionPeerPrefix": True,
             "sessions": {"/home/user/proj": "my-session"},
             "hosts": {
-                "hermes": {
+                "openmork": {
                     "workspace": "override-ws",
                     "aiPeer": "override-ai",
                     "linkedHosts": ["cursor"],
@@ -112,7 +112,7 @@ class TestFromGlobalConfig:
             "workspace": "root-ws",
             "aiPeer": "root-ai",
             "hosts": {
-                "hermes": {
+                "openmork": {
                     "workspace": "host-ws",
                     "aiPeer": "host-ai",
                 }
@@ -148,7 +148,7 @@ class TestFromGlobalConfig:
         config_file.write_text(json.dumps({
             "apiKey": "key",
             "contextTokens": 1000,
-            "hosts": {"hermes": {"contextTokens": 2000}},
+            "hosts": {"openmork": {"contextTokens": 2000}},
         }))
         config = HonchoClientConfig.from_global_config(config_path=config_file)
         assert config.context_tokens == 2000
@@ -159,7 +159,7 @@ class TestFromGlobalConfig:
         config_file.write_text(json.dumps({
             "apiKey": "key",
             "recallMode": "tools",
-            "hosts": {"hermes": {"recallMode": "context"}},
+            "hosts": {"openmork": {"recallMode": "context"}},
         }))
         config = HonchoClientConfig.from_global_config(config_path=config_file)
         assert config.recall_mode == "context"
@@ -216,10 +216,10 @@ class TestResolveSessionName:
     def test_per_repo_uses_git_root(self):
         config = HonchoClientConfig(session_strategy="per-repo")
         with patch.object(
-            HonchoClientConfig, "_git_repo_name", return_value="hermes-agent"
+            HonchoClientConfig, "_git_repo_name", return_value="OpenMork"
         ):
-            result = config.resolve_session_name("/home/user/hermes-agent/subdir")
-        assert result == "hermes-agent"
+            result = config.resolve_session_name("/home/user/OpenMork/subdir")
+        assert result == "OpenMork"
 
     def test_per_repo_with_peer_prefix(self):
         config = HonchoClientConfig(
@@ -251,7 +251,7 @@ class TestResolveSessionName:
 class TestGetLinkedWorkspaces:
     def test_resolves_linked_hosts(self):
         config = HonchoClientConfig(
-            workspace_id="hermes-ws",
+            workspace_id="openmork-ws",
             linked_hosts=["cursor", "windsurf"],
             raw={
                 "hosts": {
@@ -266,16 +266,16 @@ class TestGetLinkedWorkspaces:
 
     def test_excludes_own_workspace(self):
         config = HonchoClientConfig(
-            workspace_id="hermes-ws",
+            workspace_id="openmork-ws",
             linked_hosts=["other"],
-            raw={"hosts": {"other": {"workspace": "hermes-ws"}}},
+            raw={"hosts": {"other": {"workspace": "openmork-ws"}}},
         )
         workspaces = config.get_linked_workspaces()
         assert workspaces == []
 
     def test_uses_host_key_as_fallback(self):
         config = HonchoClientConfig(
-            workspace_id="hermes-ws",
+            workspace_id="openmork-ws",
             linked_hosts=["cursor"],
             raw={"hosts": {"cursor": {}}},  # no workspace field
         )

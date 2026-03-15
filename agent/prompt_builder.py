@@ -61,7 +61,7 @@ def _scan_context_content(content: str, filename: str) -> str:
 # =========================================================================
 
 DEFAULT_AGENT_IDENTITY = (
-    "You are Hermes Agent, an intelligent AI assistant created by Nous Research. "
+    "You are OpenMork, an intelligent AI assistant created by Nous Research. "
     "You are helpful, knowledgeable, and direct. You assist users with a wide "
     "range of tasks including answering questions, writing and editing code, "
     "analyzing information, creative work, and executing actions via your tools. "
@@ -197,12 +197,12 @@ def _read_skill_conditions(skill_file: Path) -> dict:
         from tools.skills_tool import _parse_frontmatter
         raw = skill_file.read_text(encoding="utf-8")[:2000]
         frontmatter, _ = _parse_frontmatter(raw)
-        hermes = frontmatter.get("metadata", {}).get("hermes", {})
+        openmork = frontmatter.get("metadata", {}).get("openmork", {})
         return {
-            "fallback_for_toolsets": hermes.get("fallback_for_toolsets", []),
-            "requires_toolsets": hermes.get("requires_toolsets", []),
-            "fallback_for_tools": hermes.get("fallback_for_tools", []),
-            "requires_tools": hermes.get("requires_tools", []),
+            "fallback_for_toolsets": openmork.get("fallback_for_toolsets", []),
+            "requires_toolsets": openmork.get("requires_toolsets", []),
+            "fallback_for_tools": openmork.get("fallback_for_tools", []),
+            "requires_tools": openmork.get("requires_tools", []),
         }
     except Exception as e:
         logger.debug("Failed to read skill conditions from %s: %s", skill_file, e)
@@ -246,13 +246,13 @@ def build_skills_system_prompt(
 ) -> str:
     """Build a compact skill index for the system prompt.
 
-    Scans ~/.hermes/skills/ for SKILL.md files grouped by category.
+    Scans ~/.openmork/skills/ for SKILL.md files grouped by category.
     Includes per-skill descriptions from frontmatter so the model can
     match skills by meaning, not just name.
     Filters out skills incompatible with the current OS platform.
     """
-    hermes_home = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes"))
-    skills_dir = hermes_home / "skills"
+    openmork_home = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork"))
+    skills_dir = openmork_home / "skills"
 
     if not skills_dir.exists():
         return ""
@@ -355,7 +355,7 @@ def build_context_files_prompt(cwd: Optional[str] = None) -> str:
     """Discover and load context files for the system prompt.
 
     Discovery: AGENTS.md (recursive), .cursorrules / .cursor/rules/*.mdc,
-    and SOUL.md from HERMES_HOME only. Each capped at 20,000 chars.
+    and SOUL.md from OPENMORK_HOME only. Each capped at 20,000 chars.
     """
     if cwd is None:
         cwd = os.getcwd()
@@ -423,14 +423,14 @@ def build_context_files_prompt(cwd: Optional[str] = None) -> str:
         cursorrules_content = _truncate_content(cursorrules_content, ".cursorrules")
         sections.append(cursorrules_content)
 
-    # SOUL.md from HERMES_HOME only
+    # SOUL.md from OPENMORK_HOME only
     try:
-        from hermes_cli.config import ensure_hermes_home
-        ensure_hermes_home()
+        from openmork_cli.config import ensure_openmork_home
+        ensure_openmork_home()
     except Exception as e:
-        logger.debug("Could not ensure HERMES_HOME before loading SOUL.md: %s", e)
+        logger.debug("Could not ensure OPENMORK_HOME before loading SOUL.md: %s", e)
 
-    soul_path = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes")) / "SOUL.md"
+    soul_path = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork")) / "SOUL.md"
     if soul_path.exists():
         try:
             content = soul_path.read_text(encoding="utf-8").strip()

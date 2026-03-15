@@ -113,7 +113,7 @@ class TelegramAdapter(BasePlatformAdapter):
         self._bot: Optional[Bot] = None
         # Buffer rapid/album photo updates so Telegram image bursts are handled
         # as a single MessageEvent instead of self-interrupting multiple turns.
-        self._media_batch_delay_seconds = float(os.getenv("HERMES_TELEGRAM_MEDIA_BATCH_DELAY_SECONDS", "0.8"))
+        self._media_batch_delay_seconds = float(os.getenv("OPENMORK_TELEGRAM_MEDIA_BATCH_DELAY_SECONDS", "0.8"))
         self._pending_photo_batches: Dict[str, MessageEvent] = {}
         self._pending_photo_batch_tasks: Dict[str, asyncio.Task] = {}
         self._media_group_events: Dict[str, MessageEvent] = {}
@@ -135,7 +135,7 @@ class TelegramAdapter(BasePlatformAdapter):
             return
         message = (
             "Another Telegram bot poller is already using this token. "
-            "Hermes stopped Telegram polling to avoid endless retry spam. "
+            "OPENMORK stopped Telegram polling to avoid endless retry spam. "
             "Make sure only one gateway instance is running for this bot token."
         )
         logger.error("[%s] %s Original error: %s", self.name, message, error)
@@ -172,7 +172,7 @@ class TelegramAdapter(BasePlatformAdapter):
             if not acquired:
                 owner_pid = existing.get("pid") if isinstance(existing, dict) else None
                 message = (
-                    "Another local Hermes gateway is already using this Telegram bot token"
+                    "Another local OPENMORK gateway is already using this Telegram bot token"
                     + (f" (PID {owner_pid})." if owner_pid else ".")
                     + " Stop the other gateway before starting a second Telegram poller."
                 )
@@ -241,7 +241,7 @@ class TelegramAdapter(BasePlatformAdapter):
                     BotCommand("usage", "Show token usage for this session"),
                     BotCommand("provider", "Show available providers"),
                     BotCommand("insights", "Show usage insights and analytics"),
-                    BotCommand("update", "Update Hermes to the latest version"),
+                    BotCommand("update", "Update OPENMORK to the latest version"),
                     BotCommand("reload_mcp", "Reload MCP servers from config"),
                     BotCommand("voice", "Toggle voice reply mode"),
                     BotCommand("help", "Show available commands"),

@@ -38,8 +38,8 @@ class TestSendMessageTool:
         with patch.dict(
             os.environ,
             {
-                "HERMES_CRON_AUTO_DELIVER_PLATFORM": "telegram",
-                "HERMES_CRON_AUTO_DELIVER_CHAT_ID": "-1001",
+                "OPENMORK_CRON_AUTO_DELIVER_PLATFORM": "telegram",
+                "OPENMORK_CRON_AUTO_DELIVER_CHAT_ID": "-1001",
             },
             clear=False,
         ), \
@@ -71,8 +71,8 @@ class TestSendMessageTool:
         with patch.dict(
             os.environ,
             {
-                "HERMES_CRON_AUTO_DELIVER_PLATFORM": "telegram",
-                "HERMES_CRON_AUTO_DELIVER_CHAT_ID": "-1001",
+                "OPENMORK_CRON_AUTO_DELIVER_PLATFORM": "telegram",
+                "OPENMORK_CRON_AUTO_DELIVER_CHAT_ID": "-1001",
             },
             clear=False,
         ), \
@@ -109,9 +109,9 @@ class TestSendMessageTool:
         with patch.dict(
             os.environ,
             {
-                "HERMES_CRON_AUTO_DELIVER_PLATFORM": "telegram",
-                "HERMES_CRON_AUTO_DELIVER_CHAT_ID": "-1001",
-                "HERMES_CRON_AUTO_DELIVER_THREAD_ID": "17585",
+                "OPENMORK_CRON_AUTO_DELIVER_PLATFORM": "telegram",
+                "OPENMORK_CRON_AUTO_DELIVER_CHAT_ID": "-1001",
+                "OPENMORK_CRON_AUTO_DELIVER_THREAD_ID": "17585",
             },
             clear=False,
         ), \

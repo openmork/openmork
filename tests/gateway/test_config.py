@@ -108,9 +108,9 @@ class TestGatewayConfigRoundtrip:
 
 class TestLoadGatewayConfig:
     def test_bridges_quick_commands_from_config_yaml(self, tmp_path, monkeypatch):
-        hermes_home = tmp_path / ".hermes"
-        hermes_home.mkdir()
-        config_path = hermes_home / "config.yaml"
+        openmork_home = tmp_path / ".openmork"
+        openmork_home.mkdir()
+        config_path = openmork_home / "config.yaml"
         config_path.write_text(
             "quick_commands:\n"
             "  limits:\n"
@@ -119,19 +119,19 @@ class TestLoadGatewayConfig:
             encoding="utf-8",
         )
 
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        monkeypatch.setenv("OPENMORK_HOME", str(openmork_home))
 
         config = load_gateway_config()
 
         assert config.quick_commands == {"limits": {"type": "exec", "command": "echo ok"}}
 
     def test_invalid_quick_commands_in_config_yaml_are_ignored(self, tmp_path, monkeypatch):
-        hermes_home = tmp_path / ".hermes"
-        hermes_home.mkdir()
-        config_path = hermes_home / "config.yaml"
+        openmork_home = tmp_path / ".openmork"
+        openmork_home.mkdir()
+        config_path = openmork_home / "config.yaml"
         config_path.write_text("quick_commands: not-a-mapping\n", encoding="utf-8")
 
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        monkeypatch.setenv("OPENMORK_HOME", str(openmork_home))
 
         config = load_gateway_config()
 

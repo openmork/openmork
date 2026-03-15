@@ -6,7 +6,7 @@ description: "Security model, dangerous command approval, user authorization, co
 
 # Security
 
-Hermes Agent is designed with a defense-in-depth security model. This page covers every security boundary — from command approval to container isolation to user authorization on messaging platforms.
+OpenMork is designed with a defense-in-depth security model. This page covers every security boundary — from command approval to container isolation to user authorization on messaging platforms.
 
 ## Overview
 
@@ -20,7 +20,7 @@ The security model has five layers:
 
 ## Dangerous Command Approval
 
-Before executing any command, Hermes checks it against a curated list of dangerous patterns. If a match is found, the user must explicitly approve it.
+Before executing any command, OPENMORK checks it against a curated list of dangerous patterns. If a match is found, the user must explicitly approve it.
 
 ### What Triggers Approval
 
@@ -75,11 +75,11 @@ On messaging platforms, the agent sends the dangerous command details to the cha
 - Reply **yes**, **y**, **approve**, **ok**, or **go** to approve
 - Reply **no**, **n**, **deny**, or **cancel** to deny
 
-The `HERMES_EXEC_ASK=1` environment variable is automatically set when running the gateway.
+The `OPENMORK_EXEC_ASK=1` environment variable is automatically set when running the gateway.
 
 ### Permanent Allowlist
 
-Commands approved with "always" are saved to `~/.hermes/config.yaml`:
+Commands approved with "always" are saved to `~/.openmork/config.yaml`:
 
 ```yaml
 # Permanently allowed dangerous command patterns
@@ -91,12 +91,12 @@ command_allowlist:
 These patterns are loaded at startup and silently approved in all future sessions.
 
 :::tip
-Use `hermes config edit` to review or remove patterns from your permanent allowlist.
+Use `openmork config edit` to review or remove patterns from your permanent allowlist.
 :::
 
 ## User Authorization (Gateway)
 
-When running the messaging gateway, Hermes controls who can interact with the bot through a layered authorization system.
+When running the messaging gateway, OPENMORK controls who can interact with the bot through a layered authorization system.
 
 ### Authorization Check Order
 
@@ -111,7 +111,7 @@ The `_is_user_authorized()` method checks in this order:
 
 ### Platform Allowlists
 
-Set allowed user IDs as comma-separated values in `~/.hermes/.env`:
+Set allowed user IDs as comma-separated values in `~/.openmork/.env`:
 
 ```bash
 # Platform-specific allowlists
@@ -135,20 +135,20 @@ If **no allowlists are configured** and `GATEWAY_ALLOW_ALL_USERS` is not set, **
 
 ```
 No user allowlists configured. All unauthorized users will be denied.
-Set GATEWAY_ALLOW_ALL_USERS=true in ~/.hermes/.env to allow open access,
+Set GATEWAY_ALLOW_ALL_USERS=true in ~/.openmork/.env to allow open access,
 or configure platform allowlists (e.g., TELEGRAM_ALLOWED_USERS=your_id).
 ```
 :::
 
 ### DM Pairing System
 
-For more flexible authorization, Hermes includes a code-based pairing system. Instead of requiring user IDs upfront, unknown users receive a one-time pairing code that the bot owner approves via the CLI.
+For more flexible authorization, OPENMORK includes a code-based pairing system. Instead of requiring user IDs upfront, unknown users receive a one-time pairing code that the bot owner approves via the CLI.
 
 **How it works:**
 
 1. An unknown user sends a DM to the bot
 2. The bot replies with an 8-character pairing code
-3. The bot owner runs `hermes pairing approve <platform> <code>` on the CLI
+3. The bot owner runs `openmork pairing approve <platform> <code>` on the CLI
 4. The user is permanently approved for that platform
 
 **Security features** (based on OWASP + NIST SP 800-63-4 guidance):
@@ -168,26 +168,26 @@ For more flexible authorization, Hermes includes a code-based pairing system. In
 
 ```bash
 # List pending and approved users
-hermes pairing list
+openmork pairing list
 
 # Approve a pairing code
-hermes pairing approve telegram ABC12DEF
+openmork pairing approve telegram ABC12DEF
 
 # Revoke a user's access
-hermes pairing revoke telegram 123456789
+openmork pairing revoke telegram 123456789
 
 # Clear all pending codes
-hermes pairing clear-pending
+openmork pairing clear-pending
 ```
 
-**Storage:** Pairing data is stored in `~/.hermes/pairing/` with per-platform JSON files:
+**Storage:** Pairing data is stored in `~/.openmork/pairing/` with per-platform JSON files:
 - `{platform}-pending.json` — pending pairing requests
 - `{platform}-approved.json` — approved users
 - `_rate_limits.json` — rate limit and lockout tracking
 
 ## Container Isolation
 
-When using the `docker` terminal backend, Hermes applies strict security hardening to every container.
+When using the `docker` terminal backend, OPENMORK applies strict security hardening to every container.
 
 ### Docker Security Flags
 
@@ -206,7 +206,7 @@ _SECURITY_ARGS = [
 
 ### Resource Limits
 
-Container resources are configurable in `~/.hermes/config.yaml`:
+Container resources are configurable in `~/.openmork/config.yaml`:
 
 ```yaml
 terminal:
@@ -220,7 +220,7 @@ terminal:
 
 ### Filesystem Persistence
 
-- **Persistent mode** (`container_persistent: true`): Bind-mounts `/workspace` and `/root` from `~/.hermes/sandboxes/docker/<task_id>/`
+- **Persistent mode** (`container_persistent: true`): Bind-mounts `/workspace` and `/root` from `~/.openmork/sandboxes/docker/<task_id>/`
 - **Ephemeral mode** (`container_persistent: false`): Uses tmpfs for workspace — everything is lost on cleanup
 
 :::tip
@@ -295,19 +295,19 @@ Blocked files show a warning:
 1. **Set explicit allowlists** — never use `GATEWAY_ALLOW_ALL_USERS=true` in production
 2. **Use container backend** — set `terminal.backend: docker` in config.yaml
 3. **Restrict resource limits** — set appropriate CPU, memory, and disk limits
-4. **Store secrets securely** — keep API keys in `~/.hermes/.env` with proper file permissions
+4. **Store secrets securely** — keep API keys in `~/.openmork/.env` with proper file permissions
 5. **Enable DM pairing** — use pairing codes instead of hardcoding user IDs when possible
 6. **Review command allowlist** — periodically audit `command_allowlist` in config.yaml
 7. **Set `MESSAGING_CWD`** — don't let the agent operate from sensitive directories
 8. **Run as non-root** — never run the gateway as root
-9. **Monitor logs** — check `~/.hermes/logs/` for unauthorized access attempts
-10. **Keep updated** — run `hermes update` regularly for security patches
+9. **Monitor logs** — check `~/.openmork/logs/` for unauthorized access attempts
+10. **Keep updated** — run `openmork update` regularly for security patches
 
 ### Securing API Keys
 
 ```bash
 # Set proper permissions on the .env file
-chmod 600 ~/.hermes/.env
+chmod 600 ~/.openmork/.env
 
 # Keep separate keys for different services
 # Never commit .env files to version control
@@ -321,8 +321,8 @@ For maximum security, run the gateway on a separate machine or VM:
 terminal:
   backend: ssh
   ssh_host: "agent-worker.local"
-  ssh_user: "hermes"
-  ssh_key: "~/.ssh/hermes_agent_key"
+  ssh_user: "openmork"
+  ssh_key: "~/.ssh/openmork_agent_key"
 ```
 
 This keeps the gateway's messaging connections separate from the agent's command execution.

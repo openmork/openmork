@@ -3,10 +3,10 @@
 MCP (Model Context Protocol) Client Support
 
 Connects to external MCP servers via stdio or HTTP/StreamableHTTP transport,
-discovers their tools, and registers them into the hermes-agent tool registry
+discovers their tools, and registers them into the OpenMork tool registry
 so the agent can call them like any built-in tool.
 
-Configuration is read from ~/.hermes/config.yaml under the ``mcp_servers`` key.
+Configuration is read from ~/.openmork/config.yaml under the ``mcp_servers`` key.
 The ``mcp`` Python package is optional -- if not installed, this module is a
 no-op and logs a debug message.
 
@@ -206,13 +206,13 @@ def _resolve_stdio_command(command: str, env: dict) -> tuple[str, dict]:
         if which_hit:
             resolved_command = which_hit
         elif resolved_command in {"npx", "npm", "node"}:
-            hermes_home = os.path.expanduser(
+            openmork_home = os.path.expanduser(
                 os.getenv(
-                    "HERMES_HOME", os.path.join(os.path.expanduser("~"), ".hermes")
+                    "OPENMORK_HOME", os.path.join(os.path.expanduser("~"), ".openmork")
                 )
             )
             candidates = [
-                os.path.join(hermes_home, "node", "bin", resolved_command),
+                os.path.join(openmork_home, "node", "bin", resolved_command),
                 os.path.join(os.path.expanduser("~"), ".local", "bin", resolved_command),
             ]
             for candidate in candidates:
@@ -919,7 +919,7 @@ def _run_on_mcp_loop(coro, timeout: float = 30):
 # ---------------------------------------------------------------------------
 
 def _load_mcp_config() -> Dict[str, dict]:
-    """Read ``mcp_servers`` from the Hermes config file.
+    """Read ``mcp_servers`` from the OPENMORK config file.
 
     Returns a dict of ``{server_name: server_config}`` or empty dict.
     Server config can contain either ``command``/``args``/``env`` for stdio
@@ -927,7 +927,7 @@ def _load_mcp_config() -> Dict[str, dict]:
     ``timeout`` and ``connect_timeout`` overrides.
     """
     try:
-        from hermes_cli.config import load_config
+        from openmork_cli.config import load_config
         config = load_config()
         servers = config.get("mcp_servers")
         if not servers or not isinstance(servers, dict):
@@ -1214,7 +1214,7 @@ def _make_check_fn(server_name: str):
 # ---------------------------------------------------------------------------
 
 def _convert_mcp_schema(server_name: str, mcp_tool) -> dict:
-    """Convert an MCP tool listing to the Hermes registry schema format.
+    """Convert an MCP tool listing to the OPENMORK registry schema format.
 
     Args:
         server_name: The logical server name for prefixing.
@@ -1563,10 +1563,10 @@ def discover_mcp_tools() -> List[str]:
     _run_on_mcp_loop(_discover_all(), timeout=120)
 
     if all_tools:
-        # Dynamically inject into all hermes-* platform toolsets
+        # Dynamically inject into all openmork-* platform toolsets
         from toolsets import TOOLSETS
         for ts_name, ts in TOOLSETS.items():
-            if ts_name.startswith("hermes-"):
+            if ts_name.startswith("openmork-"):
                 for tool_name in all_tools:
                     if tool_name not in ts["tools"]:
                         ts["tools"].append(tool_name)

@@ -1,16 +1,16 @@
-# Hermes Agent — ACP (Agent Client Protocol) Setup Guide
+# OpenMork — ACP (Agent Client Protocol) Setup Guide
 
-Hermes Agent supports the **Agent Client Protocol (ACP)**, allowing it to run as
-a coding agent inside your editor. ACP lets your IDE send tasks to Hermes, and
-Hermes responds with file edits, terminal commands, and explanations — all shown
+OpenMork supports the **Agent Client Protocol (ACP)**, allowing it to run as
+a coding agent inside your editor. ACP lets your IDE send tasks to OPENMORK, and
+OPENMORK responds with file edits, terminal commands, and explanations — all shown
 natively in the editor UI.
 
 ---
 
 ## Prerequisites
 
-- Hermes Agent installed and configured (`hermes setup` completed)
-- An API key / provider set up in `~/.hermes/.env` or via `hermes login`
+- OpenMork installed and configured (`openmork setup` completed)
+- An API key / provider set up in `~/.openmork/.env` or via `openmork login`
 - Python 3.11+
 
 Install the ACP extra:
@@ -45,22 +45,22 @@ Open your VS Code settings (`Ctrl+,` → click the `{}` icon for JSON) and add:
 {
   "acpClient.agents": [
     {
-      "name": "hermes-agent",
-      "registryDir": "/path/to/hermes-agent/acp_registry"
+      "name": "OpenMork",
+      "registryDir": "/path/to/OpenMork/acp_registry"
     }
   ]
 }
 ```
 
-Replace `/path/to/hermes-agent` with the actual path to your Hermes Agent
-installation (e.g. `~/.hermes/hermes-agent`).
+Replace `/path/to/OpenMork` with the actual path to your OpenMork
+installation (e.g. `~/.openmork/OpenMork`).
 
-Alternatively, if `hermes` is on your PATH, the ACP Client can discover it
+Alternatively, if `openmork` is on your PATH, the ACP Client can discover it
 automatically via the registry directory.
 
 ### 3. Restart VS Code
 
-After configuring, restart VS Code. You should see **Hermes Agent** appear in
+After configuring, restart VS Code. You should see **OpenMork** appear in
 the ACP agent picker in the chat/agent panel.
 
 ---
@@ -79,8 +79,8 @@ Open Zed settings (`Cmd+,` on macOS or `Ctrl+,` on Linux) and add to your
   "acp": {
     "agents": [
       {
-        "name": "hermes-agent",
-        "registry_dir": "/path/to/hermes-agent/acp_registry"
+        "name": "OpenMork",
+        "registry_dir": "/path/to/OpenMork/acp_registry"
       }
     ]
   }
@@ -89,7 +89,7 @@ Open Zed settings (`Cmd+,` on macOS or `Ctrl+,` on Linux) and add to your
 
 ### 2. Restart Zed
 
-Hermes Agent will appear in the agent panel. Select it and start a conversation.
+OpenMork will appear in the agent panel. Select it and start a conversation.
 
 ---
 
@@ -106,38 +106,38 @@ Hermes Agent will appear in the agent panel. Select it and start a conversation.
 - Open **Settings** → **Tools** → **ACP Agents**
 - Click **+** to add a new agent
 - Set the registry directory to your `acp_registry/` folder:
-  `/path/to/hermes-agent/acp_registry`
+  `/path/to/OpenMork/acp_registry`
 - Click **OK**
 
 ### 3. Use the agent
 
-Open the ACP panel (usually in the right sidebar) and select **Hermes Agent**.
+Open the ACP panel (usually in the right sidebar) and select **OpenMork**.
 
 ---
 
 ## What You Will See
 
-Once connected, your editor provides a native interface to Hermes Agent:
+Once connected, your editor provides a native interface to OpenMork:
 
 ### Chat Panel
 A conversational interface where you can describe tasks, ask questions, and
-give instructions. Hermes responds with explanations and actions.
+give instructions. OPENMORK responds with explanations and actions.
 
 ### File Diffs
-When Hermes edits files, you see standard diffs in the editor. You can:
+When OPENMORK edits files, you see standard diffs in the editor. You can:
 - **Accept** individual changes
 - **Reject** changes you don't want
 - **Review** the full diff before applying
 
 ### Terminal Commands
-When Hermes needs to run shell commands (builds, tests, installs), the editor
+When OPENMORK needs to run shell commands (builds, tests, installs), the editor
 shows them in an integrated terminal. Depending on your settings:
 - Commands may run automatically
 - Or you may be prompted to **approve** each command
 
 ### Approval Flow
 For potentially destructive operations, the editor will prompt you for
-approval before Hermes proceeds. This includes:
+approval before OPENMORK proceeds. This includes:
 - File deletions
 - Shell commands
 - Git operations
@@ -146,29 +146,29 @@ approval before Hermes proceeds. This includes:
 
 ## Configuration
 
-Hermes Agent under ACP uses the **same configuration** as the CLI:
+OpenMork under ACP uses the **same configuration** as the CLI:
 
-- **API keys / providers**: `~/.hermes/.env`
-- **Agent config**: `~/.hermes/config.yaml`
-- **Skills**: `~/.hermes/skills/`
-- **Sessions**: `~/.hermes/state.db`
+- **API keys / providers**: `~/.openmork/.env`
+- **Agent config**: `~/.openmork/config.yaml`
+- **Skills**: `~/.openmork/skills/`
+- **Sessions**: `~/.openmork/state.db`
 
-You can run `hermes setup` to configure providers, or edit `~/.hermes/.env`
+You can run `openmork setup` to configure providers, or edit `~/.openmork/.env`
 directly.
 
 ### Changing the model
 
-Edit `~/.hermes/config.yaml`:
+Edit `~/.openmork/config.yaml`:
 
 ```yaml
-model: openrouter/nous/hermes-3-llama-3.1-70b
+model: openrouter/nous/openmork-3-llama-3.1-70b
 ```
 
-Or set the `HERMES_MODEL` environment variable.
+Or set the `OPENMORK_MODEL` environment variable.
 
 ### Toolsets
 
-ACP sessions use the curated `hermes-acp` toolset by default. It is designed for editor workflows and intentionally excludes things like messaging delivery, cronjob management, and audio-first UX features.
+ACP sessions use the curated `openmork-acp` toolset by default. It is designed for editor workflows and intentionally excludes things like messaging delivery, cronjob management, and audio-first UX features.
 
 ---
 
@@ -178,15 +178,15 @@ ACP sessions use the curated `hermes-acp` toolset by default. It is designed for
 
 1. **Check the registry path** — make sure the `acp_registry/` directory path
    in your editor settings is correct and contains `agent.json`.
-2. **Check `hermes` is on PATH** — run `which hermes` in a terminal. If not
+2. **Check `openmork` is on PATH** — run `which openmork` in a terminal. If not
    found, you may need to activate your virtualenv or add it to PATH.
 3. **Restart the editor** after changing settings.
 
 ### Agent starts but errors immediately
 
-1. Run `hermes doctor` to check your configuration.
-2. Check that you have a valid API key: `hermes status`
-3. Try running `hermes acp` directly in a terminal to see error output.
+1. Run `openmork doctor` to check your configuration.
+2. Check that you have a valid API key: `openmork status`
+3. Try running `openmork acp` directly in a terminal to see error output.
 
 ### "Module not found" errors
 
@@ -209,15 +209,15 @@ settings for auto-approval or manual-approval preferences.
 
 ### Logs
 
-Hermes logs are written to stderr when running in ACP mode. Check:
-- VS Code: **Output** panel → select **ACP Client** or **Hermes Agent**
+OPENMORK logs are written to stderr when running in ACP mode. Check:
+- VS Code: **Output** panel → select **ACP Client** or **OpenMork**
 - Zed: **View** → **Toggle Terminal** and check the process output
 - JetBrains: **Event Log** or the ACP tool window
 
 You can also enable verbose logging:
 
 ```bash
-HERMES_LOG_LEVEL=DEBUG hermes acp
+OPENMORK_LOG_LEVEL=DEBUG openmork acp
 ```
 
 ---
@@ -225,5 +225,5 @@ HERMES_LOG_LEVEL=DEBUG hermes acp
 ## Further Reading
 
 - [ACP Specification](https://github.com/anysphere/acp)
-- [Hermes Agent Documentation](https://github.com/NousResearch/hermes-agent)
-- Run `hermes --help` for all CLI options
+- [OpenMork Documentation](https://github.com/openmork/OpenMork)
+- Run `openmork --help` for all CLI options

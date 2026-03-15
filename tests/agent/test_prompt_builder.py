@@ -231,12 +231,12 @@ class TestPromptBuilderImports:
 
 class TestBuildSkillsSystemPrompt:
     def test_empty_when_no_skills_dir(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         result = build_skills_system_prompt()
         assert result == ""
 
     def test_builds_index_with_skills(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skills_dir = tmp_path / "skills" / "coding" / "python-debug"
         skills_dir.mkdir(parents=True)
         (skills_dir / "SKILL.md").write_text(
@@ -248,7 +248,7 @@ class TestBuildSkillsSystemPrompt:
         assert "available_skills" in result
 
     def test_deduplicates_skills(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         cat_dir = tmp_path / "skills" / "tools"
         for subdir in ["search", "search"]:
             d = cat_dir / subdir
@@ -260,7 +260,7 @@ class TestBuildSkillsSystemPrompt:
 
     def test_excludes_incompatible_platform_skills(self, monkeypatch, tmp_path):
         """Skills with platforms: [macos] should not appear on Linux."""
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skills_dir = tmp_path / "skills" / "apple"
         skills_dir.mkdir(parents=True)
 
@@ -289,7 +289,7 @@ class TestBuildSkillsSystemPrompt:
 
     def test_includes_matching_platform_skills(self, monkeypatch, tmp_path):
         """Skills with platforms: [macos] should appear on macOS."""
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skills_dir = tmp_path / "skills" / "apple"
         mac_skill = skills_dir / "imessage"
         mac_skill.mkdir(parents=True)
@@ -307,7 +307,7 @@ class TestBuildSkillsSystemPrompt:
         assert "Send iMessages" in result
 
     def test_includes_setup_needed_skills(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         monkeypatch.delenv("MISSING_API_KEY_XYZ", raising=False)
         skills_dir = tmp_path / "skills" / "media"
 
@@ -330,7 +330,7 @@ class TestBuildSkillsSystemPrompt:
 
     def test_includes_skills_with_met_prerequisites(self, monkeypatch, tmp_path):
         """Skills with satisfied prerequisites should appear normally."""
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         monkeypatch.setenv("MY_API_KEY", "test_value")
         skills_dir = tmp_path / "skills" / "media"
 
@@ -347,7 +347,7 @@ class TestBuildSkillsSystemPrompt:
     def test_non_local_backend_keeps_skill_visible_without_probe(
         self, monkeypatch, tmp_path
     ):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         monkeypatch.setenv("TERMINAL_ENV", "docker")
         monkeypatch.delenv("BACKEND_ONLY_KEY", raising=False)
         skills_dir = tmp_path / "skills" / "media"
@@ -377,7 +377,7 @@ class TestBuildContextFilesPrompt:
         with patch("pathlib.Path.home", return_value=fake_home):
             result = build_context_files_prompt(cwd=str(tmp_path))
         assert "Project Context" in result
-        assert "# Hermes ☤" in result
+        assert "# OPENMORK ☤" in result
 
     def test_loads_agents_md(self, tmp_path):
         (tmp_path / "AGENTS.md").write_text("Use Ruff for linting.")
@@ -390,31 +390,31 @@ class TestBuildContextFilesPrompt:
         result = build_context_files_prompt(cwd=str(tmp_path))
         assert "type hints" in result
 
-    def test_loads_soul_md_from_hermes_home_only(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path / "hermes_home"))
-        hermes_home = tmp_path / "hermes_home"
-        hermes_home.mkdir()
-        (hermes_home / "SOUL.md").write_text("Be concise and friendly.", encoding="utf-8")
+    def test_loads_soul_md_from_openmork_home_only(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path / "openmork_home"))
+        openmork_home = tmp_path / "openmork_home"
+        openmork_home.mkdir()
+        (openmork_home / "SOUL.md").write_text("Be concise and friendly.", encoding="utf-8")
         (tmp_path / "SOUL.md").write_text("cwd soul should be ignored", encoding="utf-8")
         result = build_context_files_prompt(cwd=str(tmp_path))
         assert "Be concise and friendly." in result
         assert "cwd soul should be ignored" not in result
 
     def test_soul_md_has_no_wrapper_text(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path / "hermes_home"))
-        hermes_home = tmp_path / "hermes_home"
-        hermes_home.mkdir()
-        (hermes_home / "SOUL.md").write_text("Be concise and friendly.", encoding="utf-8")
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path / "openmork_home"))
+        openmork_home = tmp_path / "openmork_home"
+        openmork_home.mkdir()
+        (openmork_home / "SOUL.md").write_text("Be concise and friendly.", encoding="utf-8")
         result = build_context_files_prompt(cwd=str(tmp_path))
         assert "Be concise and friendly." in result
         assert "If SOUL.md is present" not in result
         assert "## SOUL.md" not in result
 
     def test_empty_soul_md_adds_nothing(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path / "hermes_home"))
-        hermes_home = tmp_path / "hermes_home"
-        hermes_home.mkdir()
-        (hermes_home / "SOUL.md").write_text("\n\n", encoding="utf-8")
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path / "openmork_home"))
+        openmork_home = tmp_path / "openmork_home"
+        openmork_home.mkdir()
+        (openmork_home / "SOUL.md").write_text("\n\n", encoding="utf-8")
         result = build_context_files_prompt(cwd=str(tmp_path))
         assert result == ""
 
@@ -476,7 +476,7 @@ class TestReadSkillConditions:
     def test_reads_fallback_for_toolsets(self, tmp_path):
         skill_file = tmp_path / "SKILL.md"
         skill_file.write_text(
-            "---\nname: ddg\ndescription: DuckDuckGo\nmetadata:\n  hermes:\n    fallback_for_toolsets: [web]\n---\n"
+            "---\nname: ddg\ndescription: DuckDuckGo\nmetadata:\n  openmork:\n    fallback_for_toolsets: [web]\n---\n"
         )
         conditions = _read_skill_conditions(skill_file)
         assert conditions["fallback_for_toolsets"] == ["web"]
@@ -484,7 +484,7 @@ class TestReadSkillConditions:
     def test_reads_requires_toolsets(self, tmp_path):
         skill_file = tmp_path / "SKILL.md"
         skill_file.write_text(
-            "---\nname: openhue\ndescription: Hue lights\nmetadata:\n  hermes:\n    requires_toolsets: [terminal]\n---\n"
+            "---\nname: openhue\ndescription: Hue lights\nmetadata:\n  openmork:\n    requires_toolsets: [terminal]\n---\n"
         )
         conditions = _read_skill_conditions(skill_file)
         assert conditions["requires_toolsets"] == ["terminal"]
@@ -492,7 +492,7 @@ class TestReadSkillConditions:
     def test_reads_multiple_conditions(self, tmp_path):
         skill_file = tmp_path / "SKILL.md"
         skill_file.write_text(
-            "---\nname: test\ndescription: Test\nmetadata:\n  hermes:\n    fallback_for_toolsets: [browser]\n    requires_tools: [terminal]\n---\n"
+            "---\nname: test\ndescription: Test\nmetadata:\n  openmork:\n    fallback_for_toolsets: [browser]\n    requires_tools: [terminal]\n---\n"
         )
         conditions = _read_skill_conditions(skill_file)
         assert conditions["fallback_for_toolsets"] == ["browser"]
@@ -572,11 +572,11 @@ class TestSkillShouldShow:
 
 class TestBuildSkillsSystemPromptConditional:
     def test_fallback_skill_hidden_when_primary_available(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skill_dir = tmp_path / "skills" / "search" / "duckduckgo"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
-            "---\nname: duckduckgo\ndescription: Free web search\nmetadata:\n  hermes:\n    fallback_for_toolsets: [web]\n---\n"
+            "---\nname: duckduckgo\ndescription: Free web search\nmetadata:\n  openmork:\n    fallback_for_toolsets: [web]\n---\n"
         )
         result = build_skills_system_prompt(
             available_tools=set(),
@@ -585,11 +585,11 @@ class TestBuildSkillsSystemPromptConditional:
         assert "duckduckgo" not in result
 
     def test_fallback_skill_shown_when_primary_unavailable(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skill_dir = tmp_path / "skills" / "search" / "duckduckgo"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
-            "---\nname: duckduckgo\ndescription: Free web search\nmetadata:\n  hermes:\n    fallback_for_toolsets: [web]\n---\n"
+            "---\nname: duckduckgo\ndescription: Free web search\nmetadata:\n  openmork:\n    fallback_for_toolsets: [web]\n---\n"
         )
         result = build_skills_system_prompt(
             available_tools=set(),
@@ -598,11 +598,11 @@ class TestBuildSkillsSystemPromptConditional:
         assert "duckduckgo" in result
 
     def test_requires_skill_hidden_when_toolset_missing(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skill_dir = tmp_path / "skills" / "iot" / "openhue"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
-            "---\nname: openhue\ndescription: Hue lights\nmetadata:\n  hermes:\n    requires_toolsets: [terminal]\n---\n"
+            "---\nname: openhue\ndescription: Hue lights\nmetadata:\n  openmork:\n    requires_toolsets: [terminal]\n---\n"
         )
         result = build_skills_system_prompt(
             available_tools=set(),
@@ -611,11 +611,11 @@ class TestBuildSkillsSystemPromptConditional:
         assert "openhue" not in result
 
     def test_requires_skill_shown_when_toolset_available(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skill_dir = tmp_path / "skills" / "iot" / "openhue"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
-            "---\nname: openhue\ndescription: Hue lights\nmetadata:\n  hermes:\n    requires_toolsets: [terminal]\n---\n"
+            "---\nname: openhue\ndescription: Hue lights\nmetadata:\n  openmork:\n    requires_toolsets: [terminal]\n---\n"
         )
         result = build_skills_system_prompt(
             available_tools=set(),
@@ -624,7 +624,7 @@ class TestBuildSkillsSystemPromptConditional:
         assert "openhue" in result
 
     def test_unconditional_skill_always_shown(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skill_dir = tmp_path / "skills" / "general" / "notes"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
@@ -638,11 +638,11 @@ class TestBuildSkillsSystemPromptConditional:
 
     def test_no_args_shows_all_skills(self, monkeypatch, tmp_path):
         """Backward compat: calling with no args shows everything."""
-        monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+        monkeypatch.setenv("OPENMORK_HOME", str(tmp_path))
         skill_dir = tmp_path / "skills" / "search" / "duckduckgo"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text(
-            "---\nname: duckduckgo\ndescription: Free web search\nmetadata:\n  hermes:\n    fallback_for_toolsets: [web]\n---\n"
+            "---\nname: duckduckgo\ndescription: Free web search\nmetadata:\n  openmork:\n    fallback_for_toolsets: [web]\n---\n"
         )
         result = build_skills_system_prompt()
         assert "duckduckgo" in result

@@ -1,5 +1,5 @@
 """
-Cron job management tools for Hermes Agent.
+Cron job management tools for OpenMork.
 
 Expose a single compressed action-oriented tool to avoid schema/context bloat.
 Compatibility wrappers remain for direct Python callers and legacy tests.
@@ -65,14 +65,14 @@ def _scan_cron_prompt(prompt: str) -> str:
 
 
 def _origin_from_env() -> Optional[Dict[str, str]]:
-    origin_platform = os.getenv("HERMES_SESSION_PLATFORM")
-    origin_chat_id = os.getenv("HERMES_SESSION_CHAT_ID")
+    origin_platform = os.getenv("OPENMORK_SESSION_PLATFORM")
+    origin_chat_id = os.getenv("OPENMORK_SESSION_CHAT_ID")
     if origin_platform and origin_chat_id:
         return {
             "platform": origin_platform,
             "chat_id": origin_chat_id,
-            "chat_name": os.getenv("HERMES_SESSION_CHAT_NAME"),
-            "thread_id": os.getenv("HERMES_SESSION_THREAD_ID"),
+            "chat_name": os.getenv("OPENMORK_SESSION_CHAT_NAME"),
+            "thread_id": os.getenv("OPENMORK_SESSION_THREAD_ID"),
         }
     return None
 
@@ -422,9 +422,9 @@ def check_cronjob_requirements() -> bool:
         return False
 
     return bool(
-        os.getenv("HERMES_INTERACTIVE")
-        or os.getenv("HERMES_GATEWAY_SESSION")
-        or os.getenv("HERMES_EXEC_ASK")
+        os.getenv("OPENMORK_INTERACTIVE")
+        or os.getenv("OPENMORK_GATEWAY_SESSION")
+        or os.getenv("OPENMORK_EXEC_ASK")
     )
 
 

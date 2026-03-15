@@ -6,7 +6,7 @@ description: "Text-to-speech and voice message transcription across all platform
 
 # Voice & TTS
 
-Hermes Agent supports both text-to-speech output and voice message transcription across all messaging platforms.
+OpenMork supports both text-to-speech output and voice message transcription across all messaging platforms.
 
 ## Text-to-Speech
 
@@ -25,12 +25,12 @@ Convert text to speech with three providers:
 | Telegram | Voice bubble (plays inline) | Opus `.ogg` |
 | Discord | Audio file attachment | MP3 |
 | WhatsApp | Audio file attachment | MP3 |
-| CLI | Saved to `~/.hermes/audio_cache/` | MP3 |
+| CLI | Saved to `~/.openmork/audio_cache/` | MP3 |
 
 ### Configuration
 
 ```yaml
-# In ~/.hermes/config.yaml
+# In ~/.openmork/config.yaml
 tts:
   provider: "edge"              # "edge" | "elevenlabs" | "openai"
   edge:
@@ -83,7 +83,7 @@ Local transcription works out of the box — no API key needed. The `faster-whis
 ### Configuration
 
 ```yaml
-# In ~/.hermes/config.yaml
+# In ~/.openmork/config.yaml
 stt:
   provider: "local"           # "local" (free, faster-whisper) | "openai" (API)
   local:
@@ -108,7 +108,7 @@ stt:
 
 ### Fallback Behavior
 
-If your configured provider isn't available, Hermes automatically falls back:
+If your configured provider isn't available, OPENMORK automatically falls back:
 - **Local not installed** → Falls back to OpenAI API (if key is set)
 - **OpenAI key not set** → Falls back to local Whisper (if installed)
 - **Neither available** → Voice messages pass through with a note to the user

@@ -32,7 +32,7 @@ class SSHEnvironment(BaseEnvironment):
         self.port = port
         self.key_path = key_path
 
-        self.control_dir = Path(tempfile.gettempdir()) / "hermes-ssh"
+        self.control_dir = Path(tempfile.gettempdir()) / "openmork-ssh"
         self.control_dir.mkdir(parents=True, exist_ok=True)
         self.control_socket = self.control_dir / f"{user}@{host}:{port}.sock"
         self._establish_connection()

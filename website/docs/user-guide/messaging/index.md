@@ -1,20 +1,20 @@
 ---
 sidebar_position: 1
 title: "Messaging Gateway"
-description: "Chat with Hermes from Telegram, Discord, Slack, WhatsApp, Signal, Email, Home Assistant, or your browser — architecture and setup overview"
+description: "Chat with OPENMORK from Telegram, Discord, Slack, WhatsApp, Signal, Email, Home Assistant, or your browser — architecture and setup overview"
 ---
 
 # Messaging Gateway
 
-Chat with Hermes from Telegram, Discord, Slack, WhatsApp, Signal, Email, Home Assistant, or your browser. The gateway is a single background process that connects to all your configured platforms, handles sessions, runs cron jobs, and delivers voice messages.
+Chat with OPENMORK from Telegram, Discord, Slack, WhatsApp, Signal, Email, Home Assistant, or your browser. The gateway is a single background process that connects to all your configured platforms, handles sessions, runs cron jobs, and delivers voice messages.
 
-For the full voice feature set — including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations — see [Voice Mode](/docs/user-guide/features/voice-mode) and [Use Voice Mode with Hermes](/docs/guides/use-voice-mode-with-hermes).
+For the full voice feature set — including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations — see [Voice Mode](/docs/user-guide/features/voice-mode) and [Use Voice Mode with OPENMORK](/docs/guides/use-voice-mode-with-openmork).
 
 ## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Gateway["Hermes Gateway"]
+    subgraph Gateway["OPENMORK Gateway"]
         subgraph Adapters["Platform adapters"]
             tg[Telegram]
             dc[Discord]
@@ -48,7 +48,7 @@ Each platform adapter receives messages, routes them through a per-chat session 
 The easiest way to configure messaging platforms is the interactive wizard:
 
 ```bash
-hermes gateway setup        # Interactive setup for all messaging platforms
+openmork gateway setup        # Interactive setup for all messaging platforms
 ```
 
 This walks you through configuring each platform with arrow-key selection, shows which platforms are already configured, and offers to start/restart the gateway when done.
@@ -56,14 +56,14 @@ This walks you through configuring each platform with arrow-key selection, shows
 ## Gateway Commands
 
 ```bash
-hermes gateway              # Run in foreground
-hermes gateway setup        # Configure messaging platforms interactively
-hermes gateway install      # Install as a user service (Linux) / launchd service (macOS)
-sudo hermes gateway install --system   # Linux only: install a boot-time system service
-hermes gateway start        # Start the default service
-hermes gateway stop         # Stop the default service
-hermes gateway status       # Check default service status
-hermes gateway status --system         # Linux only: inspect the system service explicitly
+openmork gateway              # Run in foreground
+openmork gateway setup        # Configure messaging platforms interactively
+openmork gateway install      # Install as a user service (Linux) / launchd service (macOS)
+sudo openmork gateway install --system   # Linux only: install a boot-time system service
+openmork gateway start        # Start the default service
+openmork gateway stop         # Stop the default service
+openmork gateway status       # Check default service status
+openmork gateway status --system         # Linux only: inspect the system service explicitly
 ```
 
 ## Chat Commands (Inside Messaging)
@@ -89,7 +89,7 @@ hermes gateway status --system         # Linux only: inspect the system service 
 | `/rollback [number]` | List or restore filesystem checkpoints |
 | `/background <prompt>` | Run a prompt in a separate background session |
 | `/reload-mcp` | Reload MCP servers from config |
-| `/update` | Update Hermes Agent to the latest version |
+| `/update` | Update OpenMork to the latest version |
 | `/help` | Show available commands |
 | `/<skill-name>` | Invoke any installed skill |
 
@@ -109,7 +109,7 @@ Sessions reset based on configurable policies:
 | Idle | 1440 min | Reset after N minutes of inactivity |
 | Both | (combined) | Whichever triggers first |
 
-Configure per-platform overrides in `~/.hermes/gateway.json`:
+Configure per-platform overrides in `~/.openmork/gateway.json`:
 
 ```json
 {
@@ -145,11 +145,11 @@ Instead of manually configuring user IDs, unknown users receive a one-time pairi
 ```bash
 # The user sees: "Pairing code: XKGH5N7P"
 # You approve them with:
-hermes pairing approve telegram XKGH5N7P
+openmork pairing approve telegram XKGH5N7P
 
 # Other pairing commands:
-hermes pairing list          # View pending + approved users
-hermes pairing revoke telegram 123456789  # Remove access
+openmork pairing list          # View pending + approved users
+openmork pairing revoke telegram 123456789  # Remove access
 ```
 
 Pairing codes expire after 1 hour, are rate-limited, and use cryptographic randomness.
@@ -165,7 +165,7 @@ Send any message while the agent is working to interrupt it. Key behaviors:
 
 ## Tool Progress Notifications
 
-Control how much tool activity is displayed in `~/.hermes/config.yaml`:
+Control how much tool activity is displayed in `~/.openmork/config.yaml`:
 
 ```yaml
 display:
@@ -189,7 +189,7 @@ Run a prompt in a separate background session so the agent works on it independe
 /background Check all servers in the cluster and report any that are down
 ```
 
-Hermes confirms immediately:
+OPENMORK confirms immediately:
 
 ```
 🔄 Background task started: "Check all servers in the cluster..."
@@ -207,7 +207,7 @@ Each `/background` prompt spawns a **separate agent instance** that runs asynchr
 
 ### Background Process Notifications
 
-When the agent running a background session uses `terminal(background=true)` to start long-running processes (servers, builds, etc.), the gateway can push status updates to your chat. Control this with `display.background_process_notifications` in `~/.hermes/config.yaml`:
+When the agent running a background session uses `terminal(background=true)` to start long-running processes (servers, builds, etc.), the gateway can push status updates to your chat. Control this with `display.background_process_notifications` in `~/.openmork/config.yaml`:
 
 ```yaml
 display:
@@ -224,7 +224,7 @@ display:
 You can also set this via environment variable:
 
 ```bash
-HERMES_BACKGROUND_NOTIFICATIONS=result
+OPENMORK_BACKGROUND_NOTIFICATIONS=result
 ```
 
 ### Use Cases
@@ -243,33 +243,33 @@ Background tasks on messaging platforms are fire-and-forget — you don't need t
 ### Linux (systemd)
 
 ```bash
-hermes gateway install               # Install as user service
-systemctl --user start hermes-gateway
-systemctl --user stop hermes-gateway
-systemctl --user status hermes-gateway
-journalctl --user -u hermes-gateway -f
+openmork gateway install               # Install as user service
+systemctl --user start openmork-gateway
+systemctl --user stop openmork-gateway
+systemctl --user status openmork-gateway
+journalctl --user -u openmork-gateway -f
 
 # Enable lingering (keeps running after logout)
 sudo loginctl enable-linger $USER
 
 # Or install a boot-time system service that still runs as your user
-sudo hermes gateway install --system
-sudo hermes gateway start --system
-sudo hermes gateway status --system
-journalctl -u hermes-gateway -f
+sudo openmork gateway install --system
+sudo openmork gateway start --system
+sudo openmork gateway status --system
+journalctl -u openmork-gateway -f
 ```
 
 Use the user service on laptops and dev boxes. Use the system service on VPS or headless hosts that should come back at boot without relying on systemd linger.
 
-Avoid keeping both the user and system gateway units installed at once unless you really mean to. Hermes will warn if it detects both because start/stop/status behavior gets ambiguous.
+Avoid keeping both the user and system gateway units installed at once unless you really mean to. OPENMORK will warn if it detects both because start/stop/status behavior gets ambiguous.
 
 ### macOS (launchd)
 
 ```bash
-hermes gateway install
-launchctl start ai.hermes.gateway
-launchctl stop ai.hermes.gateway
-tail -f ~/.hermes/logs/gateway.log
+openmork gateway install
+launchctl start ai.openmork.gateway
+launchctl stop ai.openmork.gateway
+tail -f ~/.openmork/logs/gateway.log
 ```
 
 ## Platform-Specific Toolsets
@@ -278,14 +278,14 @@ Each platform has its own toolset:
 
 | Platform | Toolset | Capabilities |
 |----------|---------|--------------|
-| CLI | `hermes-cli` | Full access |
-| Telegram | `hermes-telegram` | Full tools including terminal |
-| Discord | `hermes-discord` | Full tools including terminal |
-| WhatsApp | `hermes-whatsapp` | Full tools including terminal |
-| Slack | `hermes-slack` | Full tools including terminal |
-| Signal | `hermes-signal` | Full tools including terminal |
-| Email | `hermes-email` | Full tools including terminal |
-| Home Assistant | `hermes-homeassistant` | Full tools + HA device control (ha_list_entities, ha_get_state, ha_call_service, ha_list_services) |
+| CLI | `openmork-cli` | Full access |
+| Telegram | `openmork-telegram` | Full tools including terminal |
+| Discord | `openmork-discord` | Full tools including terminal |
+| WhatsApp | `openmork-whatsapp` | Full tools including terminal |
+| Slack | `openmork-slack` | Full tools including terminal |
+| Signal | `openmork-signal` | Full tools including terminal |
+| Email | `openmork-email` | Full tools including terminal |
+| Home Assistant | `openmork-homeassistant` | Full tools + HA device control (ha_list_entities, ha_get_state, ha_call_service, ha_list_services) |
 
 ## Next Steps
 

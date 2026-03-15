@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Skills Hub — Source adapters and hub state management for the Hermes Skills Hub.
+Skills Hub — Source adapters and hub state management for the OPENMORK Skills Hub.
 
 This is a library module (not an agent tool). It provides:
   - GitHubAuth: Shared GitHub API authentication (PAT, gh CLI, GitHub App)
@@ -10,7 +10,7 @@ This is a library module (not an agent tool). It provides:
   - HubLockFile: Track provenance of installed hub skills
   - Hub state directory management (quarantine, audit log, taps, index cache)
 
-Used by hermes_cli/skills_hub.py for CLI commands and the /skills slash command.
+Used by openmork_cli/skills_hub.py for CLI commands and the /skills slash command.
 """
 
 import hashlib
@@ -42,8 +42,8 @@ logger = logging.getLogger(__name__)
 # Paths
 # ---------------------------------------------------------------------------
 
-HERMES_HOME = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes"))
-SKILLS_DIR = HERMES_HOME / "skills"
+OPENMORK_HOME = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork"))
+SKILLS_DIR = OPENMORK_HOME / "skills"
 HUB_DIR = SKILLS_DIR / ".hub"
 LOCK_FILE = HUB_DIR / "lock.json"
 QUARANTINE_DIR = HUB_DIR / "quarantine"
@@ -346,9 +346,9 @@ class GitHubSource(SkillSource):
         tags = []
         metadata = fm.get("metadata", {})
         if isinstance(metadata, dict):
-            hermes_meta = metadata.get("hermes", {})
-            if isinstance(hermes_meta, dict):
-                tags = hermes_meta.get("tags", [])
+            openmork_meta = metadata.get("openmork", {})
+            if isinstance(openmork_meta, dict):
+                tags = openmork_meta.get("tags", [])
         if not tags:
             raw_tags = fm.get("tags", [])
             tags = raw_tags if isinstance(raw_tags, list) else []
@@ -1858,7 +1858,7 @@ class LobeHubSource(SkillSource):
             f"name: {identifier}",
             f"description: {description[:500]}",
             "metadata:",
-            "  hermes:",
+            "  openmork:",
             f"    tags: [{', '.join(str(t) for t in tag_list)}]",
             f"  lobehub:",
             f"    source: lobehub",
@@ -1888,7 +1888,7 @@ class OptionalSkillSource(SkillSource):
 
     These skills are official (maintained by Nous Research) but not activated
     by default — they don't appear in the system prompt and aren't copied to
-    ~/.hermes/skills/ during setup.  They are discoverable via the Skills Hub
+    ~/.openmork/skills/ during setup.  They are discoverable via the Skills Hub
     (search / install / inspect) and labelled "official" with "builtin" trust.
     """
 
@@ -2008,9 +2008,9 @@ class OptionalSkillSource(SkillSource):
             tags = []
             meta_block = fm.get("metadata", {})
             if isinstance(meta_block, dict):
-                hermes_meta = meta_block.get("hermes", {})
-                if isinstance(hermes_meta, dict):
-                    tags = hermes_meta.get("tags", [])
+                openmork_meta = meta_block.get("openmork", {})
+                if isinstance(openmork_meta, dict):
+                    tags = openmork_meta.get("tags", [])
 
             rel_path = str(parent.relative_to(self._optional_dir))
 

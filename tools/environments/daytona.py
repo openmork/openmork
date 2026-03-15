@@ -33,7 +33,7 @@ class DaytonaEnvironment(BaseEnvironment):
         cwd: str = "/home/daytona",
         timeout: int = 60,
         cpu: int = 1,
-        memory: int = 5120,       # MB (hermes convention)
+        memory: int = 5120,       # MB (openmork convention)
         disk: int = 10240,        # MB (Daytona platform max is 10GB)
         persistent_filesystem: bool = True,
         task_id: str = "default",
@@ -67,7 +67,7 @@ class DaytonaEnvironment(BaseEnvironment):
             disk_gib = 10
         resources = Resources(cpu=cpu, memory=memory_gib, disk=disk_gib)
 
-        labels = {"hermes_task_id": task_id}
+        labels = {"openmork_task_id": task_id}
 
         # Try to resume an existing stopped sandbox for this task
         if self._persistent:
@@ -176,9 +176,9 @@ class DaytonaEnvironment(BaseEnvironment):
             self._ensure_sandbox_ready()
 
         if stdin_data is not None:
-            marker = f"HERMES_EOF_{uuid.uuid4().hex[:8]}"
+            marker = f"OPENMORK_EOF_{uuid.uuid4().hex[:8]}"
             while marker in stdin_data:
-                marker = f"HERMES_EOF_{uuid.uuid4().hex[:8]}"
+                marker = f"OPENMORK_EOF_{uuid.uuid4().hex[:8]}"
             command = f"{command} << '{marker}'\n{stdin_data}\n{marker}"
 
         exec_command, sudo_stdin = self._prepare_command(command)

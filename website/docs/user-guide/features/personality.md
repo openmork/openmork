@@ -1,41 +1,41 @@
 ---
 sidebar_position: 9
 title: "Personality & SOUL.md"
-description: "Customize Hermes Agent's personality with a global SOUL.md, built-in personalities, and custom persona definitions"
+description: "Customize OpenMork's personality with a global SOUL.md, built-in personalities, and custom persona definitions"
 ---
 
 # Personality & SOUL.md
 
-Hermes Agent's personality is customizable, but there are two different layers that matter:
+OpenMork's personality is customizable, but there are two different layers that matter:
 
-- `SOUL.md` — a durable persona file that lives in `HERMES_HOME` and is loaded automatically for that Hermes instance
+- `SOUL.md` — a durable persona file that lives in `OPENMORK_HOME` and is loaded automatically for that OPENMORK instance
 - built-in or custom `/personality` presets — session-level system-prompt overlays
 
 If you want a stable default voice that follows you across sessions, `SOUL.md` is the right tool.
 
 ## How SOUL.md works now
 
-Hermes now seeds a default `SOUL.md` automatically in:
+OPENMORK now seeds a default `SOUL.md` automatically in:
 
 ```text
-~/.hermes/SOUL.md
+~/.openmork/SOUL.md
 ```
 
-More precisely, it uses the current instance's `HERMES_HOME`, so if you run Hermes with a custom home directory, it will use:
+More precisely, it uses the current instance's `OPENMORK_HOME`, so if you run OPENMORK with a custom home directory, it will use:
 
 ```text
-$HERMES_HOME/SOUL.md
+$OPENMORK_HOME/SOUL.md
 ```
 
 ### Important behavior
 
-- Hermes creates a starter `SOUL.md` automatically if one does not exist yet
+- OPENMORK creates a starter `SOUL.md` automatically if one does not exist yet
 - Existing user `SOUL.md` files are never overwritten
-- Hermes loads `SOUL.md` only from `HERMES_HOME`
-- Hermes does not look in the current working directory for `SOUL.md`
-- If `SOUL.md` exists but is empty, Hermes adds nothing from it to the prompt
+- OPENMORK loads `SOUL.md` only from `OPENMORK_HOME`
+- OPENMORK does not look in the current working directory for `SOUL.md`
+- If `SOUL.md` exists but is empty, OPENMORK adds nothing from it to the prompt
 - If `SOUL.md` has content, that content is injected verbatim after security scanning and truncation
-- Hermes does not add wrapper language like "If SOUL.md is present..." around the file anymore
+- OPENMORK does not add wrapper language like "If SOUL.md is present..." around the file anymore
 
 That makes `SOUL.md` a true per-user or per-instance default personality, not a repo-local trick.
 
@@ -43,23 +43,23 @@ That makes `SOUL.md` a true per-user or per-instance default personality, not a 
 
 This keeps personality predictable.
 
-If Hermes loaded `SOUL.md` from whatever directory you happened to launch it in, your personality could change unexpectedly between projects. By loading only from `HERMES_HOME`, the personality belongs to the Hermes instance itself.
+If OPENMORK loaded `SOUL.md` from whatever directory you happened to launch it in, your personality could change unexpectedly between projects. By loading only from `OPENMORK_HOME`, the personality belongs to the OPENMORK instance itself.
 
 That also makes it easier to teach users:
-- "Edit `~/.hermes/SOUL.md` to change Hermes' default personality."
+- "Edit `~/.openmork/SOUL.md` to change OPENMORK' default personality."
 
 ## Where to edit it
 
 For most users:
 
 ```bash
-~/.hermes/SOUL.md
+~/.openmork/SOUL.md
 ```
 
 If you use a custom home:
 
 ```bash
-$HERMES_HOME/SOUL.md
+$OPENMORK_HOME/SOUL.md
 ```
 
 ## What should go in SOUL.md?
@@ -70,7 +70,7 @@ Use it for durable voice and personality guidance, such as:
 - level of directness
 - default interaction style
 - what to avoid stylistically
-- how Hermes should handle uncertainty, disagreement, or ambiguity
+- how OPENMORK should handle uncertainty, disagreement, or ambiguity
 
 Use it less for:
 - one-off project instructions
@@ -115,9 +115,9 @@ You optimize for truth, clarity, and usefulness over politeness theater.
 - Treat edge cases as part of the design, not cleanup
 ```
 
-## What Hermes injects into the prompt
+## What OPENMORK injects into the prompt
 
-If `SOUL.md` contains text, Hermes injects the file's text itself — not a wrapper explanation.
+If `SOUL.md` contains text, OPENMORK injects the file's text itself — not a wrapper explanation.
 
 So the system prompt gets the content directly, after:
 - prompt-injection scanning
@@ -171,7 +171,7 @@ Examples:
 
 ## Built-in personalities
 
-Hermes ships with built-in personalities you can switch to with `/personality`.
+OPENMORK ships with built-in personalities you can switch to with `/personality`.
 
 | Name | Description |
 |------|-------------|
@@ -182,7 +182,7 @@ Hermes ships with built-in personalities you can switch to with `/personality`.
 | **teacher** | Patient educator with clear examples |
 | **kawaii** | Cute expressions, sparkles, and enthusiasm ★ |
 | **catgirl** | Neko-chan with cat-like expressions, nya~ |
-| **pirate** | Captain Hermes, tech-savvy buccaneer |
+| **pirate** | Captain OPENMORK, tech-savvy buccaneer |
 | **shakespeare** | Bardic prose with dramatic flair |
 | **surfer** | Totally chill bro vibes |
 | **noir** | Hard-boiled detective narration |
@@ -206,11 +206,11 @@ Hermes ships with built-in personalities you can switch to with `/personality`.
 /personality teacher
 ```
 
-These are convenient overlays, but your global `SOUL.md` still gives Hermes its persistent default personality unless the overlay meaningfully changes it.
+These are convenient overlays, but your global `SOUL.md` still gives OPENMORK its persistent default personality unless the overlay meaningfully changes it.
 
 ## Custom personalities in config
 
-You can also define named custom personalities in `~/.hermes/config.yaml` under `agent.personalities`.
+You can also define named custom personalities in `~/.openmork/config.yaml` under `agent.personalities`.
 
 ```yaml
 agent:
@@ -230,7 +230,7 @@ Then switch to it with:
 
 A strong default setup is:
 
-1. Keep a thoughtful global `SOUL.md` in `~/.hermes/SOUL.md`
+1. Keep a thoughtful global `SOUL.md` in `~/.openmork/SOUL.md`
 2. Put project instructions in `AGENTS.md`
 3. Use `/personality` only when you want a temporary mode shift
 
@@ -242,7 +242,7 @@ That gives you:
 ## How personality interacts with the full prompt
 
 At a high level, the prompt stack includes:
-1. default Hermes identity
+1. default OPENMORK identity
 2. memory/user context
 3. skills guidance
 4. context files such as `AGENTS.md`, `.cursorrules`, and global `SOUL.md`
@@ -256,13 +256,13 @@ So `SOUL.md` is important, but it is one layer in a broader system.
 - [Context Files](/docs/user-guide/features/context-files)
 - [Configuration](/docs/user-guide/configuration)
 - [Tips & Best Practices](/docs/guides/tips)
-- [SOUL.md Guide](/docs/guides/use-soul-with-hermes)
+- [SOUL.md Guide](/docs/guides/use-soul-with-openmork)
 
 ## CLI appearance vs conversational personality
 
 Conversational personality and CLI appearance are separate:
 
-- `SOUL.md`, `agent.system_prompt`, and `/personality` affect how Hermes speaks
-- `display.skin` and `/skin` affect how Hermes looks in the terminal
+- `SOUL.md`, `agent.system_prompt`, and `/personality` affect how OPENMORK speaks
+- `display.skin` and `/skin` affect how OPENMORK looks in the terminal
 
 For terminal appearance, see [Skins & Themes](./skins.md).

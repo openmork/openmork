@@ -58,9 +58,9 @@ def codex_auth_dir(tmp_path, monkeypatch):
 
 class TestReadCodexAccessToken:
     def test_valid_auth_store(self, tmp_path, monkeypatch):
-        hermes_home = tmp_path / "hermes"
-        hermes_home.mkdir(parents=True, exist_ok=True)
-        (hermes_home / "auth.json").write_text(json.dumps({
+        openmork_home = tmp_path / "openmork"
+        openmork_home.mkdir(parents=True, exist_ok=True)
+        (openmork_home / "auth.json").write_text(json.dumps({
             "version": 1,
             "providers": {
                 "openai-codex": {
@@ -68,22 +68,22 @@ class TestReadCodexAccessToken:
                 },
             },
         }))
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        monkeypatch.setenv("OPENMORK_HOME", str(openmork_home))
         result = _read_codex_access_token()
         assert result == "tok-123"
 
     def test_missing_returns_none(self, tmp_path, monkeypatch):
-        hermes_home = tmp_path / "hermes"
-        hermes_home.mkdir(parents=True, exist_ok=True)
-        (hermes_home / "auth.json").write_text(json.dumps({"version": 1, "providers": {}}))
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        openmork_home = tmp_path / "openmork"
+        openmork_home.mkdir(parents=True, exist_ok=True)
+        (openmork_home / "auth.json").write_text(json.dumps({"version": 1, "providers": {}}))
+        monkeypatch.setenv("OPENMORK_HOME", str(openmork_home))
         result = _read_codex_access_token()
         assert result is None
 
     def test_empty_token_returns_none(self, tmp_path, monkeypatch):
-        hermes_home = tmp_path / "hermes"
-        hermes_home.mkdir(parents=True, exist_ok=True)
-        (hermes_home / "auth.json").write_text(json.dumps({
+        openmork_home = tmp_path / "openmork"
+        openmork_home.mkdir(parents=True, exist_ok=True)
+        (openmork_home / "auth.json").write_text(json.dumps({
             "version": 1,
             "providers": {
                 "openai-codex": {
@@ -91,7 +91,7 @@ class TestReadCodexAccessToken:
                 },
             },
         }))
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        monkeypatch.setenv("OPENMORK_HOME", str(openmork_home))
         result = _read_codex_access_token()
         assert result is None
 
@@ -177,8 +177,8 @@ class TestGetTextAuxiliaryClient:
             }
         }
         monkeypatch.setenv("OPENAI_API_KEY", "lm-studio-key")
-        monkeypatch.setattr("hermes_cli.config.load_config", lambda: config)
-        monkeypatch.setattr("hermes_cli.runtime_provider.load_config", lambda: config)
+        monkeypatch.setattr("openmork_cli.config.load_config", lambda: config)
+        monkeypatch.setattr("openmork_cli.runtime_provider.load_config", lambda: config)
 
         with patch("agent.auxiliary_client._read_nous_auth", return_value=None), \
              patch("agent.auxiliary_client._read_codex_access_token", return_value=None), \
@@ -273,7 +273,7 @@ class TestVisionClientFallback:
             patch("agent.anthropic_adapter.build_anthropic_client", return_value=MagicMock()),
             patch("agent.anthropic_adapter.resolve_anthropic_token", return_value="sk-ant-api03-key"),
             patch("agent.auxiliary_client.OpenAI") as mock_openai,
-            patch("hermes_cli.config.load_config", fake_load_config),
+            patch("openmork_cli.config.load_config", fake_load_config),
         ):
             client, model = get_vision_auxiliary_client()
 
@@ -459,8 +459,8 @@ class TestResolveForcedProvider:
             }
         }
         monkeypatch.setenv("OPENAI_API_KEY", "local-key")
-        monkeypatch.setattr("hermes_cli.config.load_config", lambda: config)
-        monkeypatch.setattr("hermes_cli.runtime_provider.load_config", lambda: config)
+        monkeypatch.setattr("openmork_cli.config.load_config", lambda: config)
+        monkeypatch.setattr("openmork_cli.runtime_provider.load_config", lambda: config)
         with patch("agent.auxiliary_client._read_nous_auth", return_value=None), \
              patch("agent.auxiliary_client._read_codex_access_token", return_value=None), \
              patch("agent.auxiliary_client._resolve_api_key_provider", return_value=(None, None)), \
@@ -542,9 +542,9 @@ class TestTaskSpecificOverrides:
         assert model == "google/gemini-3-flash-preview"
 
     def test_task_direct_endpoint_from_config(self, monkeypatch, tmp_path):
-        hermes_home = tmp_path / "hermes"
-        hermes_home.mkdir(parents=True, exist_ok=True)
-        (hermes_home / "config.yaml").write_text(
+        openmork_home = tmp_path / "openmork"
+        openmork_home.mkdir(parents=True, exist_ok=True)
+        (openmork_home / "config.yaml").write_text(
             """auxiliary:
   web_extract:
     base_url: http://localhost:3456/v1
@@ -552,7 +552,7 @@ class TestTaskSpecificOverrides:
     model: config-model
 """
         )
-        monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+        monkeypatch.setenv("OPENMORK_HOME", str(openmork_home))
         with patch("agent.auxiliary_client.OpenAI") as mock_openai:
             client, model = get_text_auxiliary_client("web_extract")
         assert model == "config-model"

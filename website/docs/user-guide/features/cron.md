@@ -6,7 +6,7 @@ description: "Schedule automated tasks with natural language, manage them with o
 
 # Scheduled Tasks (Cron)
 
-Schedule tasks to run automatically with natural language or cron expressions. Hermes exposes cron management through a single `cronjob` tool with action-style operations instead of separate schedule/list/remove tools.
+Schedule tasks to run automatically with natural language or cron expressions. OPENMORK exposes cron management through a single `cronjob` tool with action-style operations instead of separate schedule/list/remove tools.
 
 ## What cron can do now
 
@@ -19,7 +19,7 @@ Cron jobs can:
 - run in fresh agent sessions with the normal static tool list
 
 :::warning
-Cron-run sessions cannot recursively create more cron jobs. Hermes disables cron management tools inside cron executions to prevent runaway scheduling loops.
+Cron-run sessions cannot recursively create more cron jobs. OPENMORK disables cron management tools inside cron executions to prevent runaway scheduling loops.
 :::
 
 ## Creating scheduled tasks
@@ -36,9 +36,9 @@ Cron-run sessions cannot recursively create more cron jobs. Hermes disables cron
 ### From the standalone CLI
 
 ```bash
-hermes cron create "every 2h" "Check server status"
-hermes cron create "every 1h" "Summarize new feed items" --skill blogwatcher
-hermes cron create "every 1h" "Use both skills and combine the result" \
+openmork cron create "every 2h" "Check server status"
+openmork cron create "every 1h" "Summarize new feed items" --skill blogwatcher
+openmork cron create "every 1h" "Use both skills and combine the result" \
   --skill blogwatcher \
   --skill find-nearby \
   --name "Skill combo"
@@ -46,13 +46,13 @@ hermes cron create "every 1h" "Use both skills and combine the result" \
 
 ### Through natural conversation
 
-Ask Hermes normally:
+Ask OPENMORK normally:
 
 ```text
 Every morning at 9am, check Hacker News for AI news and send me a summary on Telegram.
 ```
 
-Hermes will use the unified `cronjob` tool internally.
+OPENMORK will use the unified `cronjob` tool internally.
 
 ## Skill-backed cron jobs
 
@@ -103,12 +103,12 @@ You do not need to delete and recreate jobs just to change them.
 ### Standalone CLI
 
 ```bash
-hermes cron edit <job_id> --schedule "every 4h"
-hermes cron edit <job_id> --prompt "Use the revised task"
-hermes cron edit <job_id> --skill blogwatcher --skill find-nearby
-hermes cron edit <job_id> --add-skill find-nearby
-hermes cron edit <job_id> --remove-skill blogwatcher
-hermes cron edit <job_id> --clear-skills
+openmork cron edit <job_id> --schedule "every 4h"
+openmork cron edit <job_id> --prompt "Use the revised task"
+openmork cron edit <job_id> --skill blogwatcher --skill find-nearby
+openmork cron edit <job_id> --add-skill find-nearby
+openmork cron edit <job_id> --remove-skill blogwatcher
+openmork cron edit <job_id> --clear-skills
 ```
 
 Notes:
@@ -135,13 +135,13 @@ Cron jobs now have a fuller lifecycle than just create/remove.
 ### Standalone CLI
 
 ```bash
-hermes cron list
-hermes cron pause <job_id>
-hermes cron resume <job_id>
-hermes cron run <job_id>
-hermes cron remove <job_id>
-hermes cron status
-hermes cron tick
+openmork cron list
+openmork cron pause <job_id>
+openmork cron resume <job_id>
+openmork cron run <job_id>
+openmork cron remove <job_id>
+openmork cron status
+openmork cron tick
 ```
 
 What they do:
@@ -156,19 +156,19 @@ What they do:
 **Cron execution is handled by the gateway daemon.** The gateway ticks the scheduler every 60 seconds, running any due jobs in isolated agent sessions.
 
 ```bash
-hermes gateway install     # Install as a user service
-sudo hermes gateway install --system   # Linux: boot-time system service for servers
-hermes gateway             # Or run in foreground
+openmork gateway install     # Install as a user service
+sudo openmork gateway install --system   # Linux: boot-time system service for servers
+openmork gateway             # Or run in foreground
 
-hermes cron list
-hermes cron status
+openmork cron list
+openmork cron status
 ```
 
 ### Gateway scheduler behavior
 
-On each tick Hermes:
+On each tick OPENMORK:
 
-1. loads jobs from `~/.hermes/cron/jobs.json`
+1. loads jobs from `~/.openmork/cron/jobs.json`
 2. checks `next_run_at` against the current time
 3. starts a fresh `AIAgent` session for each due job
 4. optionally injects one or more attached skills into that fresh session
@@ -176,7 +176,7 @@ On each tick Hermes:
 6. delivers the final response
 7. updates run metadata and the next scheduled time
 
-A file lock at `~/.hermes/cron/.tick.lock` prevents overlapping scheduler ticks from double-running the same job batch.
+A file lock at `~/.openmork/cron/.tick.lock` prevents overlapping scheduler ticks from double-running the same job batch.
 
 ## Delivery options
 
@@ -185,7 +185,7 @@ When scheduling jobs, you specify where the output goes:
 | Option | Description | Example |
 |--------|-------------|---------|
 | `"origin"` | Back to where the job was created | Default on messaging platforms |
-| `"local"` | Save to local files only (`~/.hermes/cron/output/`) | Default on CLI |
+| `"local"` | Save to local files only (`~/.openmork/cron/output/`) | Default on CLI |
 | `"telegram"` | Telegram home channel | Uses `TELEGRAM_HOME_CHANNEL` |
 | `"discord"` | Discord home channel | Uses `DISCORD_HOME_CHANNEL` |
 | `"telegram:123456"` | Specific Telegram chat by ID | Direct delivery |
@@ -195,7 +195,7 @@ The agent's final response is automatically delivered. You do not need to call `
 
 ## Schedule formats
 
-The agent's final response is automatically delivered — you do **not** need to include `send_message` in the cron prompt for that same destination. If a cron run calls `send_message` to the exact target the scheduler will already deliver to, Hermes skips that duplicate send and tells the model to put the user-facing content in the final response instead. Use `send_message` only for additional or different targets.
+The agent's final response is automatically delivered — you do **not** need to include `send_message` in the cron prompt for that same destination. If a cron run calls `send_message` to the exact target the scheduler will already deliver to, OPENMORK skips that duplicate send and tells the model to put the user-facing content in the final response instead. Use `send_message` only for additional or different targets.
 
 ### Relative delays (one-shot)
 
@@ -266,7 +266,7 @@ For `update`, pass `skills=[]` to remove all attached skills.
 
 ## Job storage
 
-Jobs are stored in `~/.hermes/cron/jobs.json`. Output from job runs is saved to `~/.hermes/cron/output/{job_id}/{timestamp}.md`.
+Jobs are stored in `~/.openmork/cron/jobs.json`. Output from job runs is saved to `~/.openmork/cron/output/{job_id}/{timestamp}.md`.
 
 The storage uses atomic file writes so interrupted writes do not leave a partially written job file behind.
 

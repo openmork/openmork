@@ -7,7 +7,7 @@ sidebar_position: 8
 
 # Fallback Providers
 
-Hermes Agent has two separate fallback systems that keep your sessions running when providers hit issues:
+OpenMork has two separate fallback systems that keep your sessions running when providers hit issues:
 
 1. **Primary model fallback** — automatically switches to a backup provider:model when your main model fails
 2. **Auxiliary task fallback** — independent provider resolution for side tasks like vision, compression, and web extraction
@@ -16,11 +16,11 @@ Both are optional and work independently.
 
 ## Primary Model Fallback
 
-When your main LLM provider encounters errors — rate limits, server overload, auth failures, connection drops — Hermes can automatically switch to a backup provider:model pair mid-session without losing your conversation.
+When your main LLM provider encounters errors — rate limits, server overload, auth failures, connection drops — OPENMORK can automatically switch to a backup provider:model pair mid-session without losing your conversation.
 
 ### Configuration
 
-Add a `fallback_model` section to `~/.hermes/config.yaml`:
+Add a `fallback_model` section to `~/.openmork/config.yaml`:
 
 ```yaml
 fallback_model:
@@ -35,8 +35,8 @@ Both `provider` and `model` are **required**. If either is missing, the fallback
 | Provider | Value | Requirements |
 |----------|-------|-------------|
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
-| Nous Portal | `nous` | `hermes login` (OAuth) |
-| OpenAI Codex | `openai-codex` | `hermes model` (ChatGPT OAuth) |
+| Nous Portal | `nous` | `openmork login` (OAuth) |
+| OpenAI Codex | `openai-codex` | `openmork model` (ChatGPT OAuth) |
 | Anthropic | `anthropic` | `ANTHROPIC_API_KEY` or Claude Code credentials |
 | z.ai / GLM | `zai` | `GLM_API_KEY` |
 | Kimi / Moonshot | `kimi-coding` | `KIMI_API_KEY` |
@@ -66,7 +66,7 @@ The fallback activates automatically when the primary model fails with:
 - **Not found** (HTTP 404) — immediately
 - **Invalid responses** — when the API returns malformed or empty responses repeatedly
 
-When triggered, Hermes:
+When triggered, OPENMORK:
 
 1. Resolves credentials for the fallback provider
 2. Builds a new API client
@@ -100,7 +100,7 @@ model:
 
 fallback_model:
   provider: nous
-  model: nous-hermes-3
+  model: nous-openmork-3
 ```
 
 **Local model as fallback for cloud:**
@@ -137,7 +137,7 @@ There are no environment variables for `fallback_model` — it is configured exc
 
 ## Auxiliary Task Fallback
 
-Hermes uses separate lightweight models for side tasks. Each task has its own provider resolution chain that acts as a built-in fallback system.
+OPENMORK uses separate lightweight models for side tasks. Each task has its own provider resolution chain that acts as a built-in fallback system.
 
 ### Tasks with Independent Provider Resolution
 
@@ -153,7 +153,7 @@ Hermes uses separate lightweight models for side tasks. Each task has its own pr
 
 ### Auto-Detection Chain
 
-When a task's provider is set to `"auto"` (the default), Hermes tries providers in order until one works:
+When a task's provider is set to `"auto"` (the default), OPENMORK tries providers in order until one works:
 
 **For text tasks (compression, web extract, etc.):**
 
@@ -169,7 +169,7 @@ Main provider (if vision-capable) → OpenRouter → Nous Portal →
 Codex OAuth → Anthropic → Custom endpoint → give up
 ```
 
-If the resolved provider fails at call time, Hermes also has an internal retry: if the provider is not OpenRouter and no explicit `base_url` is set, it tries OpenRouter as a last-resort fallback.
+If the resolved provider fails at call time, OPENMORK also has an internal retry: if the provider is not OpenRouter and no explicit `base_url` is set, it tries OpenRouter as a last-resort fallback.
 
 ### Configuring Auxiliary Providers
 
@@ -224,8 +224,8 @@ CONTEXT_COMPRESSION_MODEL=google/gemini-3-flash-preview
 |----------|-------------|-------------|
 | `"auto"` | Try providers in order until one works (default) | At least one provider configured |
 | `"openrouter"` | Force OpenRouter | `OPENROUTER_API_KEY` |
-| `"nous"` | Force Nous Portal | `hermes login` |
-| `"codex"` | Force Codex OAuth | `hermes model` → Codex |
+| `"nous"` | Force Nous Portal | `openmork login` |
+| `"codex"` | Force Codex OAuth | `openmork model` → Codex |
 | `"main"` | Use whatever provider the main agent uses | Active main provider configured |
 | `"anthropic"` | Force Anthropic native | `ANTHROPIC_API_KEY` or Claude Code credentials |
 
@@ -241,7 +241,7 @@ auxiliary:
     model: "qwen2.5-vl"
 ```
 
-`base_url` takes precedence over `provider`. Hermes uses the configured `api_key` for authentication, falling back to `OPENAI_API_KEY` if not set. It does **not** reuse `OPENROUTER_API_KEY` for custom endpoints.
+`base_url` takes precedence over `provider`. OPENMORK uses the configured `api_key` for authentication, falling back to `OPENAI_API_KEY` if not set. It does **not** reuse `OPENROUTER_API_KEY` for custom endpoints.
 
 ---
 
@@ -257,7 +257,7 @@ compression:
 
 This is equivalent to configuring `auxiliary.compression.provider` and `auxiliary.compression.model`. If both are set, the `auxiliary.compression` values take precedence.
 
-If no provider is available for compression, Hermes drops middle conversation turns without generating a summary rather than failing the session.
+If no provider is available for compression, OPENMORK drops middle conversation turns without generating a summary rather than failing the session.
 
 ---
 

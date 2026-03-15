@@ -10,15 +10,15 @@ Automatic filesystem snapshots before destructive file operations, with user-fac
 2. **Once per turn** — checkpoint at most once per conversation turn (user message → agent response cycle), triggered lazily on the first file-mutating operation. Not on every write.
 3. **Opt-in via config** — disabled by default, enabled with `checkpoints: true` in config.yaml.
 4. **Works on any directory** — uses a shadow git repo completely separate from the user's project git. Works on git repos, non-git directories, anything.
-5. **User-facing rollback** — `/rollback` slash command (CLI + gateway) to list and restore checkpoints. Also `hermes rollback` CLI subcommand.
+5. **User-facing rollback** — `/rollback` slash command (CLI + gateway) to list and restore checkpoints. Also `openmork rollback` CLI subcommand.
 
 ## Architecture
 
 ```
-~/.hermes/checkpoints/
+~/.openmork/checkpoints/
   {sha256(abs_dir)[:16]}/       # Shadow git repo per working directory
     HEAD, refs/, objects/...    # Standard git internals
-    HERMES_WORKDIR              # Original dir path (for display)
+    OPENMORK_WORKDIR              # Original dir path (for display)
     info/exclude                # Default excludes (node_modules, .env, etc.)
 ```
 
@@ -113,7 +113,7 @@ This means:
 
 ### Config
 
-Add to `DEFAULT_CONFIG` in `hermes_cli/config.py`:
+Add to `DEFAULT_CONFIG` in `openmork_cli/config.py`:
 
 ```python
 "checkpoints": False,          # Enable filesystem checkpoints before destructive ops
@@ -122,7 +122,7 @@ Add to `DEFAULT_CONFIG` in `hermes_cli/config.py`:
 
 User enables with:
 ```yaml
-# ~/.hermes/config.yaml
+# ~/.openmork/config.yaml
 checkpoints: true
 ```
 
@@ -147,7 +147,7 @@ Use /rollback <number> to restore, e.g. /rollback 1
 
 **Gateway slash command** — add `/rollback` to gateway/run.py with the same behavior.
 
-**CLI subcommand** — `hermes rollback` (optional, lower priority).
+**CLI subcommand** — `openmork rollback` (optional, lower priority).
 
 ### What Gets Excluded (not checkpointed)
 
@@ -183,7 +183,7 @@ Also respects the project's `.gitignore` if present (shadow repo can read it via
 |------|--------|
 | `tools/checkpoint_manager.py` | **NEW** — CheckpointManager class (adapted from PR #559) |
 | `run_agent.py` | Add CheckpointManager init + trigger in `_execute_tool_calls()` |
-| `hermes_cli/config.py` | Add `checkpoints` + `checkpoint_max_snapshots` to DEFAULT_CONFIG |
+| `openmork_cli/config.py` | Add `checkpoints` + `checkpoint_max_snapshots` to DEFAULT_CONFIG |
 | `cli.py` | Add `/rollback` slash command handler |
 | `gateway/run.py` | Add `/rollback` slash command handler |
 | `tests/tools/test_checkpoint_manager.py` | **NEW** — tests (adapted from PR #559's tests) |
@@ -211,7 +211,7 @@ Also respects the project's `.gitignore` if present (shadow repo can read it via
 
 1. `tools/checkpoint_manager.py` — core class with take/list/restore/prune
 2. `tests/tools/test_checkpoint_manager.py` — tests
-3. `hermes_cli/config.py` — config keys
+3. `openmork_cli/config.py` — config keys
 4. `run_agent.py` — integration (init + trigger)
 5. `cli.py` — `/rollback` slash command
 6. `gateway/run.py` — `/rollback` slash command

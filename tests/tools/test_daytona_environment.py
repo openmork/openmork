@@ -256,7 +256,7 @@ class TestExecute:
         # (single quotes get shell-escaped by shlex.quote, so check components)
         call_args = sb.process.exec.call_args_list[-1]
         cmd = call_args[0][0]
-        assert "HERMES_EOF_" in cmd
+        assert "OPENMORK_EOF_" in cmd
         assert "print" in cmd
         assert "hi" in cmd
 

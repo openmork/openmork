@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 GLOBAL_CONFIG_PATH = Path.home() / ".honcho" / "config.json"
-HOST = "hermes"
+HOST = "openmork"
 
 
 _RECALL_MODE_ALIASES = {"auto": "hybrid"}
@@ -45,7 +45,7 @@ def _resolve_memory_mode(
 
     Resolution order: host-level wins over global.
     String form:  applies as the default for all peers.
-    Object form:  { "default": "hybrid", "hermes": "honcho", ... }
+    Object form:  { "default": "hybrid", "openmork": "honcho", ... }
                   "default" key sets the fallback; other keys are per-peer overrides.
     """
     # Pick the winning value (host beats global)
@@ -66,12 +66,12 @@ class HonchoClientConfig:
     """Configuration for Honcho client, resolved for a specific host."""
 
     host: str = HOST
-    workspace_id: str = "hermes"
+    workspace_id: str = "openmork"
     api_key: str | None = None
     environment: str = "production"
     # Identity
     peer_name: str | None = None
-    ai_peer: str = "hermes"
+    ai_peer: str = "openmork"
     linked_hosts: list[str] = field(default_factory=list)
     # Toggles
     enabled: bool = False
@@ -79,7 +79,7 @@ class HonchoClientConfig:
     # memoryMode: default for all peers. "hybrid" / "honcho"
     memory_mode: str = "hybrid"
     # Per-peer overrides — any named Honcho peer. Override memory_mode when set.
-    # Config object form: "memoryMode": { "default": "hybrid", "hermes": "honcho" }
+    # Config object form: "memoryMode": { "default": "hybrid", "openmork": "honcho" }
     peer_memory_modes: dict[str, str] = field(default_factory=dict)
 
     def peer_memory_mode(self, peer_name: str) -> str:
@@ -97,7 +97,7 @@ class HonchoClientConfig:
     # reasoning_level: "minimal" | "low" | "medium" | "high" | "max"
     # Used as the default; prefetch_dialectic may bump it dynamically.
     dialectic_reasoning_level: str = "low"
-    # Max chars of dialectic result to inject into Hermes system prompt
+    # Max chars of dialectic result to inject into OPENMORK system prompt
     dialectic_max_chars: int = 600
     # Recall mode: how memory retrieval works when Honcho is active.
     # "hybrid"  — auto-injected context + Honcho tools available (model decides)
@@ -112,7 +112,7 @@ class HonchoClientConfig:
     raw: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_env(cls, workspace_id: str = "hermes") -> HonchoClientConfig:
+    def from_env(cls, workspace_id: str = "openmork") -> HonchoClientConfig:
         """Create config from environment variables (fallback)."""
         return cls(
             workspace_id=workspace_id,
@@ -269,8 +269,8 @@ class HonchoClientConfig:
 
         Resolution order:
           1. Manual directory override from sessions map
-          2. Hermes session title (from /title command)
-          3. per-session strategy — Hermes session_id ({timestamp}_{hex})
+          2. OPENMORK session title (from /title command)
+          3. per-session strategy — OPENMORK session_id ({timestamp}_{hex})
           4. per-repo strategy — git repo root directory name
           5. per-directory strategy — directory basename
           6. global strategy — workspace name
@@ -293,7 +293,7 @@ class HonchoClientConfig:
                     return f"{self.peer_name}-{sanitized}"
                 return sanitized
 
-        # per-session: inherit Hermes session_id (new Honcho session each run)
+        # per-session: inherit OPENMORK session_id (new Honcho session each run)
         if self.session_strategy == "per-session" and session_id:
             if self.session_peer_prefix and self.peer_name:
                 return f"{self.peer_name}-{session_id}"
@@ -349,7 +349,7 @@ def get_honcho_client(config: HonchoClientConfig | None = None) -> Honcho:
         raise ValueError(
             "Honcho API key not found. "
             "Get your API key at https://app.honcho.dev, "
-            "then run 'hermes honcho setup' or set HONCHO_API_KEY."
+            "then run 'openmork honcho setup' or set HONCHO_API_KEY."
         )
 
     try:

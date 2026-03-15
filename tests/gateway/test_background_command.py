@@ -281,17 +281,17 @@ class TestBackgroundInCLICommands:
 
     def test_background_in_commands_dict(self):
         """The /background command is in the COMMANDS dict."""
-        from hermes_cli.commands import COMMANDS
+        from openmork_cli.commands import COMMANDS
         assert "/background" in COMMANDS
 
     def test_background_in_session_category(self):
         """The /background command is in the Session category."""
-        from hermes_cli.commands import COMMANDS_BY_CATEGORY
+        from openmork_cli.commands import COMMANDS_BY_CATEGORY
         assert "/background" in COMMANDS_BY_CATEGORY["Session"]
 
     def test_background_autocompletes(self):
         """The /background command appears in autocomplete results."""
-        from hermes_cli.commands import SlashCommandCompleter
+        from openmork_cli.commands import SlashCommandCompleter
         from prompt_toolkit.document import Document
 
         completer = SlashCommandCompleter()

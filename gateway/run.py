@@ -32,19 +32,19 @@ from typing import Dict, Optional, Any, List
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Resolve Hermes home directory (respects HERMES_HOME override)
-_hermes_home = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes"))
+# Resolve OPENMORK home directory (respects OPENMORK_HOME override)
+_openmork_home = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork"))
 
-# Load environment variables from ~/.hermes/.env first.
+# Load environment variables from ~/.openmork/.env first.
 # User-managed env files should override stale shell exports on restart.
 from dotenv import load_dotenv  # backward-compat for tests that monkeypatch this symbol
-from hermes_cli.env_loader import load_hermes_dotenv
-_env_path = _hermes_home / '.env'
-load_hermes_dotenv(hermes_home=_hermes_home, project_env=Path(__file__).resolve().parents[1] / '.env')
+from openmork_cli.env_loader import load_openmork_dotenv
+_env_path = _openmork_home / '.env'
+load_openmork_dotenv(openmork_home=_openmork_home, project_env=Path(__file__).resolve().parents[1] / '.env')
 
 # Bridge config.yaml values into the environment so os.getenv() picks them up.
 # config.yaml is authoritative for terminal settings — overrides .env.
-_config_path = _hermes_home / 'config.yaml'
+_config_path = _openmork_home / 'config.yaml'
 if _config_path.exists():
     try:
         import yaml as _yaml
@@ -133,26 +133,26 @@ if _config_path.exists():
         _agent_cfg = _cfg.get("agent", {})
         if _agent_cfg and isinstance(_agent_cfg, dict):
             if "max_turns" in _agent_cfg:
-                os.environ["HERMES_MAX_ITERATIONS"] = str(_agent_cfg["max_turns"])
-        # Timezone: bridge config.yaml → HERMES_TIMEZONE env var.
-        # HERMES_TIMEZONE from .env takes precedence (already in os.environ).
+                os.environ["OPENMORK_MAX_ITERATIONS"] = str(_agent_cfg["max_turns"])
+        # Timezone: bridge config.yaml → OPENMORK_TIMEZONE env var.
+        # OPENMORK_TIMEZONE from .env takes precedence (already in os.environ).
         _tz_cfg = _cfg.get("timezone", "")
-        if _tz_cfg and isinstance(_tz_cfg, str) and "HERMES_TIMEZONE" not in os.environ:
-            os.environ["HERMES_TIMEZONE"] = _tz_cfg.strip()
+        if _tz_cfg and isinstance(_tz_cfg, str) and "OPENMORK_TIMEZONE" not in os.environ:
+            os.environ["OPENMORK_TIMEZONE"] = _tz_cfg.strip()
         # Security settings
         _security_cfg = _cfg.get("security", {})
         if isinstance(_security_cfg, dict):
             _redact = _security_cfg.get("redact_secrets")
             if _redact is not None:
-                os.environ["HERMES_REDACT_SECRETS"] = str(_redact).lower()
+                os.environ["OPENMORK_REDACT_SECRETS"] = str(_redact).lower()
     except Exception:
         pass  # Non-fatal; gateway can still run with .env values
 
 # Gateway runs in quiet mode - suppress debug output and use cwd directly (no temp dirs)
-os.environ["HERMES_QUIET"] = "1"
+os.environ["OPENMORK_QUIET"] = "1"
 
 # Enable interactive exec approval for dangerous commands on messaging platforms
-os.environ["HERMES_EXEC_ASK"] = "1"
+os.environ["OPENMORK_EXEC_ASK"] = "1"
 
 # Set terminal working directory for messaging platforms.
 # If the user set an explicit path in config.yaml (not "." or "auto"),
@@ -183,14 +183,14 @@ logger = logging.getLogger(__name__)
 
 def _resolve_runtime_agent_kwargs() -> dict:
     """Resolve provider credentials for gateway-created AIAgent instances."""
-    from hermes_cli.runtime_provider import (
+    from openmork_cli.runtime_provider import (
         resolve_runtime_provider,
         format_runtime_provider_error,
     )
 
     try:
         runtime = resolve_runtime_provider(
-            requested=os.getenv("HERMES_INFERENCE_PROVIDER"),
+            requested=os.getenv("OPENMORK_INFERENCE_PROVIDER"),
         )
     except Exception as exc:
         raise RuntimeError(format_runtime_provider_error(exc)) from exc
@@ -210,10 +210,10 @@ def _resolve_gateway_model() -> str:
     back to the hardcoded default ("anthropic/claude-opus-4.6") which fails
     when the active provider is openai-codex.
     """
-    model = os.getenv("HERMES_MODEL") or os.getenv("LLM_MODEL") or "anthropic/claude-opus-4.6"
+    model = os.getenv("OPENMORK_MODEL") or os.getenv("LLM_MODEL") or "anthropic/claude-opus-4.6"
     try:
         import yaml as _y
-        _cfg_path = _hermes_home / "config.yaml"
+        _cfg_path = _openmork_home / "config.yaml"
         if _cfg_path.exists():
             with open(_cfg_path, encoding="utf-8") as _f:
                 _cfg = _y.safe_load(_f) or {}
@@ -227,27 +227,27 @@ def _resolve_gateway_model() -> str:
     return model
 
 
-def _resolve_hermes_bin() -> Optional[list[str]]:
-    """Resolve the Hermes update command as argv parts.
+def _resolve_openmork_bin() -> Optional[list[str]]:
+    """Resolve the OPENMORK update command as argv parts.
 
     Tries in order:
-    1. ``shutil.which("hermes")`` — standard PATH lookup
-    2. ``sys.executable -m hermes_cli.main`` — fallback when Hermes is running
-       from a venv/module invocation and the ``hermes`` shim is not on PATH
+    1. ``shutil.which("openmork")`` — standard PATH lookup
+    2. ``sys.executable -m openmork_cli.main`` — fallback when OPENMORK is running
+       from a venv/module invocation and the ``openmork`` shim is not on PATH
 
     Returns argv parts ready for quoting/joining, or ``None`` if neither works.
     """
     import shutil
 
-    hermes_bin = shutil.which("hermes")
-    if hermes_bin:
-        return [hermes_bin]
+    openmork_bin = shutil.which("openmork")
+    if openmork_bin:
+        return [openmork_bin]
 
     try:
         import importlib.util
 
-        if importlib.util.find_spec("hermes_cli") is not None:
-            return [sys.executable, "-m", "hermes_cli.main"]
+        if importlib.util.find_spec("openmork_cli") is not None:
+            return [sys.executable, "-m", "openmork_cli.main"]
     except Exception:
         pass
 
@@ -312,7 +312,7 @@ class GatewayRunner:
         # Initialize session database for session_search tool support
         self._session_db = None
         try:
-            from hermes_state import SessionDB
+            from openmork_state import SessionDB
             self._session_db = SessionDB()
         except Exception as e:
             logger.debug("SQLite session store not available: %s", e)
@@ -385,7 +385,7 @@ class GatewayRunner:
     
     # -- Voice mode persistence ------------------------------------------
 
-    _VOICE_MODE_PATH = _hermes_home / "gateway_voice_mode.json"
+    _VOICE_MODE_PATH = _openmork_home / "gateway_voice_mode.json"
 
     def _load_voice_modes(self) -> Dict[str, str]:
         try:
@@ -544,16 +544,16 @@ class GatewayRunner:
     def _load_prefill_messages() -> List[Dict[str, Any]]:
         """Load ephemeral prefill messages from config or env var.
         
-        Checks HERMES_PREFILL_MESSAGES_FILE env var first, then falls back to
-        the prefill_messages_file key in ~/.hermes/config.yaml.
-        Relative paths are resolved from ~/.hermes/.
+        Checks OPENMORK_PREFILL_MESSAGES_FILE env var first, then falls back to
+        the prefill_messages_file key in ~/.openmork/config.yaml.
+        Relative paths are resolved from ~/.openmork/.
         """
         import json as _json
-        file_path = os.getenv("HERMES_PREFILL_MESSAGES_FILE", "")
+        file_path = os.getenv("OPENMORK_PREFILL_MESSAGES_FILE", "")
         if not file_path:
             try:
                 import yaml as _y
-                cfg_path = _hermes_home / "config.yaml"
+                cfg_path = _openmork_home / "config.yaml"
                 if cfg_path.exists():
                     with open(cfg_path, encoding="utf-8") as _f:
                         cfg = _y.safe_load(_f) or {}
@@ -564,7 +564,7 @@ class GatewayRunner:
             return []
         path = Path(file_path).expanduser()
         if not path.is_absolute():
-            path = _hermes_home / path
+            path = _openmork_home / path
         if not path.exists():
             logger.warning("Prefill messages file not found: %s", path)
             return []
@@ -583,15 +583,15 @@ class GatewayRunner:
     def _load_ephemeral_system_prompt() -> str:
         """Load ephemeral system prompt from config or env var.
         
-        Checks HERMES_EPHEMERAL_SYSTEM_PROMPT env var first, then falls back to
-        agent.system_prompt in ~/.hermes/config.yaml.
+        Checks OPENMORK_EPHEMERAL_SYSTEM_PROMPT env var first, then falls back to
+        agent.system_prompt in ~/.openmork/config.yaml.
         """
-        prompt = os.getenv("HERMES_EPHEMERAL_SYSTEM_PROMPT", "")
+        prompt = os.getenv("OPENMORK_EPHEMERAL_SYSTEM_PROMPT", "")
         if prompt:
             return prompt
         try:
             import yaml as _y
-            cfg_path = _hermes_home / "config.yaml"
+            cfg_path = _openmork_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -605,14 +605,14 @@ class GatewayRunner:
         """Load reasoning effort from config with env fallback.
 
         Checks agent.reasoning_effort in config.yaml first, then
-        HERMES_REASONING_EFFORT as a fallback. Valid: "xhigh", "high",
+        OPENMORK_REASONING_EFFORT as a fallback. Valid: "xhigh", "high",
         "medium", "low", "minimal", "none". Returns None to use default
         (medium).
         """
         effort = ""
         try:
             import yaml as _y
-            cfg_path = _hermes_home / "config.yaml"
+            cfg_path = _openmork_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -620,7 +620,7 @@ class GatewayRunner:
         except Exception:
             pass
         if not effort:
-            effort = os.getenv("HERMES_REASONING_EFFORT", "")
+            effort = os.getenv("OPENMORK_REASONING_EFFORT", "")
         if not effort:
             return None
         effort = effort.lower().strip()
@@ -637,7 +637,7 @@ class GatewayRunner:
         """Load show_reasoning toggle from config.yaml display section."""
         try:
             import yaml as _y
-            cfg_path = _hermes_home / "config.yaml"
+            cfg_path = _openmork_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -656,11 +656,11 @@ class GatewayRunner:
           - ``error``  — only the final message when exit code is non-zero
           - ``off``    — no watcher messages at all
         """
-        mode = os.getenv("HERMES_BACKGROUND_NOTIFICATIONS", "")
+        mode = os.getenv("OPENMORK_BACKGROUND_NOTIFICATIONS", "")
         if not mode:
             try:
                 import yaml as _y
-                cfg_path = _hermes_home / "config.yaml"
+                cfg_path = _openmork_home / "config.yaml"
                 if cfg_path.exists():
                     with open(cfg_path, encoding="utf-8") as _f:
                         cfg = _y.safe_load(_f) or {}
@@ -686,7 +686,7 @@ class GatewayRunner:
         """Load OpenRouter provider routing preferences from config.yaml."""
         try:
             import yaml as _y
-            cfg_path = _hermes_home / "config.yaml"
+            cfg_path = _openmork_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -704,7 +704,7 @@ class GatewayRunner:
         """
         try:
             import yaml as _y
-            cfg_path = _hermes_home / "config.yaml"
+            cfg_path = _openmork_home / "config.yaml"
             if cfg_path.exists():
                 with open(cfg_path, encoding="utf-8") as _f:
                     cfg = _y.safe_load(_f) or {}
@@ -721,7 +721,7 @@ class GatewayRunner:
         
         Returns True if at least one adapter connected successfully.
         """
-        logger.info("Starting Hermes Gateway...")
+        logger.info("Starting OPENMORK Gateway...")
         logger.info("Session storage: %s", self.config.sessions_dir)
         try:
             from gateway.status import write_runtime_status
@@ -740,7 +740,7 @@ class GatewayRunner:
         if not _any_allowlist and not _allow_all:
             logger.warning(
                 "No user allowlists configured. All unauthorized users will be denied. "
-                "Set GATEWAY_ALLOW_ALL_USERS=true in ~/.hermes/.env to allow open access, "
+                "Set GATEWAY_ALLOW_ALL_USERS=true in ~/.openmork/.env to allow open access, "
                 "or configure platform allowlists (e.g., TELEGRAM_ALLOWED_USERS=your_id)."
             )
         
@@ -841,8 +841,8 @@ class GatewayRunner:
         if not notified and any(
             path.exists()
             for path in (
-                _hermes_home / ".update_pending.json",
-                _hermes_home / ".update_pending.claimed.json",
+                _openmork_home / ".update_pending.json",
+                _openmork_home / ".update_pending.claimed.json",
             )
         ):
             self._schedule_update_notification_watch()
@@ -965,7 +965,7 @@ class GatewayRunner:
         elif platform == Platform.SLACK:
             from gateway.platforms.slack import SlackAdapter, check_slack_requirements
             if not check_slack_requirements():
-                logger.warning("Slack: slack-bolt not installed. Run: pip install 'hermes-agent[slack]'")
+                logger.warning("Slack: slack-bolt not installed. Run: pip install 'OpenMork[slack]'")
                 return None
             return SlackAdapter(config)
 
@@ -1093,7 +1093,7 @@ class GatewayRunner:
                             f"Hi~ I don't recognize you yet!\n\n"
                             f"Here's your pairing code: `{code}`\n\n"
                             f"Ask the bot owner to run:\n"
-                            f"`hermes pairing approve {platform_name} {code}`"
+                            f"`openmork pairing approve {platform_name} {code}`"
                         )
                 else:
                     adapter = self.adapters.get(source.platform)
@@ -1396,7 +1396,7 @@ class GatewayRunner:
             _hyg_threshold_pct = 0.85
             _hyg_compression_enabled = True
             try:
-                _hyg_cfg_path = _hermes_home / "config.yaml"
+                _hyg_cfg_path = _openmork_home / "config.yaml"
                 if _hyg_cfg_path.exists():
                     import yaml as _hyg_yaml
                     with open(_hyg_cfg_path, encoding="utf-8") as _hyg_f:
@@ -1599,7 +1599,7 @@ class GatewayRunner:
                     await adapter.send(
                         source.chat_id,
                         f"📬 No home channel is set for {platform_name.title()}. "
-                        f"A home channel is where Hermes delivers cron job results "
+                        f"A home channel is where OPENMORK delivers cron job results "
                         f"and cross-platform messages.\n\n"
                         f"Type /sethome to make this chat your home channel, "
                         f"or ignore to skip."
@@ -1778,7 +1778,7 @@ class GatewayRunner:
                     {
                         "role": "session_meta",
                         "tools": tool_defs or [],
-                        "model": os.getenv("HERMES_MODEL", ""),
+                        "model": os.getenv("OPENMORK_MODEL", ""),
                         "platform": source.platform.value if source.platform else "",
                         "timestamp": ts,
                     }
@@ -1890,7 +1890,7 @@ class GatewayRunner:
         is_running = session_key in self._running_agents
         
         lines = [
-            "📊 **Hermes Gateway Status**",
+            "📊 **OPENMORK Gateway Status**",
             "",
             f"**Session ID:** `{session_entry.session_id[:12]}...`",
             f"**Created:** {session_entry.created_at.strftime('%Y-%m-%d %H:%M')}",
@@ -1919,7 +1919,7 @@ class GatewayRunner:
     async def _handle_help_command(self, event: MessageEvent) -> str:
         """Handle /help command - list available commands."""
         lines = [
-            "📖 **Hermes Commands**\n",
+            "📖 **OPENMORK Commands**\n",
             "`/new` — Start a new conversation",
             "`/reset` — Reset conversation history",
             "`/status` — Show session info",
@@ -1940,7 +1940,7 @@ class GatewayRunner:
             "`/background <prompt>` — Run a prompt in a separate background session",
             "`/voice [on|off|tts|status]` — Toggle voice reply mode",
             "`/reload-mcp` — Reload MCP servers from config",
-            "`/update` — Update Hermes Agent to the latest version",
+            "`/update` — Update OpenMork to the latest version",
             "`/help` — Show this message",
         ]
         try:
@@ -1957,7 +1957,7 @@ class GatewayRunner:
     async def _handle_model_command(self, event: MessageEvent) -> str:
         """Handle /model command - show or change the current model."""
         import yaml
-        from hermes_cli.models import (
+        from openmork_cli.models import (
             parse_model_input,
             validate_requested_model,
             curated_models_for_provider,
@@ -1966,10 +1966,10 @@ class GatewayRunner:
         )
 
         args = event.get_command_args().strip()
-        config_path = _hermes_home / 'config.yaml'
+        config_path = _openmork_home / 'config.yaml'
 
         # Resolve current model and provider from config
-        current = os.getenv("HERMES_MODEL") or "anthropic/claude-opus-4.6"
+        current = os.getenv("OPENMORK_MODEL") or "anthropic/claude-opus-4.6"
         current_provider = "openrouter"
         try:
             if config_path.exists():
@@ -1988,7 +1988,7 @@ class GatewayRunner:
         current_provider = normalize_provider(current_provider)
         if current_provider == "auto":
             try:
-                from hermes_cli.auth import resolve_provider as _resolve_provider
+                from openmork_cli.auth import resolve_provider as _resolve_provider
                 current_provider = _resolve_provider(current_provider)
             except Exception:
                 current_provider = "openrouter"
@@ -2026,7 +2026,7 @@ class GatewayRunner:
         base_url = "https://openrouter.ai/api/v1"
         if provider_changed:
             try:
-                from hermes_cli.runtime_provider import resolve_runtime_provider
+                from openmork_cli.runtime_provider import resolve_runtime_provider
                 runtime = resolve_runtime_provider(requested=target_provider)
                 api_key = runtime.get("api_key", "")
                 base_url = runtime.get("base_url", "")
@@ -2036,7 +2036,7 @@ class GatewayRunner:
         else:
             # Use current provider's base_url from config or registry
             try:
-                from hermes_cli.runtime_provider import resolve_runtime_provider
+                from openmork_cli.runtime_provider import resolve_runtime_provider
                 runtime = resolve_runtime_provider(requested=current_provider)
                 api_key = runtime.get("api_key", "")
                 base_url = runtime.get("base_url", "")
@@ -2077,9 +2077,9 @@ class GatewayRunner:
                 return f"⚠️ Failed to save model change: {e}"
 
         # Set env vars so the next agent run picks up the change
-        os.environ["HERMES_MODEL"] = new_model
+        os.environ["OPENMORK_MODEL"] = new_model
         if provider_changed:
-            os.environ["HERMES_INFERENCE_PROVIDER"] = target_provider
+            os.environ["OPENMORK_INFERENCE_PROVIDER"] = target_provider
 
         provider_label = _PROVIDER_LABELS.get(target_provider, target_provider)
         provider_note = f"\n**Provider:** {provider_label}" if provider_changed else ""
@@ -2097,7 +2097,7 @@ class GatewayRunner:
     async def _handle_provider_command(self, event: MessageEvent) -> str:
         """Handle /provider command - show available providers."""
         import yaml
-        from hermes_cli.models import (
+        from openmork_cli.models import (
             list_available_providers,
             normalize_provider,
             _PROVIDER_LABELS,
@@ -2105,7 +2105,7 @@ class GatewayRunner:
 
         # Resolve current provider from config
         current_provider = "openrouter"
-        config_path = _hermes_home / 'config.yaml'
+        config_path = _openmork_home / 'config.yaml'
         try:
             if config_path.exists():
                 with open(config_path, encoding="utf-8") as f:
@@ -2119,7 +2119,7 @@ class GatewayRunner:
         current_provider = normalize_provider(current_provider)
         if current_provider == "auto":
             try:
-                from hermes_cli.auth import resolve_provider as _resolve_provider
+                from openmork_cli.auth import resolve_provider as _resolve_provider
                 current_provider = _resolve_provider(current_provider)
             except Exception:
                 current_provider = "openrouter"
@@ -2145,7 +2145,7 @@ class GatewayRunner:
 
         lines.append("")
         lines.append("Switch: `/model provider:model-name`")
-        lines.append("Setup: `hermes setup`")
+        lines.append("Setup: `openmork setup`")
         return "\n".join(lines)
     
     async def _handle_personality_command(self, event: MessageEvent) -> str:
@@ -2153,7 +2153,7 @@ class GatewayRunner:
         import yaml
 
         args = event.get_command_args().strip().lower()
-        config_path = _hermes_home / 'config.yaml'
+        config_path = _openmork_home / 'config.yaml'
 
         try:
             if config_path.exists():
@@ -2168,7 +2168,7 @@ class GatewayRunner:
             personalities = {}
 
         if not personalities:
-            return "No personalities configured in `~/.hermes/config.yaml`"
+            return "No personalities configured in `~/.openmork/config.yaml`"
 
         if not args:
             lines = ["🎭 **Available Personalities**\n"]
@@ -2296,7 +2296,7 @@ class GatewayRunner:
         # Save to config.yaml
         try:
             import yaml
-            config_path = _hermes_home / 'config.yaml'
+            config_path = _openmork_home / 'config.yaml'
             user_config = {}
             if config_path.exists():
                 with open(config_path, encoding="utf-8") as f:
@@ -2435,8 +2435,8 @@ class GatewayRunner:
             if "pynacl" in err_lower or "nacl" in err_lower or "davey" in err_lower:
                 return (
                     "Voice dependencies are missing (PyNaCl / davey). "
-                    "Install or reinstall Hermes with the messaging extra, e.g. "
-                    "`pip install hermes-agent[messaging]`."
+                    "Install or reinstall OPENMORK with the messaging extra, e.g. "
+                    "`pip install OpenMork[messaging]`."
                 )
             return f"Failed to join voice channel: {e}"
 
@@ -2600,7 +2600,7 @@ class GatewayRunner:
             # Use .mp3 extension so edge-tts conversion to opus works correctly.
             # The TTS tool may convert to .ogg — use file_path from result.
             audio_path = os.path.join(
-                tempfile.gettempdir(), "hermes_voice",
+                tempfile.gettempdir(), "openmork_voice",
                 f"tts_reply_{_uuid.uuid4().hex[:12]}.mp3",
             )
             os.makedirs(os.path.dirname(audio_path), exist_ok=True)
@@ -2651,7 +2651,7 @@ class GatewayRunner:
         cp_cfg = {}
         try:
             import yaml as _y
-            _cfg_path = _hermes_home / "config.yaml"
+            _cfg_path = _openmork_home / "config.yaml"
             if _cfg_path.exists():
                 with open(_cfg_path, encoding="utf-8") as _f:
                     _data = _y.safe_load(_f) or {}
@@ -2757,18 +2757,18 @@ class GatewayRunner:
 
             # Determine toolset (same logic as _run_agent)
             default_toolset_map = {
-                Platform.LOCAL: "hermes-cli",
-                Platform.TELEGRAM: "hermes-telegram",
-                Platform.DISCORD: "hermes-discord",
-                Platform.WHATSAPP: "hermes-whatsapp",
-                Platform.SLACK: "hermes-slack",
-                Platform.SIGNAL: "hermes-signal",
-                Platform.HOMEASSISTANT: "hermes-homeassistant",
-                Platform.EMAIL: "hermes-email",
+                Platform.LOCAL: "openmork-cli",
+                Platform.TELEGRAM: "openmork-telegram",
+                Platform.DISCORD: "openmork-discord",
+                Platform.WHATSAPP: "openmork-whatsapp",
+                Platform.SLACK: "openmork-slack",
+                Platform.SIGNAL: "openmork-signal",
+                Platform.HOMEASSISTANT: "openmork-homeassistant",
+                Platform.EMAIL: "openmork-email",
             }
             platform_toolsets_config = {}
             try:
-                config_path = _hermes_home / 'config.yaml'
+                config_path = _openmork_home / 'config.yaml'
                 if config_path.exists():
                     import yaml
                     with open(config_path, 'r', encoding="utf-8") as f:
@@ -2792,13 +2792,13 @@ class GatewayRunner:
             if config_toolsets and isinstance(config_toolsets, list):
                 enabled_toolsets = config_toolsets
             else:
-                default_toolset = default_toolset_map.get(source.platform, "hermes-telegram")
+                default_toolset = default_toolset_map.get(source.platform, "openmork-telegram")
                 enabled_toolsets = [default_toolset]
 
             platform_key = "cli" if source.platform == Platform.LOCAL else source.platform.value
 
             pr = self._provider_routing
-            max_iterations = int(os.getenv("HERMES_MAX_ITERATIONS", "90"))
+            max_iterations = int(os.getenv("OPENMORK_MAX_ITERATIONS", "90"))
             reasoning_config = self._load_reasoning_config()
             self._reasoning_config = reasoning_config
 
@@ -2907,7 +2907,7 @@ class GatewayRunner:
         import yaml
 
         args = event.get_command_args().strip().lower()
-        config_path = _hermes_home / "config.yaml"
+        config_path = _openmork_home / "config.yaml"
         self._reasoning_config = self._load_reasoning_config()
         self._show_reasoning = self._load_show_reasoning()
 
@@ -3213,7 +3213,7 @@ class GatewayRunner:
                     i += 1
 
         try:
-            from hermes_state import SessionDB
+            from openmork_state import SessionDB
             from agent.insights import InsightsEngine
 
             loop = _asyncio.get_event_loop()
@@ -3302,10 +3302,10 @@ class GatewayRunner:
             return f"❌ MCP reload failed: {e}"
 
     async def _handle_update_command(self, event: MessageEvent) -> str:
-        """Handle /update command — update Hermes Agent to the latest version.
+        """Handle /update command — update OpenMork to the latest version.
 
-        Spawns ``hermes update`` in a separate systemd scope so it survives the
-        gateway restart that ``hermes update`` may trigger at the end. Marker
+        Spawns ``openmork update`` in a separate systemd scope so it survives the
+        gateway restart that ``openmork update`` may trigger at the end. Marker
         files are written so either the current gateway process or the next one
         can notify the user when the update finishes.
         """
@@ -3320,18 +3320,18 @@ class GatewayRunner:
         if not git_dir.exists():
             return "✗ Not a git repository — cannot update."
 
-        hermes_cmd = _resolve_hermes_bin()
-        if not hermes_cmd:
+        openmork_cmd = _resolve_openmork_bin()
+        if not openmork_cmd:
             return (
-                "✗ Could not locate the `hermes` command. "
-                "Hermes is running, but the update command could not find the "
+                "✗ Could not locate the `openmork` command. "
+                "OPENMORK is running, but the update command could not find the "
                 "executable on PATH or via the current Python interpreter. "
-                "Try running `hermes update` manually in your terminal."
+                "Try running `openmork update` manually in your terminal."
             )
 
-        pending_path = _hermes_home / ".update_pending.json"
-        output_path = _hermes_home / ".update_output.txt"
-        exit_code_path = _hermes_home / ".update_exit_code"
+        pending_path = _openmork_home / ".update_pending.json"
+        output_path = _openmork_home / ".update_output.txt"
+        exit_code_path = _openmork_home / ".update_exit_code"
         pending = {
             "platform": event.source.platform.value,
             "chat_id": event.source.chat_id,
@@ -3341,11 +3341,11 @@ class GatewayRunner:
         pending_path.write_text(json.dumps(pending))
         exit_code_path.unlink(missing_ok=True)
 
-        # Spawn `hermes update` in a separate cgroup so it survives gateway
+        # Spawn `openmork update` in a separate cgroup so it survives gateway
         # restart. systemd-run --user --scope creates a transient scope unit.
-        hermes_cmd_str = " ".join(shlex.quote(part) for part in hermes_cmd)
+        openmork_cmd_str = " ".join(shlex.quote(part) for part in openmork_cmd)
         update_cmd = (
-            f"{hermes_cmd_str} update > {shlex.quote(str(output_path))} 2>&1; "
+            f"{openmork_cmd_str} update > {shlex.quote(str(output_path))} 2>&1; "
             f"status=$?; printf '%s' \"$status\" > {shlex.quote(str(exit_code_path))}"
         )
         try:
@@ -3353,7 +3353,7 @@ class GatewayRunner:
             if systemd_run:
                 subprocess.Popen(
                     [systemd_run, "--user", "--scope",
-                     "--unit=hermes-update", "--",
+                     "--unit=openmork-update", "--",
                      "bash", "-c", update_cmd],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
@@ -3373,7 +3373,7 @@ class GatewayRunner:
             return f"✗ Failed to start update: {e}"
 
         self._schedule_update_notification_watch()
-        return "⚕ Starting Hermes update… I'll notify you when it's done."
+        return "⚕ Starting OPENMORK update… I'll notify you when it's done."
 
     def _schedule_update_notification_watch(self) -> None:
         """Ensure a background task is watching for update completion."""
@@ -3393,10 +3393,10 @@ class GatewayRunner:
         poll_interval: float = 2.0,
         timeout: float = 1800.0,
     ) -> None:
-        """Wait for ``hermes update`` to finish, then send its notification."""
-        pending_path = _hermes_home / ".update_pending.json"
-        claimed_path = _hermes_home / ".update_pending.claimed.json"
-        exit_code_path = _hermes_home / ".update_exit_code"
+        """Wait for ``openmork update`` to finish, then send its notification."""
+        pending_path = _openmork_home / ".update_pending.json"
+        claimed_path = _openmork_home / ".update_pending.claimed.json"
+        exit_code_path = _openmork_home / ".update_exit_code"
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
 
@@ -3420,10 +3420,10 @@ class GatewayRunner:
         import json
         import re as _re
 
-        pending_path = _hermes_home / ".update_pending.json"
-        claimed_path = _hermes_home / ".update_pending.claimed.json"
-        output_path = _hermes_home / ".update_output.txt"
-        exit_code_path = _hermes_home / ".update_exit_code"
+        pending_path = _openmork_home / ".update_pending.json"
+        claimed_path = _openmork_home / ".update_pending.claimed.json"
+        output_path = _openmork_home / ".update_output.txt"
+        exit_code_path = _openmork_home / ".update_exit_code"
 
         if not pending_path.exists() and not claimed_path.exists():
             return False
@@ -3470,14 +3470,14 @@ class GatewayRunner:
                     if len(output) > 3500:
                         output = "…" + output[-3500:]
                     if exit_code == 0:
-                        msg = f"✅ Hermes update finished.\n\n```\n{output}\n```"
+                        msg = f"✅ OPENMORK update finished.\n\n```\n{output}\n```"
                     else:
-                        msg = f"❌ Hermes update failed.\n\n```\n{output}\n```"
+                        msg = f"❌ OPENMORK update failed.\n\n```\n{output}\n```"
                 else:
                     if exit_code == 0:
-                        msg = "✅ Hermes update finished successfully."
+                        msg = "✅ OPENMORK update finished successfully."
                     else:
-                        msg = "❌ Hermes update failed. Check the gateway logs or run `hermes update` manually for details."
+                        msg = "❌ OPENMORK update failed. Check the gateway logs or run `openmork update` manually for details."
                 await adapter.send(chat_id, msg)
                 logger.info(
                     "Sent post-update notification to %s:%s (exit=%s)",
@@ -3498,16 +3498,16 @@ class GatewayRunner:
 
     def _set_session_env(self, context: SessionContext) -> None:
         """Set environment variables for the current session."""
-        os.environ["HERMES_SESSION_PLATFORM"] = context.source.platform.value
-        os.environ["HERMES_SESSION_CHAT_ID"] = context.source.chat_id
+        os.environ["OPENMORK_SESSION_PLATFORM"] = context.source.platform.value
+        os.environ["OPENMORK_SESSION_CHAT_ID"] = context.source.chat_id
         if context.source.chat_name:
-            os.environ["HERMES_SESSION_CHAT_NAME"] = context.source.chat_name
+            os.environ["OPENMORK_SESSION_CHAT_NAME"] = context.source.chat_name
         if context.source.thread_id:
-            os.environ["HERMES_SESSION_THREAD_ID"] = str(context.source.thread_id)
+            os.environ["OPENMORK_SESSION_THREAD_ID"] = str(context.source.thread_id)
     
     def _clear_session_env(self) -> None:
         """Clear session environment variables."""
-        for var in ["HERMES_SESSION_PLATFORM", "HERMES_SESSION_CHAT_ID", "HERMES_SESSION_CHAT_NAME", "HERMES_SESSION_THREAD_ID"]:
+        for var in ["OPENMORK_SESSION_PLATFORM", "OPENMORK_SESSION_CHAT_ID", "OPENMORK_SESSION_CHAT_NAME", "OPENMORK_SESSION_THREAD_ID"]:
             if var in os.environ:
                 del os.environ[var]
     
@@ -3773,20 +3773,20 @@ class GatewayRunner:
         # Determine toolset based on platform.
         # Check config.yaml for per-platform overrides, fallback to hardcoded defaults.
         default_toolset_map = {
-            Platform.LOCAL: "hermes-cli",
-            Platform.TELEGRAM: "hermes-telegram",
-            Platform.DISCORD: "hermes-discord",
-            Platform.WHATSAPP: "hermes-whatsapp",
-            Platform.SLACK: "hermes-slack",
-            Platform.SIGNAL: "hermes-signal",
-            Platform.HOMEASSISTANT: "hermes-homeassistant",
-            Platform.EMAIL: "hermes-email",
+            Platform.LOCAL: "openmork-cli",
+            Platform.TELEGRAM: "openmork-telegram",
+            Platform.DISCORD: "openmork-discord",
+            Platform.WHATSAPP: "openmork-whatsapp",
+            Platform.SLACK: "openmork-slack",
+            Platform.SIGNAL: "openmork-signal",
+            Platform.HOMEASSISTANT: "openmork-homeassistant",
+            Platform.EMAIL: "openmork-email",
         }
 
         # Try to load platform_toolsets from config
         platform_toolsets_config = {}
         try:
-            config_path = _hermes_home / 'config.yaml'
+            config_path = _openmork_home / 'config.yaml'
             if config_path.exists():
                 import yaml
                 with open(config_path, 'r', encoding="utf-8") as f:
@@ -3812,14 +3812,14 @@ class GatewayRunner:
         if config_toolsets and isinstance(config_toolsets, list):
             enabled_toolsets = config_toolsets
         else:
-            default_toolset = default_toolset_map.get(source.platform, "hermes-telegram")
+            default_toolset = default_toolset_map.get(source.platform, "openmork-telegram")
             enabled_toolsets = [default_toolset]
         
         # Tool progress mode from config.yaml: "all", "new", "verbose", "off"
         # Falls back to env vars for backward compatibility
         _progress_cfg = {}
         try:
-            _tp_cfg_path = _hermes_home / "config.yaml"
+            _tp_cfg_path = _openmork_home / "config.yaml"
             if _tp_cfg_path.exists():
                 import yaml as _tp_yaml
                 with open(_tp_cfg_path, encoding="utf-8") as _tp_f:
@@ -3829,7 +3829,7 @@ class GatewayRunner:
             pass
         progress_mode = (
             _progress_cfg.get("tool_progress")
-            or os.getenv("HERMES_TOOL_PROGRESS_MODE")
+            or os.getenv("OPENMORK_TOOL_PROGRESS_MODE")
             or "all"
         )
         tool_progress_enabled = progress_mode != "off"
@@ -4039,10 +4039,10 @@ class GatewayRunner:
         def run_sync():
             # Pass session_key to process registry via env var so background
             # processes can be mapped back to this gateway session
-            os.environ["HERMES_SESSION_KEY"] = session_key or ""
+            os.environ["OPENMORK_SESSION_KEY"] = session_key or ""
 
             # Read from env var or use default (same as CLI)
-            max_iterations = int(os.getenv("HERMES_MAX_ITERATIONS", "90"))
+            max_iterations = int(os.getenv("OPENMORK_MAX_ITERATIONS", "90"))
             
             # Map platform enum to the platform hint key the agent understands.
             # Platform.LOCAL ("local") maps to "cli"; others pass through as-is.
@@ -4362,7 +4362,7 @@ def _start_cron_ticker(stop_event: threading.Event, adapters=None, interval: int
     Background thread that ticks the cron scheduler at a regular interval.
     
     Runs inside the gateway process so cronjobs fire automatically without
-    needing a separate `hermes cron daemon` or system cron entry.
+    needing a separate `openmork cron daemon` or system cron entry.
 
     Also refreshes the channel directory every 5 minutes and prunes the
     image/audio/document cache once per hour.
@@ -4423,9 +4423,9 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
                  when the previous process hasn't fully exited yet.
     """
     # ── Duplicate-instance guard ──────────────────────────────────────
-    # Prevent two gateways from running under the same HERMES_HOME.
-    # The PID file is scoped to HERMES_HOME, so future multi-profile
-    # setups (each profile using a distinct HERMES_HOME) will naturally
+    # Prevent two gateways from running under the same OPENMORK_HOME.
+    # The PID file is scoped to OPENMORK_HOME, so future multi-profile
+    # setups (each profile using a distinct OPENMORK_HOME) will naturally
     # allow concurrent instances without tripping this guard.
     import time as _time
     from gateway.status import get_running_pid, remove_pid_file
@@ -4466,17 +4466,17 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
                     pass
             remove_pid_file()
         else:
-            hermes_home = os.getenv("HERMES_HOME", "~/.hermes")
+            openmork_home = os.getenv("OPENMORK_HOME", "~/.openmork")
             logger.error(
-                "Another gateway instance is already running (PID %d, HERMES_HOME=%s). "
-                "Use 'hermes gateway restart' to replace it, or 'hermes gateway stop' first.",
-                existing_pid, hermes_home,
+                "Another gateway instance is already running (PID %d, OPENMORK_HOME=%s). "
+                "Use 'openmork gateway restart' to replace it, or 'openmork gateway stop' first.",
+                existing_pid, openmork_home,
             )
             print(
                 f"\n❌ Gateway already running (PID {existing_pid}).\n"
-                f"   Use 'hermes gateway restart' to replace it,\n"
-                f"   or 'hermes gateway stop' to kill it first.\n"
-                f"   Or use 'hermes gateway run --replace' to auto-replace.\n"
+                f"   Use 'openmork gateway restart' to replace it,\n"
+                f"   or 'openmork gateway stop' to kill it first.\n"
+                f"   Or use 'openmork gateway run --replace' to auto-replace.\n"
             )
             return False
 
@@ -4488,7 +4488,7 @@ async def start_gateway(config: Optional[GatewayConfig] = None, replace: bool = 
         pass
 
     # Configure rotating file log so gateway output is persisted for debugging
-    log_dir = _hermes_home / 'logs'
+    log_dir = _openmork_home / 'logs'
     log_dir.mkdir(parents=True, exist_ok=True)
     file_handler = RotatingFileHandler(
         log_dir / 'gateway.log',
@@ -4570,7 +4570,7 @@ def main():
     """CLI entry point for the gateway."""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Hermes Gateway - Multi-platform messaging")
+    parser = argparse.ArgumentParser(description="OPENMORK Gateway - Multi-platform messaging")
     parser.add_argument("--config", "-c", help="Path to gateway config file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     

@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""
+OpenMork CLI Launcher
+
+This is a convenience wrapper to launch the OPENMORK CLI.
+Usage: ./openmork [options]
+"""
+
+if __name__ == "__main__":
+    from cli import main
+    import fire
+    fire.Fire(main)

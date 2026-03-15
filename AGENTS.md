@@ -1,6 +1,6 @@
-# Hermes Agent - Development Guide
+# OpenMork - Development Guide
 
-Instructions for AI coding assistants and developers working on the hermes-agent codebase.
+Instructions for AI coding assistants and developers working on the OpenMork codebase.
 
 ## Development Environment
 
@@ -11,12 +11,12 @@ source .venv/bin/activate  # ALWAYS activate before running Python
 ## Project Structure
 
 ```
-hermes-agent/
+OpenMork/
 ├── run_agent.py          # AIAgent class — core conversation loop
 ├── model_tools.py        # Tool orchestration, _discover_tools(), handle_function_call()
-├── toolsets.py           # Toolset definitions, _HERMES_CORE_TOOLS list
-├── cli.py                # HermesCLI class — interactive CLI orchestrator
-├── hermes_state.py       # SessionDB — SQLite session store (FTS5 search)
+├── toolsets.py           # Toolset definitions, _OPENMORK_CORE_TOOLS list
+├── cli.py                # OPENMORKCLI class — interactive CLI orchestrator
+├── openmork_state.py       # SessionDB — SQLite session store (FTS5 search)
 ├── agent/                # Agent internals
 │   ├── prompt_builder.py     # System prompt assembly
 │   ├── context_compressor.py # Auto context compression
@@ -26,15 +26,15 @@ hermes-agent/
 │   ├── display.py            # KawaiiSpinner, tool preview formatting
 │   ├── skill_commands.py     # Skill slash commands (shared CLI/gateway)
 │   └── trajectory.py         # Trajectory saving helpers
-├── hermes_cli/           # CLI subcommands and setup
-│   ├── main.py           # Entry point — all `hermes` subcommands
+├── openmork_cli/           # CLI subcommands and setup
+│   ├── main.py           # Entry point — all `openmork` subcommands
 │   ├── config.py         # DEFAULT_CONFIG, OPTIONAL_ENV_VARS, migration
 │   ├── commands.py       # Slash command definitions + SlashCommandCompleter
 │   ├── callbacks.py      # Terminal callbacks (clarify, sudo, approval)
 │   ├── setup.py          # Interactive setup wizard
 │   ├── skin_engine.py    # Skin/theme engine — CLI visual customization
-│   ├── skills_config.py  # `hermes skills` — enable/disable skills per platform
-│   ├── tools_config.py   # `hermes tools` — enable/disable tools per platform
+│   ├── skills_config.py  # `openmork skills` — enable/disable skills per platform
+│   ├── tools_config.py   # `openmork tools` — enable/disable tools per platform
 │   ├── skills_hub.py     # `/skills` slash command (search, browse, install)
 │   ├── models.py         # Model catalog, provider model lists
 │   └── auth.py           # Provider credential resolution
@@ -61,7 +61,7 @@ hermes-agent/
 └── batch_runner.py       # Parallel batch processing
 ```
 
-**User config:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (API keys)
+**User config:** `~/.openmork/config.yaml` (settings), `~/.openmork/.env` (API keys)
 
 ## File Dependency Chain
 
@@ -128,14 +128,14 @@ Messages follow OpenAI format: `{"role": "system/user/assistant/tool", ...}`. Re
 - **Rich** for banner/panels, **prompt_toolkit** for input with autocomplete
 - **KawaiiSpinner** (`agent/display.py`) — animated faces during API calls, `┊` activity feed for tool results
 - `load_cli_config()` in cli.py merges hardcoded defaults + user config YAML
-- **Skin engine** (`hermes_cli/skin_engine.py`) — data-driven CLI theming; initialized from `display.skin` config key at startup; skins customize banner colors, spinner faces/verbs/wings, tool prefix, response box, branding text
-- `process_command()` is a method on `HermesCLI` (not in commands.py)
-- Skill slash commands: `agent/skill_commands.py` scans `~/.hermes/skills/`, injects as **user message** (not system prompt) to preserve prompt caching
+- **Skin engine** (`openmork_cli/skin_engine.py`) — data-driven CLI theming; initialized from `display.skin` config key at startup; skins customize banner colors, spinner faces/verbs/wings, tool prefix, response box, branding text
+- `process_command()` is a method on `OPENMORKCLI` (not in commands.py)
+- Skill slash commands: `agent/skill_commands.py` scans `~/.openmork/skills/`, injects as **user message** (not system prompt) to preserve prompt caching
 
 ### Adding CLI Commands
 
-1. Add to `COMMANDS` dict in `hermes_cli/commands.py`
-2. Add handler in `HermesCLI.process_command()` in `cli.py`
+1. Add to `COMMANDS` dict in `openmork_cli/commands.py`
+2. Add handler in `OPENMORKCLI.process_command()` in `cli.py`
 3. For persistent settings, use `save_config_value()` in `cli.py`
 
 ---
@@ -167,7 +167,7 @@ registry.register(
 
 **2. Add import** in `model_tools.py` `_discover_tools()` list.
 
-**3. Add to `toolsets.py`** — either `_HERMES_CORE_TOOLS` (all platforms) or a new toolset.
+**3. Add to `toolsets.py`** — either `_OPENMORK_CORE_TOOLS` (all platforms) or a new toolset.
 
 The registry handles schema collection, dispatch, availability checking, and error wrapping. All handlers MUST return a JSON string.
 
@@ -178,11 +178,11 @@ The registry handles schema collection, dispatch, availability checking, and err
 ## Adding Configuration
 
 ### config.yaml options:
-1. Add to `DEFAULT_CONFIG` in `hermes_cli/config.py`
+1. Add to `DEFAULT_CONFIG` in `openmork_cli/config.py`
 2. Bump `_config_version` (currently 5) to trigger migration for existing users
 
 ### .env variables:
-1. Add to `OPTIONAL_ENV_VARS` in `hermes_cli/config.py` with metadata:
+1. Add to `OPTIONAL_ENV_VARS` in `openmork_cli/config.py` with metadata:
 ```python
 "NEW_API_KEY": {
     "description": "What it's for",
@@ -198,20 +198,20 @@ The registry handles schema collection, dispatch, availability checking, and err
 | Loader | Used by | Location |
 |--------|---------|----------|
 | `load_cli_config()` | CLI mode | `cli.py` |
-| `load_config()` | `hermes tools`, `hermes setup` | `hermes_cli/config.py` |
+| `load_config()` | `openmork tools`, `openmork setup` | `openmork_cli/config.py` |
 | Direct YAML load | Gateway | `gateway/run.py` |
 
 ---
 
 ## Skin/Theme System
 
-The skin engine (`hermes_cli/skin_engine.py`) provides data-driven CLI visual customization. Skins are **pure data** — no code changes needed to add a new skin.
+The skin engine (`openmork_cli/skin_engine.py`) provides data-driven CLI visual customization. Skins are **pure data** — no code changes needed to add a new skin.
 
 ### Architecture
 
 ```
-hermes_cli/skin_engine.py    # SkinConfig dataclass, built-in skins, YAML loader
-~/.hermes/skins/*.yaml       # User-installed custom skins (drop-in)
+openmork_cli/skin_engine.py    # SkinConfig dataclass, built-in skins, YAML loader
+~/.openmork/skins/*.yaml       # User-installed custom skins (drop-in)
 ```
 
 - `init_skin_from_config()` — called at CLI startup, reads `display.skin` from config
@@ -242,14 +242,14 @@ hermes_cli/skin_engine.py    # SkinConfig dataclass, built-in skins, YAML loader
 
 ### Built-in skins
 
-- `default` — Classic Hermes gold/kawaii (the current look)
+- `default` — Classic OPENMORK gold/kawaii (the current look)
 - `ares` — Crimson/bronze war-god theme with custom spinner wings
 - `mono` — Clean grayscale monochrome
 - `slate` — Cool blue developer-focused theme
 
 ### Adding a built-in skin
 
-Add to `_BUILTIN_SKINS` dict in `hermes_cli/skin_engine.py`:
+Add to `_BUILTIN_SKINS` dict in `openmork_cli/skin_engine.py`:
 
 ```python
 "mytheme": {
@@ -264,7 +264,7 @@ Add to `_BUILTIN_SKINS` dict in `hermes_cli/skin_engine.py`:
 
 ### User skins (YAML)
 
-Users create `~/.hermes/skins/<name>.yaml`:
+Users create `~/.openmork/skins/<name>.yaml`:
 
 ```yaml
 name: cyberpunk
@@ -294,7 +294,7 @@ Activate with `/skin cyberpunk` or `display.skin: cyberpunk` in config.yaml.
 ## Important Policies
 ### Prompt Caching Must Not Break
 
-Hermes-Agent ensures caching remains valid throughout a conversation. **Do NOT implement changes that would:**
+OpenMork ensures caching remains valid throughout a conversation. **Do NOT implement changes that would:**
 - Alter past context mid-conversation
 - Change toolsets mid-conversation
 - Reload memories or rebuild system prompts mid-conversation
@@ -309,7 +309,7 @@ Cache-breaking forces dramatically higher costs. The ONLY time we alter context 
 
 When `terminal(background=true, check_interval=...)` is used, the gateway runs a watcher that
 pushes status updates to the user's chat. Control verbosity with `display.background_process_notifications`
-in config.yaml (or `HERMES_BACKGROUND_NOTIFICATIONS` env var):
+in config.yaml (or `OPENMORK_BACKGROUND_NOTIFICATIONS` env var):
 
 - `all` — running-output updates + final message (default)
 - `result` — only the final completion message
@@ -321,7 +321,7 @@ in config.yaml (or `HERMES_BACKGROUND_NOTIFICATIONS` env var):
 ## Known Pitfalls
 
 ### DO NOT use `simple_term_menu` for interactive menus
-Rendering bugs in tmux/iTerm2 — ghosting on scroll. Use `curses` (stdlib) instead. See `hermes_cli/tools_config.py` for the pattern.
+Rendering bugs in tmux/iTerm2 — ghosting on scroll. Use `curses` (stdlib) instead. See `openmork_cli/tools_config.py` for the pattern.
 
 ### DO NOT use `\033[K` (ANSI erase-to-EOL) in spinner/display code
 Leaks as literal `?[K` text under `prompt_toolkit`'s `patch_stdout`. Use space-padding: `f"\r{line}{' ' * pad}"`.
@@ -329,8 +329,8 @@ Leaks as literal `?[K` text under `prompt_toolkit`'s `patch_stdout`. Use space-p
 ### `_last_resolved_tool_names` is a process-global in `model_tools.py`
 When subagents overwrite this global, `execute_code` calls after delegation may fail with missing tool imports. Known bug.
 
-### Tests must not write to `~/.hermes/`
-The `_isolate_hermes_home` autouse fixture in `tests/conftest.py` redirects `HERMES_HOME` to a temp dir. Never hardcode `~/.hermes/` paths in tests.
+### Tests must not write to `~/.openmork/`
+The `_isolate_openmork_home` autouse fixture in `tests/conftest.py` redirects `OPENMORK_HOME` to a temp dir. Never hardcode `~/.openmork/` paths in tests.
 
 ---
 
