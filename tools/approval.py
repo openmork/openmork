@@ -14,6 +14,8 @@ import sys
 import threading
 from typing import Optional
 
+from openmork_contracts import ValidationResult, validate_arm_contract
+
 logger = logging.getLogger(__name__)
 
 # =========================================================================
@@ -532,3 +534,24 @@ def check_all_command_guards(command: str, env_type: str,
             save_permanent_allowlist(_permanent_approved)
 
     return {"approved": True, "message": None}
+
+
+class _DefaultSecurityArm:
+    apiVersion = "1.0"
+
+    def validate_action(self, action_type: str, payload: dict, context: dict) -> ValidationResult:
+        if action_type != "terminal.command":
+            return ValidationResult(is_allowed=True)
+
+        command = str(payload.get("command", ""))
+        approved = check_command_approval(command, session_key=str(context.get("session_key", "")))
+        if approved.get("approved"):
+            return ValidationResult(is_allowed=True)
+        return ValidationResult(
+            is_allowed=False,
+            reason=str(approved.get("message") or approved.get("description") or "Approval required"),
+            requires_approval=True,
+        )
+
+
+validate_arm_contract(_DefaultSecurityArm(), arm_kind="security", expected_api_version="1.0")

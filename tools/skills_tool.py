@@ -78,6 +78,7 @@ from typing import Dict, Any, List, Optional, Set, Tuple
 import yaml
 from openmork_cli.config import load_env, _ENV_VAR_NAME_RE
 from tools.registry import registry
+from openmork_contracts import validate_arm_contract
 
 logger = logging.getLogger(__name__)
 
@@ -1252,6 +1253,23 @@ SKILL_VIEW_SCHEMA = {
         "required": ["name"],
     },
 }
+
+class _BuiltinSkillsetArm:
+    apiVersion = "1.0"
+
+    @property
+    def capabilities(self) -> list[dict]:
+        return [SKILLS_LIST_SCHEMA, SKILL_VIEW_SCHEMA]
+
+    def execute(self, tool_name: str, arguments: dict):
+        if tool_name == "skills_list":
+            return skills_list(category=arguments.get("category"))
+        if tool_name == "skill_view":
+            return skill_view(arguments.get("name", ""), file_path=arguments.get("file_path"))
+        raise ValueError(f"Unknown skillset tool: {tool_name}")
+
+
+validate_arm_contract(_BuiltinSkillsetArm(), arm_kind="skillset", expected_api_version="1.0")
 
 registry.register(
     name="skills_list",

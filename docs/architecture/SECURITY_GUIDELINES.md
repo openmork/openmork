@@ -19,3 +19,23 @@ The default security arm uses pattern matching (`safety.yaml`) to intercept dang
 Arms should assume they are running in a hostile environment if exposed to the internet.
 - **Filesystem:** Do not allow arbitrary read/writes outside the defined workspace without explicit approval.
 - **Network:** Gateway modules should validate webhook signatures and sanitize all incoming payloads.
+
+## 4. Automated operational checks (required)
+OpenMork ships a repo scanner at `scripts/security/check_secrets.py`.
+
+It blocks commits/CI when it detects:
+- likely secrets/tokens in files (OpenAI, Anthropic, GitHub PAT, AWS access key IDs, generic token assignments)
+- git remotes with embedded credentials in URL, e.g. `https://<secret>@github.com/org/repo.git`
+
+Run locally:
+```bash
+python scripts/security/check_secrets.py          # staged files + remotes
+python scripts/security/check_secrets.py --all-files
+```
+
+Install the local git hook:
+```bash
+ln -sf ../../scripts/security/pre-commit .git/hooks/pre-commit
+```
+
+CI also runs this check on pushes and pull requests via `.github/workflows/security-check.yml`.

@@ -67,6 +67,7 @@ from model_tools import get_tool_definitions, handle_function_call, check_toolse
 from tools.terminal_tool import cleanup_vm
 from tools.interrupt import set_interrupt as _set_interrupt
 from tools.browser_tool import cleanup_browser
+from openmork_contracts import validate_arm_contract
 
 import requests
 
@@ -708,6 +709,40 @@ class AIAgent:
                     self._memory_store = MemoryStore(
                         memory_char_limit=mem_config.get("memory_char_limit", 2200),
                         user_char_limit=mem_config.get("user_char_limit", 1375),
+                    )
+
+                    class _MemoryStoreArmAdapter:
+                        apiVersion = "1.0"
+
+                        def __init__(self, store):
+                            self._store = store
+
+                        def get_session_state(self, session_id: str) -> dict:
+                            return {"memory": list(self._store.memory_entries), "user": list(self._store.user_entries)}
+
+                        def save_session_state(self, session_id: str, state: dict) -> None:
+                            self._store.memory_entries = list(state.get("memory", self._store.memory_entries))
+                            self._store.user_entries = list(state.get("user", self._store.user_entries))
+                            self._store.save_to_disk("memory")
+                            self._store.save_to_disk("user")
+
+                        def add_memory(self, content: str, metadata: dict | None = None) -> str:
+                            target = "user" if (metadata or {}).get("target") == "user" else "memory"
+                            result = self._store.add(target, content)
+                            if not result.get("success"):
+                                raise ValueError(result.get("error", "Failed to add memory"))
+                            return content[:32]
+
+                        def search_memories(self, query: str, limit: int = 5) -> list[dict]:
+                            pool = self._store.memory_entries + self._store.user_entries
+                            hits = [e for e in pool if query.lower() in e.lower()]
+                            return [{"content": h} for h in hits[: max(1, limit)]]
+
+                    validate_arm_contract(
+                        _MemoryStoreArmAdapter(self._memory_store),
+                        arm_kind="memory",
+                        expected_api_version="1.0",
+                        allow_legacy_api_version=True,
                     )
                     self._memory_store.load_from_disk()
             except Exception:

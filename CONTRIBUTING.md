@@ -578,6 +578,27 @@ OPENMORK has terminal access. Security matters.
 
 If your PR affects security, note it explicitly in the description.
 
+### Required secret scanning before commit
+
+Run:
+```bash
+python scripts/security/check_secrets.py
+```
+
+This scanner checks staged files for common secret/token patterns and fails if any git remote includes embedded credentials (`https://<secret>@...`).
+
+Optional full-repo scan:
+```bash
+python scripts/security/check_secrets.py --all-files
+```
+
+Install the local pre-commit hook:
+```bash
+ln -sf ../../scripts/security/pre-commit .git/hooks/pre-commit
+```
+
+CI enforces the same policy in `.github/workflows/security-check.yml`.
+
 ---
 
 ## Pull Request Process

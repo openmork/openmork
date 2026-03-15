@@ -177,6 +177,7 @@ from gateway.session import (
 )
 from gateway.delivery import DeliveryRouter, DeliveryTarget
 from gateway.platforms.base import BasePlatformAdapter, MessageEvent, MessageType
+from openmork_contracts import validate_arm_contract, ArmContractError
 
 logger = logging.getLogger(__name__)
 
@@ -935,6 +936,34 @@ class GatewayRunner:
         """Wait for shutdown signal."""
         await self._shutdown_event.wait()
     
+    def _validate_gateway_adapter_contract(self, adapter: BasePlatformAdapter) -> BasePlatformAdapter:
+        """Validate gateway adapter against ARM contract (legacy-compatible)."""
+        # Legacy adapters may not expose apiVersion yet; accept and normalize.
+        if not hasattr(adapter, "apiVersion"):
+            setattr(adapter, "apiVersion", "1.0")
+
+        # Map current BasePlatformAdapter API to ARM contract names without changing
+        # adapter internals.
+        if not hasattr(adapter, "send_message") and hasattr(adapter, "send"):
+            setattr(adapter, "send_message", getattr(adapter, "send"))
+        if not hasattr(adapter, "register_callback") and hasattr(adapter, "set_message_handler"):
+            setattr(adapter, "register_callback", getattr(adapter, "set_message_handler"))
+        if not hasattr(adapter, "start") and hasattr(adapter, "connect"):
+            setattr(adapter, "start", getattr(adapter, "connect"))
+        if not hasattr(adapter, "stop") and hasattr(adapter, "disconnect"):
+            setattr(adapter, "stop", getattr(adapter, "disconnect"))
+
+        try:
+            validate_arm_contract(
+                adapter,
+                arm_kind="gateway",
+                expected_api_version="1.0",
+                allow_legacy_api_version=True,
+            )
+        except ArmContractError as exc:
+            raise RuntimeError(f"Gateway adapter '{adapter.__class__.__name__}' rejected by ARM contract: {exc}") from exc
+        return adapter
+
     def _create_adapter(
         self, 
         platform: Platform, 
@@ -946,49 +975,49 @@ class GatewayRunner:
             if not check_telegram_requirements():
                 logger.warning("Telegram: python-telegram-bot not installed")
                 return None
-            return TelegramAdapter(config)
+            return self._validate_gateway_adapter_contract(TelegramAdapter(config))
         
         elif platform == Platform.DISCORD:
             from gateway.platforms.discord import DiscordAdapter, check_discord_requirements
             if not check_discord_requirements():
                 logger.warning("Discord: discord.py not installed")
                 return None
-            return DiscordAdapter(config)
+            return self._validate_gateway_adapter_contract(DiscordAdapter(config))
         
         elif platform == Platform.WHATSAPP:
             from gateway.platforms.whatsapp import WhatsAppAdapter, check_whatsapp_requirements
             if not check_whatsapp_requirements():
                 logger.warning("WhatsApp: Node.js not installed or bridge not configured")
                 return None
-            return WhatsAppAdapter(config)
+            return self._validate_gateway_adapter_contract(WhatsAppAdapter(config))
         
         elif platform == Platform.SLACK:
             from gateway.platforms.slack import SlackAdapter, check_slack_requirements
             if not check_slack_requirements():
                 logger.warning("Slack: slack-bolt not installed. Run: pip install 'openmork[slack]'")
                 return None
-            return SlackAdapter(config)
+            return self._validate_gateway_adapter_contract(SlackAdapter(config))
 
         elif platform == Platform.SIGNAL:
             from gateway.platforms.signal import SignalAdapter, check_signal_requirements
             if not check_signal_requirements():
                 logger.warning("Signal: SIGNAL_HTTP_URL or SIGNAL_ACCOUNT not configured")
                 return None
-            return SignalAdapter(config)
+            return self._validate_gateway_adapter_contract(SignalAdapter(config))
 
         elif platform == Platform.HOMEASSISTANT:
             from gateway.platforms.homeassistant import HomeAssistantAdapter, check_ha_requirements
             if not check_ha_requirements():
                 logger.warning("HomeAssistant: aiohttp not installed or HASS_TOKEN not set")
                 return None
-            return HomeAssistantAdapter(config)
+            return self._validate_gateway_adapter_contract(HomeAssistantAdapter(config))
 
         elif platform == Platform.EMAIL:
             from gateway.platforms.email import EmailAdapter, check_email_requirements
             if not check_email_requirements():
                 logger.warning("Email: EMAIL_ADDRESS, EMAIL_PASSWORD, EMAIL_IMAP_HOST, or EMAIL_SMTP_HOST not set")
                 return None
-            return EmailAdapter(config)
+            return self._validate_gateway_adapter_contract(EmailAdapter(config))
 
         return None
     
