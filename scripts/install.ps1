@@ -1,11 +1,11 @@
 # ============================================================================
-# Hermes Agent Installer for Windows
+# OpenMork Installer for Windows
 # ============================================================================
 # Installation script for Windows (PowerShell).
 # Uses uv for fast Python provisioning and package management.
 #
 # Usage:
-#   irm https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.ps1 | iex
 #
 # Or download and run with options:
 #   .\install.ps1 -NoVenv -SkipSetup
@@ -16,8 +16,8 @@ param(
     [switch]$NoVenv,
     [switch]$SkipSetup,
     [string]$Branch = "main",
-    [string]$HermesHome = "$env:LOCALAPPDATA\hermes",
-    [string]$InstallDir = "$env:LOCALAPPDATA\hermes\hermes-agent"
+    [string]$OpenMorkHome = "$env:LOCALAPPDATA\openmork",
+    [string]$InstallDir = "$env:LOCALAPPDATA\openmork\openmork"
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,10 +26,11 @@ $ErrorActionPreference = "Stop"
 # Configuration
 # ============================================================================
 
-$RepoUrlSsh = "git@github.com:NousResearch/hermes-agent.git"
-$RepoUrlHttps = "https://github.com/NousResearch/hermes-agent.git"
+$RepoUrlSsh = "git@github.com:openmork/openmork.git"
+$RepoUrlHttps = "https://github.com/openmork/openmork.git"
 $PythonVersion = "3.11"
 $NodeVersion = "22"
+$LegacyHomeCandidates = @("$env:LOCALAPPDATA\hermes", "$env:USERPROFILE\.hermes")
 
 # ============================================================================
 # Helper functions
@@ -38,9 +39,9 @@ $NodeVersion = "22"
 function Write-Banner {
     Write-Host ""
     Write-Host "┌─────────────────────────────────────────────────────────┐" -ForegroundColor Magenta
-    Write-Host "│             ⚕ Hermes Agent Installer                   │" -ForegroundColor Magenta
+    Write-Host "│             ⚕ OpenMork Installer                   │" -ForegroundColor Magenta
     Write-Host "├─────────────────────────────────────────────────────────┤" -ForegroundColor Magenta
-    Write-Host "│  An open source AI agent by Nous Research.              │" -ForegroundColor Magenta
+    Write-Host "│  An open source AI agent by OpenMork contributors.              │" -ForegroundColor Magenta
     Write-Host "└─────────────────────────────────────────────────────────┘" -ForegroundColor Magenta
     Write-Host ""
 }
@@ -63,6 +64,47 @@ function Write-Warn {
 function Write-Err {
     param([string]$Message)
     Write-Host "✗ $Message" -ForegroundColor Red
+}
+
+function Resolve-LegacyOpenMorkHome {
+    foreach ($candidate in $LegacyHomeCandidates) {
+        if ((Test-Path $candidate) -and ($candidate -ne $OpenMorkHome)) {
+            return $candidate
+        }
+    }
+    return $null
+}
+
+function Test-DirectoryHasFiles {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return $false }
+    return [bool](Get-ChildItem -Path $Path -Force -ErrorAction SilentlyContinue | Select-Object -First 1)
+}
+
+function Invoke-LegacyMigration {
+    $legacyHome = Resolve-LegacyOpenMorkHome
+    if (-not $legacyHome) { return }
+
+    if ($OpenMorkHome -eq $legacyHome) { return }
+
+    New-Item -ItemType Directory -Force -Path $OpenMorkHome | Out-Null
+    Write-Warn "Legacy Hermes path detected: $legacyHome"
+
+    if (-not (Test-DirectoryHasFiles -Path $OpenMorkHome)) {
+        Write-Info "Migrating data to $OpenMorkHome (non-destructive, no overwrite)..."
+        Get-ChildItem -Path $legacyHome -Force -ErrorAction SilentlyContinue | ForEach-Object {
+            $dest = Join-Path $OpenMorkHome $_.Name
+            if (-not (Test-Path $dest)) {
+                Copy-Item -Path $_.FullName -Destination $dest -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+        Write-Success "Legacy data copied to OPENMORK_HOME"
+    } else {
+        Write-Info "OPENMORK_HOME already has data; keeping existing files untouched"
+    }
+
+    Write-Warn "Compatibility mode active: legacy path is deprecated and will be removed in a future release."
+    Write-Info "You can keep using the old folder temporarily; OpenMork will prefer OPENMORK_HOME=$OpenMorkHome"
 }
 
 # ============================================================================
@@ -217,11 +259,11 @@ function Test-Node {
     }
 
     # Check our own managed install from a previous run
-    $managedNode = "$HermesHome\node\node.exe"
+    $managedNode = "$OpenMorkHome\node\node.exe"
     if (Test-Path $managedNode) {
         $version = & $managedNode --version
-        $env:Path = "$HermesHome\node;$env:Path"
-        Write-Success "Node.js $version found (Hermes-managed)"
+        $env:Path = "$OpenMorkHome\node;$env:Path"
+        Write-Success "Node.js $version found (OpenMork-managed)"
         $script:HasNode = $true
         return $true
     }
@@ -244,7 +286,7 @@ function Test-Node {
         } catch { }
     }
 
-    # Fallback: download binary zip to ~/.hermes/node/
+    # Fallback: download binary zip to ~/.openmork/node/
     Write-Info "Downloading Node.js $NodeVersion binary..."
     try {
         $arch = if ([Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
@@ -255,7 +297,7 @@ function Test-Node {
         if ($zipName) {
             $downloadUrl = "${indexUrl}${zipName}"
             $tmpZip = "$env:TEMP\$zipName"
-            $tmpDir = "$env:TEMP\hermes-node-extract"
+            $tmpDir = "$env:TEMP\openmork-node-extract"
 
             Invoke-WebRequest -Uri $downloadUrl -OutFile $tmpZip -UseBasicParsing
             if (Test-Path $tmpDir) { Remove-Item -Recurse -Force $tmpDir }
@@ -263,12 +305,12 @@ function Test-Node {
 
             $extractedDir = Get-ChildItem $tmpDir -Directory | Select-Object -First 1
             if ($extractedDir) {
-                if (Test-Path "$HermesHome\node") { Remove-Item -Recurse -Force "$HermesHome\node" }
-                Move-Item $extractedDir.FullName "$HermesHome\node"
-                $env:Path = "$HermesHome\node;$env:Path"
+                if (Test-Path "$OpenMorkHome\node") { Remove-Item -Recurse -Force "$OpenMorkHome\node" }
+                Move-Item $extractedDir.FullName "$OpenMorkHome\node"
+                $env:Path = "$OpenMorkHome\node;$env:Path"
 
-                $version = & "$HermesHome\node\node.exe" --version
-                Write-Success "Node.js $version installed to ~/.hermes/node/"
+                $version = & "$OpenMorkHome\node\node.exe" --version
+                Write-Success "Node.js $version installed to ~/.openmork/node/"
                 $script:HasNode = $true
 
                 Remove-Item -Force $tmpZip -ErrorAction SilentlyContinue
@@ -461,9 +503,9 @@ function Install-Repository {
             if (Test-Path $InstallDir) { Remove-Item -Recurse -Force $InstallDir -ErrorAction SilentlyContinue }
             Write-Warn "Git clone failed — downloading ZIP archive instead..."
             try {
-                $zipUrl = "https://github.com/NousResearch/hermes-agent/archive/refs/heads/$Branch.zip"
-                $zipPath = "$env:TEMP\hermes-agent-$Branch.zip"
-                $extractPath = "$env:TEMP\hermes-agent-extract"
+                $zipUrl = "https://github.com/openmork/openmork/archive/refs/heads/$Branch.zip"
+                $zipPath = "$env:TEMP\openmork-$Branch.zip"
+                $extractPath = "$env:TEMP\openmork-extract"
                 
                 Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing
                 if (Test-Path $extractPath) { Remove-Item -Recurse -Force $extractPath }
@@ -590,97 +632,127 @@ function Install-Dependencies {
 }
 
 function Set-PathVariable {
-    Write-Info "Setting up hermes command..."
+    Write-Info "Setting up openmork command..."
     
     if ($NoVenv) {
-        $hermesBin = "$InstallDir"
+        $openmorkBin = "$InstallDir"
     } else {
-        $hermesBin = "$InstallDir\venv\Scripts"
+        $openmorkBin = "$InstallDir\venv\Scripts"
     }
     
-    # Add the venv Scripts dir to user PATH so hermes is globally available
-    # On Windows, the hermes.exe in venv\Scripts\ has the venv Python baked in
+    # Add the venv Scripts dir to user PATH so openmork is globally available
+    # On Windows, openmork.exe in venv\Scripts\ has the venv Python baked in
     $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
     
-    if ($currentPath -notlike "*$hermesBin*") {
+    if ($currentPath -notlike "*$openmorkBin*") {
         [Environment]::SetEnvironmentVariable(
             "Path",
-            "$hermesBin;$currentPath",
+            "$openmorkBin;$currentPath",
             "User"
         )
-        Write-Success "Added to user PATH: $hermesBin"
+        Write-Success "Added to user PATH: $openmorkBin"
     } else {
         Write-Info "PATH already configured"
     }
     
-    # Set HERMES_HOME so the Python code finds config/data in the right place.
-    # Only needed on Windows where we install to %LOCALAPPDATA%\hermes instead
-    # of the Unix default ~/.hermes
-    $currentHermesHome = [Environment]::GetEnvironmentVariable("HERMES_HOME", "User")
-    if (-not $currentHermesHome -or $currentHermesHome -ne $HermesHome) {
-        [Environment]::SetEnvironmentVariable("HERMES_HOME", $HermesHome, "User")
-        Write-Success "Set HERMES_HOME=$HermesHome"
+    # Canonical home for OpenMork
+    $currentOpenMorkHome = [Environment]::GetEnvironmentVariable("OPENMORK_HOME", "User")
+    if (-not $currentOpenMorkHome -or $currentOpenMorkHome -ne $OpenMorkHome) {
+        [Environment]::SetEnvironmentVariable("OPENMORK_HOME", $OpenMorkHome, "User")
+        Write-Success "Set OPENMORK_HOME=$OpenMorkHome"
     }
-    $env:HERMES_HOME = $HermesHome
+    $env:OPENMORK_HOME = $OpenMorkHome
+
+    # Temporary compat alias for legacy integrations expecting HERMES_HOME
+    $currentHermesHomeCompat = [Environment]::GetEnvironmentVariable("HERMES_HOME", "User")
+    if (-not $currentHermesHomeCompat) {
+        [Environment]::SetEnvironmentVariable("HERMES_HOME", $OpenMorkHome, "User")
+        Write-Warn "Set legacy HERMES_HOME compatibility alias -> $OpenMorkHome (deprecated)."
+    }
     
     # Update current session
-    $env:Path = "$hermesBin;$env:Path"
+    $env:Path = "$openmorkBin;$env:Path"
     
-    Write-Success "hermes command ready"
+    Write-Success "openmork command ready"
+}
+
+function Install-LegacyCommandAlias {
+    # Temporary compatibility shim for renamed CLI command.
+    # Remove after users migrate from `hermes` to `openmork` (target: next major release).
+    if ($NoVenv) { return }
+
+    $scriptsDir = "$InstallDir\venv\Scripts"
+    $openmorkExe = "$scriptsDir\openmork.exe"
+    if (-not (Test-Path $openmorkExe)) { return }
+
+    $legacyCmdPath = "$scriptsDir\hermes.cmd"
+    @"
+@echo off
+echo [DEPRECATED] 'hermes' command is kept temporarily for compatibility. Please use 'openmork'. 1>&2
+""%~dp0openmork.exe"" %*
+"@ | Set-Content -Path $legacyCmdPath -Encoding ASCII
+
+    $legacyPs1Path = "$scriptsDir\hermes.ps1"
+    @"
+Write-Warning "[DEPRECATED] 'hermes' command is kept temporarily for compatibility. Please use 'openmork'."
+& "$scriptsDir\openmork.exe" @args
+"@ | Set-Content -Path $legacyPs1Path -Encoding UTF8
+
+    Write-Warn "Installed temporary legacy command alias: hermes -> openmork"
 }
 
 function Copy-ConfigTemplates {
     Write-Info "Setting up configuration files..."
     
-    # Create ~/.hermes directory structure
-    New-Item -ItemType Directory -Force -Path "$HermesHome\cron" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\sessions" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\logs" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\pairing" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\hooks" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\image_cache" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\audio_cache" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\memories" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\skills" | Out-Null
-    New-Item -ItemType Directory -Force -Path "$HermesHome\whatsapp\session" | Out-Null
+    # Create ~/.openmork directory structure
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\cron" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\sessions" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\logs" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\pairing" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\hooks" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\image_cache" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\audio_cache" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\memories" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\skills" | Out-Null
+    New-Item -ItemType Directory -Force -Path "$OpenMorkHome\whatsapp\session" | Out-Null
     
     # Create .env
-    $envPath = "$HermesHome\.env"
+    $envPath = "$OpenMorkHome\.env"
     if (-not (Test-Path $envPath)) {
         $examplePath = "$InstallDir\.env.example"
         if (Test-Path $examplePath) {
             Copy-Item $examplePath $envPath
-            Write-Success "Created ~/.hermes/.env from template"
+            Write-Success "Created ~/.openmork/.env from template"
         } else {
             New-Item -ItemType File -Force -Path $envPath | Out-Null
-            Write-Success "Created ~/.hermes/.env"
+            Write-Success "Created ~/.openmork/.env"
         }
     } else {
-        Write-Info "~/.hermes/.env already exists, keeping it"
+        Write-Info "~/.openmork/.env already exists, keeping it"
     }
     
     # Create config.yaml
-    $configPath = "$HermesHome\config.yaml"
+    $configPath = "$OpenMorkHome\config.yaml"
     if (-not (Test-Path $configPath)) {
         $examplePath = "$InstallDir\cli-config.yaml.example"
         if (Test-Path $examplePath) {
             Copy-Item $examplePath $configPath
-            Write-Success "Created ~/.hermes/config.yaml from template"
+            Write-Success "Created ~/.openmork/config.yaml from template"
         }
     } else {
-        Write-Info "~/.hermes/config.yaml already exists, keeping it"
+        Write-Info "~/.openmork/config.yaml already exists, keeping it"
     }
     
     # Create SOUL.md if it doesn't exist (global persona file)
-    $soulPath = "$HermesHome\SOUL.md"
+    $soulPath = "$OpenMorkHome\SOUL.md"
     if (-not (Test-Path $soulPath)) {
         @"
-# Hermes Agent Persona
+# OpenMork Persona
 
 <!-- 
 This file defines the agent's personality and tone.
 The agent will embody whatever you write here.
-Edit this to customize how Hermes communicates with you.
+Edit this to customize how OpenMork communicates with you.
 
 Examples:
   - "You are a warm, playful assistant who uses kaomoji occasionally."
@@ -691,25 +763,25 @@ This file is loaded fresh each message -- no restart needed.
 Delete the contents (or this file) to use the default personality.
 -->
 "@ | Set-Content -Path $soulPath -Encoding UTF8
-        Write-Success "Created ~/.hermes/SOUL.md (edit to customize personality)"
+        Write-Success "Created ~/.openmork/SOUL.md (edit to customize personality)"
     }
     
-    Write-Success "Configuration directory ready: ~/.hermes/"
+    Write-Success "Configuration directory ready: ~/.openmork/"
     
-    # Seed bundled skills into ~/.hermes/skills/ (manifest-based, one-time per skill)
-    Write-Info "Syncing bundled skills to ~/.hermes/skills/ ..."
+    # Seed bundled skills into ~/.openmork/skills/ (manifest-based, one-time per skill)
+    Write-Info "Syncing bundled skills to ~/.openmork/skills/ ..."
     $pythonExe = "$InstallDir\venv\Scripts\python.exe"
     if (Test-Path $pythonExe) {
         try {
             & $pythonExe "$InstallDir\tools\skills_sync.py" 2>$null
-            Write-Success "Skills synced to ~/.hermes/skills/"
+            Write-Success "Skills synced to ~/.openmork/skills/"
         } catch {
             # Fallback: simple directory copy
             $bundledSkills = "$InstallDir\skills"
-            $userSkills = "$HermesHome\skills"
+            $userSkills = "$OpenMorkHome\skills"
             if ((Test-Path $bundledSkills) -and -not (Get-ChildItem $userSkills -Exclude '.bundled_manifest' -ErrorAction SilentlyContinue)) {
                 Copy-Item -Path "$bundledSkills\*" -Destination $userSkills -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Success "Skills copied to ~/.hermes/skills/"
+                Write-Success "Skills copied to ~/.openmork/skills/"
             }
         }
     }
@@ -762,18 +834,18 @@ function Invoke-SetupWizard {
     
     Push-Location $InstallDir
     
-    # Run hermes setup using the venv Python directly (no activation needed)
+    # Run openmork setup using the venv Python directly (no activation needed)
     if (-not $NoVenv) {
-        & ".\venv\Scripts\python.exe" -m hermes_cli.main setup
+        & ".\venv\Scripts\python.exe" -m openmork_cli.main setup
     } else {
-        python -m hermes_cli.main setup
+        python -m openmork_cli.main setup
     }
     
     Pop-Location
 }
 
 function Start-GatewayIfConfigured {
-    $envPath = "$HermesHome\.env"
+    $envPath = "$OpenMorkHome\.env"
     if (-not (Test-Path $envPath)) { return }
 
     $hasMessaging = $false
@@ -785,23 +857,23 @@ function Start-GatewayIfConfigured {
 
     if (-not $hasMessaging) { return }
 
-    $hermesCmd = "$InstallDir\venv\Scripts\hermes.exe"
-    if (-not (Test-Path $hermesCmd)) {
-        $hermesCmd = "hermes"
+    $openmorkCmd = "$InstallDir\venv\Scripts\openmork.exe"
+    if (-not (Test-Path $openmorkCmd)) {
+        $openmorkCmd = "openmork"
     }
 
     # If WhatsApp is enabled but not yet paired, run foreground for QR scan
     $whatsappEnabled = $content | Where-Object { $_ -match "^WHATSAPP_ENABLED=true" }
-    $whatsappSession = "$HermesHome\whatsapp\session\creds.json"
+    $whatsappSession = "$OpenMorkHome\whatsapp\session\creds.json"
     if ($whatsappEnabled -and -not (Test-Path $whatsappSession)) {
         Write-Host ""
         Write-Info "WhatsApp is enabled but not yet paired."
-        Write-Info "Running 'hermes whatsapp' to pair via QR code..."
+        Write-Info "Running 'openmork whatsapp' to pair via QR code..."
         Write-Host ""
         $response = Read-Host "Pair WhatsApp now? [Y/n]"
         if ($response -eq "" -or $response -match "^[Yy]") {
             try {
-                & $hermesCmd whatsapp
+                & $openmorkCmd whatsapp
             } catch {
                 # Expected after pairing completes
             }
@@ -817,19 +889,19 @@ function Start-GatewayIfConfigured {
     if ($response -eq "" -or $response -match "^[Yy]") {
         Write-Info "Starting gateway in background..."
         try {
-            $logFile = "$HermesHome\logs\gateway.log"
-            Start-Process -FilePath $hermesCmd -ArgumentList "gateway" `
+            $logFile = "$OpenMorkHome\logs\gateway.log"
+            Start-Process -FilePath $openmorkCmd -ArgumentList "gateway" `
                 -RedirectStandardOutput $logFile `
-                -RedirectStandardError "$HermesHome\logs\gateway-error.log" `
+                -RedirectStandardError "$OpenMorkHome\logs\gateway-error.log" `
                 -WindowStyle Hidden
             Write-Success "Gateway started! Your bot is now online."
             Write-Info "Logs: $logFile"
             Write-Info "To stop: close the gateway process from Task Manager"
         } catch {
-            Write-Warn "Failed to start gateway. Run manually: hermes gateway"
+            Write-Warn "Failed to start gateway. Run manually: openmork gateway"
         }
     } else {
-        Write-Info "Skipped. Start the gateway later with: hermes gateway"
+        Write-Info "Skipped. Start the gateway later with: openmork gateway"
     }
 }
 
@@ -844,30 +916,30 @@ function Write-Completion {
     Write-Host "📁 Your files:" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "   Config:    " -NoNewline -ForegroundColor Yellow
-    Write-Host "$HermesHome\config.yaml"
+    Write-Host "$OpenMorkHome\config.yaml"
     Write-Host "   API Keys:  " -NoNewline -ForegroundColor Yellow
-    Write-Host "$HermesHome\.env"
+    Write-Host "$OpenMorkHome\.env"
     Write-Host "   Data:      " -NoNewline -ForegroundColor Yellow
-    Write-Host "$HermesHome\cron\, sessions\, logs\"
+    Write-Host "$OpenMorkHome\cron\, sessions\, logs\"
     Write-Host "   Code:      " -NoNewline -ForegroundColor Yellow
-    Write-Host "$HermesHome\hermes-agent\"
+    Write-Host "$OpenMorkHome\openmork\"
     Write-Host ""
     
     Write-Host "─────────────────────────────────────────────────────────" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "🚀 Commands:" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "   hermes              " -NoNewline -ForegroundColor Green
+    Write-Host "   openmork            " -NoNewline -ForegroundColor Green
     Write-Host "Start chatting"
-    Write-Host "   hermes setup        " -NoNewline -ForegroundColor Green
+    Write-Host "   openmork setup        " -NoNewline -ForegroundColor Green
     Write-Host "Configure API keys & settings"
-    Write-Host "   hermes config       " -NoNewline -ForegroundColor Green
+    Write-Host "   openmork config       " -NoNewline -ForegroundColor Green
     Write-Host "View/edit configuration"
-    Write-Host "   hermes config edit  " -NoNewline -ForegroundColor Green
+    Write-Host "   openmork config edit  " -NoNewline -ForegroundColor Green
     Write-Host "Open config in editor"
-    Write-Host "   hermes gateway      " -NoNewline -ForegroundColor Green
+    Write-Host "   openmork gateway      " -NoNewline -ForegroundColor Green
     Write-Host "Start messaging gateway (Telegram, Discord, etc.)"
-    Write-Host "   hermes update       " -NoNewline -ForegroundColor Green
+    Write-Host "   openmork update       " -NoNewline -ForegroundColor Green
     Write-Host "Update to latest version"
     Write-Host ""
     
@@ -902,12 +974,14 @@ function Main {
     if (-not (Test-Git)) { throw "Git not found — install from https://git-scm.com/download/win" }
     Test-Node              # Auto-installs if missing
     Install-SystemPackages  # ripgrep + ffmpeg in one step
+    Invoke-LegacyMigration  # Non-destructive ~/.hermes -> ~/.openmork copy
     
     Install-Repository
     Install-Venv
     Install-Dependencies
     Install-NodeDeps
     Set-PathVariable
+    Install-LegacyCommandAlias
     Copy-ConfigTemplates
     Invoke-SetupWizard
     Start-GatewayIfConfigured
@@ -925,7 +999,7 @@ try {
     Write-Err "Installation failed: $_"
     Write-Host ""
     Write-Info "If the error is unclear, try downloading and running the script directly:"
-    Write-Host "  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.ps1' -OutFile install.ps1" -ForegroundColor Yellow
+    Write-Host "  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.ps1' -OutFile install.ps1" -ForegroundColor Yellow
     Write-Host "  .\install.ps1" -ForegroundColor Yellow
     Write-Host ""
 }
