@@ -84,7 +84,7 @@ all = [
 
 [project.scripts]
 openmork = "openmork_cli.main:main"
-openmork = "run_agent:main"
+openmork-agent = "run_agent:main"
 openmork-acp = "acp_adapter.entry:main"
 
 [tool.setuptools]

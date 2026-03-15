@@ -10,7 +10,7 @@ const config: Config = {
   url: 'https://openmork.local',
   baseUrl: '/docs/',
 
-  organizationName: 'NousResearch',
+  organizationName: 'openmork',
   projectName: 'openmork',
 
   onBrokenLinks: 'warn',
