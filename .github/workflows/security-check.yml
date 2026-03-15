@@ -20,3 +20,6 @@ jobs:
 
       - name: Run secret/remote scanner
         run: python scripts/security/check_secrets.py --all-files
+
+      - name: Run dependency integrity check
+        run: python scripts/security/check_dependency_integrity.py --lock uv.lock

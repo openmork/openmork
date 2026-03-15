@@ -599,6 +599,21 @@ ln -sf ../../scripts/security/pre-commit .git/hooks/pre-commit
 
 CI enforces the same policy in `.github/workflows/security-check.yml`.
 
+### Required dependency integrity check
+Run:
+```bash
+python scripts/security/check_dependency_integrity.py --lock uv.lock
+```
+
+This ensures critical runtime dependencies are pinned in the lockfile and no editable lock entries slip in.
+
+### Community ARM PRs (required)
+If your PR adds or modifies an ARM (gateway/memory/security/skillset):
+- Expose `apiVersion = "1.0"` (or the current expected protocol)
+- Pass runtime contract validation (`openmork_contracts.validate_arm_contract`)
+- Register through the central ARM registry (`openmork_arm_registry`) with metadata (`compat`, `version`) and optional healthcheck
+- Add unit tests for contract compatibility and at least one smoke test for health/metrics
+
 ---
 
 ## Pull Request Process

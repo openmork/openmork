@@ -39,3 +39,13 @@ ln -sf ../../scripts/security/pre-commit .git/hooks/pre-commit
 ```
 
 CI also runs this check on pushes and pull requests via `.github/workflows/security-check.yml`.
+
+## 5. Supply-chain integrity checks (required)
+OpenMork also enforces a minimal lockfile integrity gate for critical runtime dependencies.
+
+Run locally:
+```bash
+python scripts/security/check_dependency_integrity.py --lock uv.lock
+```
+
+This check verifies that critical packages (OpenAI/Anthropic/httpx/requests/pydantic/dotenv/pyyaml) are present in `uv.lock` with pinned versions and rejects editable lock entries.
