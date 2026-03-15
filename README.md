@@ -278,7 +278,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 openmork is built on the shoulders of great open-source projects:
 
-- [Hermes-Agent](https://github.com/NousResearch/hermes-agent) by Nous Research
+- [OpenMork](https://github.com/NousResearch/openmork) by Nous Research
 - [OpenClaw](https://github.com/anthropics/claude-code)
 - [Superpowers](https://github.com/obra/superpowers)
 - [MetaClaw](https://github.com/aiming-lab/MetaClaw)

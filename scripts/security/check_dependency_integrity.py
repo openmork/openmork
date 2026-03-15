@@ -20,7 +20,7 @@ CRITICAL_PACKAGES = {
 }
 
 # Editable entries for the project package itself are allowed.
-ALLOWED_EDITABLE = {"openmork", "hermes-agent"}
+ALLOWED_EDITABLE = {"openmork"}
 
 
 def _load_lock(path: Path) -> dict:

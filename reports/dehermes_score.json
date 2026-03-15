@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-03-15T23:11:10.379145+00:00",
+  "score": 0,
+  "formula": "score = max(0, 100 - (weighted_refs + dependency_legacy_hits*6 + path_legacy_hits*4)); weighted_refs: code*3 + config*2 + docs*1",
+  "totals": {
+    "refs_by_category": {
+      "code": 107,
+      "docs": 9
+    },
+    "dependency_legacy_hits": 0,
+    "path_legacy_hits": 37,
+    "weighted_refs": 330,
+    "penalty": 478
+  },
+  "top_files": [
+    {
+      "file": "scripts/install.ps1",
+      "total_refs": 93,
+      "breakdown": {
+        "hermes_agent_name": 9,
+        "hermes_cli": 2,
+        "hermes_home_env": 5,
+        "legacy_path_dot_hermes": 28,
+        "brand_hermes": 49
+      }
+    },
+    {
+      "file": "scripts/install.cmd",
+      "total_refs": 14,
+      "breakdown": {
+        "hermes_agent_name": 4,
+        "legacy_path_dot_hermes": 4,
+        "brand_hermes": 6
+      }
+    },
+    {
+      "file": "website/static/img/docs/cli-layout.svg",
+      "total_refs": 6,
+      "breakdown": {
+        "brand_hermes": 6
+      }
+    },
+    {
+      "file": "website/static/img/docs/session-recap.svg",
+      "total_refs": 3,
+      "breakdown": {
+        "brand_hermes": 3
+      }
+    }
+  ]
+}
