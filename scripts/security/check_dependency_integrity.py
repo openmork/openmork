@@ -8,15 +8,19 @@ import sys
 import tomllib
 from pathlib import Path
 
+# Keep this list to packages that are guaranteed in the current lock.
+# Provider-specific SDKs can be optional per deployment.
 CRITICAL_PACKAGES = {
     "openai",
-    "anthropic",
     "httpx",
     "requests",
     "pydantic",
     "python-dotenv",
     "pyyaml",
 }
+
+# Editable entries for the project package itself are allowed.
+ALLOWED_EDITABLE = {"openmork", "hermes-agent"}
 
 
 def _load_lock(path: Path) -> dict:
@@ -43,7 +47,7 @@ def check_lock_integrity(lock_path: Path) -> tuple[bool, list[str]]:
 
     for name, pkg in by_name.items():
         source = pkg.get("source")
-        if isinstance(source, dict) and source.get("editable"):
+        if isinstance(source, dict) and source.get("editable") and name not in ALLOWED_EDITABLE:
             issues.append(f"Editable dependency detected in lockfile: {name}")
 
     return len(issues) == 0, issues

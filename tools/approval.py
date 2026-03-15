@@ -455,16 +455,28 @@ def check_all_command_guards(command: str, env_type: str,
 
     # --- Phase 2: Decide ---
 
-    # OPENMORK: Tirith blocks are downgraded to warns — user always decides
+    # Respect tirith "block" actions as hard blocks.
+
+    session_key = os.getenv("OPENMORK_SESSION_KEY", "default")
+
     if tirith_result["action"] == "block":
-        tirith_result["action"] = "warn"
-        if not tirith_result.get("summary"):
-            tirith_result["summary"] = "security issue detected"
+        findings = tirith_result.get("findings") or []
+        summary = tirith_result.get("summary") or "security policy violation"
+        if findings:
+            first = findings[0]
+            rid = first.get("rule_id")
+            sev = first.get("severity")
+            parts = [p for p in [summary, rid, sev] if p]
+            summary = " | ".join(parts)
+        return {
+            "approved": False,
+            "message": f"BLOCKED: {summary}",
+            "pattern_key": f"tirith:{(findings[0].get('rule_id') if findings else 'unknown')}",
+            "description": summary,
+        }
 
     # Collect warnings that need approval
     warnings = []  # list of (pattern_key, description, is_tirith)
-
-    session_key = os.getenv("OPENMORK_SESSION_KEY", "default")
 
     if tirith_result["action"] == "warn":
         findings = tirith_result.get("findings") or []
