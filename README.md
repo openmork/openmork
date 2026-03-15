@@ -135,7 +135,7 @@ OpenAI, Claude, Grok, Qwen<br/>
 
 ```bash
 # Clone
-git clone https://github.com/openmork/openmork.git
+git clone https://github.com/Wosmim/openmork.git
 cd openmork
 
 # Install
