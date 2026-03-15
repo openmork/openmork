@@ -177,7 +177,8 @@ from gateway.session import (
 )
 from gateway.delivery import DeliveryRouter, DeliveryTarget
 from gateway.platforms.base import BasePlatformAdapter, MessageEvent, MessageType
-from openmork_contracts import validate_arm_contract, ArmContractError
+from openmork_arm_registry import get_arm_registry
+from openmork_contracts import ArmContractError
 
 logger = logging.getLogger(__name__)
 
@@ -954,11 +955,15 @@ class GatewayRunner:
             setattr(adapter, "stop", getattr(adapter, "disconnect"))
 
         try:
-            validate_arm_contract(
+            get_arm_registry().register(
+                "gateway",
                 adapter,
-                arm_kind="gateway",
                 expected_api_version="1.0",
                 allow_legacy_api_version=True,
+                compat="platform-adapter",
+                version=getattr(adapter, "apiVersion", "1.0"),
+                metadata={"component": "gateway", "adapter": adapter.__class__.__name__},
+                healthcheck=lambda a: {"ok": bool(getattr(a, "_running", True))},
             )
         except ArmContractError as exc:
             raise RuntimeError(f"Gateway adapter '{adapter.__class__.__name__}' rejected by ARM contract: {exc}") from exc

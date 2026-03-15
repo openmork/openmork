@@ -67,7 +67,7 @@ from model_tools import get_tool_definitions, handle_function_call, check_toolse
 from tools.terminal_tool import cleanup_vm
 from tools.interrupt import set_interrupt as _set_interrupt
 from tools.browser_tool import cleanup_browser
-from openmork_contracts import validate_arm_contract
+from openmork_arm_registry import get_arm_registry
 
 import requests
 
@@ -738,11 +738,15 @@ class AIAgent:
                             hits = [e for e in pool if query.lower() in e.lower()]
                             return [{"content": h} for h in hits[: max(1, limit)]]
 
-                    validate_arm_contract(
-                        _MemoryStoreArmAdapter(self._memory_store),
-                        arm_kind="memory",
+                    memory_arm = _MemoryStoreArmAdapter(self._memory_store)
+                    get_arm_registry().register(
+                        "memory",
+                        memory_arm,
                         expected_api_version="1.0",
                         allow_legacy_api_version=True,
+                        compat="memory-store",
+                        version="1.0",
+                        metadata={"component": "run_agent", "adapter": "MemoryStore"},
                     )
                     self._memory_store.load_from_disk()
             except Exception:

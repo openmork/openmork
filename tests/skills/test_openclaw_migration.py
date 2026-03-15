@@ -37,6 +37,66 @@ def load_skills_guard():
     return module
 
 
+def test_dry_run_does_not_modify_target_disk(tmp_path: Path):
+    mod = load_module()
+    source = tmp_path / ".openclaw"
+    target = tmp_path / ".openmork"
+    (source / "workspace").mkdir(parents=True)
+    (source / "workspace" / "SOUL.md").write_text("# Soul\n\nHello\n", encoding="utf-8")
+    target.mkdir()
+    original = "keep: true\n"
+    (target / "config.yaml").write_text(original, encoding="utf-8")
+
+    migrator = mod.Migrator(
+        source_root=source,
+        target_root=target,
+        execute=False,
+        workspace_target=None,
+        overwrite=False,
+        migrate_secrets=False,
+        output_dir=target / "migration-report",
+        selected_options={"soul"},
+    )
+    report = migrator.migrate()
+
+    assert report["mode"] == "dry-run"
+    assert not (target / "SOUL.md").exists()
+    assert (target / "config.yaml").read_text(encoding="utf-8") == original
+
+
+def test_execute_rolls_back_on_stage_failure(tmp_path: Path):
+    mod = load_module()
+    source = tmp_path / ".openclaw"
+    target = tmp_path / ".openmork"
+    (source / "workspace").mkdir(parents=True)
+    (source / "workspace" / "SOUL.md").write_text("# Soul\n\nHello\n", encoding="utf-8")
+    target.mkdir()
+    sentinel = "model: baseline\n"
+    (target / "config.yaml").write_text(sentinel, encoding="utf-8")
+
+    migrator = mod.Migrator(
+        source_root=source,
+        target_root=target,
+        execute=True,
+        workspace_target=None,
+        overwrite=True,
+        migrate_secrets=False,
+        output_dir=target / "migration-report",
+        selected_options={"soul"},
+    )
+
+    def _boom() -> None:
+        raise RuntimeError("boom")
+
+    migrator.migrate_soul = _boom
+    report = migrator.migrate()
+
+    assert report["rollback"]["triggered"] is True
+    assert report["rollback"]["restored"] is True
+    assert (target / "config.yaml").read_text(encoding="utf-8") == sentinel
+    assert not (target / "SOUL.md").exists()
+
+
 def test_extract_markdown_entries_promotes_heading_context():
     mod = load_module()
     text = """# MEMORY.md - Long-Term Memory

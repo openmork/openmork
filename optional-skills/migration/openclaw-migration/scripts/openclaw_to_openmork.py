@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import tempfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -472,6 +473,9 @@ class Migrator:
         self.backup_dir = self.output_dir / "backups" if self.output_dir else None
         self.overflow_dir = self.output_dir / "overflow" if self.output_dir else None
         self.items: List[ItemResult] = []
+        self.stage_reports: List[Dict[str, Any]] = []
+        self.rollback_state: Dict[str, Any] = {"triggered": False, "reason": "", "restored": False}
+        self._snapshot_dir: Optional[Path] = None
 
         config = load_yaml_file(self.target_root / "config.yaml")
         mem_cfg = config.get("memory", {}) if isinstance(config.get("memory"), dict) else {}
@@ -533,59 +537,83 @@ class Migrator:
             self.record("source", self.source_root, None, "error", "OpenClaw directory does not exist")
             return self.build_report()
 
+        if self.execute:
+            self._create_rollback_snapshot()
+
         config = self.load_openclaw_config()
 
-        self.run_if_selected("soul", self.migrate_soul)
-        self.run_if_selected("workspace-agents", self.migrate_workspace_agents)
-        self.run_if_selected(
-            "memory",
-            lambda: self.migrate_memory(
-                self.source_candidate("workspace/MEMORY.md", "workspace.default/MEMORY.md"),
-                self.target_root / "memories" / "MEMORY.md",
-                self.memory_limit,
-                kind="memory",
+        stages: List[Tuple[str, Any]] = [
+            ("soul", self.migrate_soul),
+            ("workspace-agents", self.migrate_workspace_agents),
+            (
+                "memory",
+                lambda: self.migrate_memory(
+                    self.source_candidate("workspace/MEMORY.md", "workspace.default/MEMORY.md"),
+                    self.target_root / "memories" / "MEMORY.md",
+                    self.memory_limit,
+                    kind="memory",
+                ),
             ),
-        )
-        self.run_if_selected(
-            "user-profile",
-            lambda: self.migrate_memory(
-                self.source_candidate("workspace/USER.md", "workspace.default/USER.md"),
-                self.target_root / "memories" / "USER.md",
-                self.user_limit,
-                kind="user-profile",
+            (
+                "user-profile",
+                lambda: self.migrate_memory(
+                    self.source_candidate("workspace/USER.md", "workspace.default/USER.md"),
+                    self.target_root / "memories" / "USER.md",
+                    self.user_limit,
+                    kind="user-profile",
+                ),
             ),
-        )
-        self.run_if_selected("messaging-settings", lambda: self.migrate_messaging_settings(config))
-        self.run_if_selected("secret-settings", lambda: self.handle_secret_settings(config))
-        self.run_if_selected("discord-settings", lambda: self.migrate_discord_settings(config))
-        self.run_if_selected("slack-settings", lambda: self.migrate_slack_settings(config))
-        self.run_if_selected("whatsapp-settings", lambda: self.migrate_whatsapp_settings(config))
-        self.run_if_selected("signal-settings", lambda: self.migrate_signal_settings(config))
-        self.run_if_selected("provider-keys", lambda: self.handle_provider_keys(config))
-        self.run_if_selected("model-config", lambda: self.migrate_model_config(config))
-        self.run_if_selected("tts-config", lambda: self.migrate_tts_config(config))
-        self.run_if_selected("command-allowlist", self.migrate_command_allowlist)
-        self.run_if_selected("skills", self.migrate_skills)
-        self.run_if_selected("shared-skills", self.migrate_shared_skills)
-        self.run_if_selected("daily-memory", self.migrate_daily_memory)
-        self.run_if_selected(
-            "tts-assets",
-            lambda: self.copy_tree_non_destructive(
-                self.source_candidate("workspace/tts"),
-                self.target_root / "tts",
-                kind="tts-assets",
-                ignore_dir_names={".venv", "generated", "__pycache__"},
+            ("messaging-settings", lambda: self.migrate_messaging_settings(config)),
+            ("secret-settings", lambda: self.handle_secret_settings(config)),
+            ("discord-settings", lambda: self.migrate_discord_settings(config)),
+            ("slack-settings", lambda: self.migrate_slack_settings(config)),
+            ("whatsapp-settings", lambda: self.migrate_whatsapp_settings(config)),
+            ("signal-settings", lambda: self.migrate_signal_settings(config)),
+            ("provider-keys", lambda: self.handle_provider_keys(config)),
+            ("model-config", lambda: self.migrate_model_config(config)),
+            ("tts-config", lambda: self.migrate_tts_config(config)),
+            ("command-allowlist", self.migrate_command_allowlist),
+            ("skills", self.migrate_skills),
+            ("shared-skills", self.migrate_shared_skills),
+            ("daily-memory", self.migrate_daily_memory),
+            (
+                "tts-assets",
+                lambda: self.copy_tree_non_destructive(
+                    self.source_candidate("workspace/tts"),
+                    self.target_root / "tts",
+                    kind="tts-assets",
+                    ignore_dir_names={".venv", "generated", "__pycache__"},
+                ),
             ),
-        )
-        self.run_if_selected("archive", self.archive_docs)
+            ("archive", self.archive_docs),
+        ]
+
+        for option_id, fn in stages:
+            ok = self.run_if_selected(option_id, fn)
+            if not ok:
+                break
+
         return self.build_report()
 
-    def run_if_selected(self, option_id: str, func) -> None:
-        if self.is_selected(option_id):
+    def run_if_selected(self, option_id: str, func) -> bool:
+        if not self.is_selected(option_id):
+            meta = MIGRATION_OPTION_METADATA[option_id]
+            self.record(option_id, None, None, "skipped", "Not selected for this run", option_label=meta["label"])
+            self.stage_reports.append({"stage": option_id, "status": "skipped"})
+            return True
+
+        before = len(self.items)
+        try:
             func()
-            return
-        meta = MIGRATION_OPTION_METADATA[option_id]
-        self.record(option_id, None, None, "skipped", "Not selected for this run", option_label=meta["label"])
+            self.stage_reports.append({"stage": option_id, "status": "ok", "new_items": len(self.items) - before})
+            return True
+        except Exception as exc:
+            reason = f"Stage failed: {exc}"
+            self.record(option_id, None, None, "error", reason)
+            self.stage_reports.append({"stage": option_id, "status": "error", "error": str(exc)})
+            if self.execute:
+                self._rollback_on_failure(option_id, str(exc))
+            return False
 
     def build_report(self) -> Dict[str, Any]:
         summary: Dict[str, int] = {
@@ -622,6 +650,8 @@ class Migrator:
                 ],
             },
             "summary": summary,
+            "stages": self.stage_reports,
+            "rollback": self.rollback_state,
             "items": [asdict(item) for item in self.items],
         }
 
@@ -629,6 +659,32 @@ class Migrator:
             write_report(self.output_dir, report)
 
         return report
+
+    def _create_rollback_snapshot(self) -> None:
+        if not self.execute:
+            return
+        tmp_root = Path(tempfile.mkdtemp(prefix="openmork-migration-rollback-"))
+        snapshot = tmp_root / "target_snapshot"
+        if self.target_root.exists():
+            shutil.copytree(self.target_root, snapshot, dirs_exist_ok=True)
+        self._snapshot_dir = snapshot
+
+    def _rollback_on_failure(self, stage: str, error: str) -> None:
+        self.rollback_state = {
+            "triggered": True,
+            "reason": f"{stage}: {error}",
+            "restored": False,
+        }
+        if self._snapshot_dir is None:
+            return
+        try:
+            if self.target_root.exists():
+                shutil.rmtree(self.target_root)
+            if self._snapshot_dir.exists():
+                shutil.copytree(self._snapshot_dir, self.target_root, dirs_exist_ok=True)
+            self.rollback_state["restored"] = True
+        except Exception as exc:
+            self.rollback_state["restore_error"] = str(exc)
 
     def maybe_backup(self, path: Path) -> Optional[Path]:
         if not self.execute or not self.backup_dir or not path.exists():
