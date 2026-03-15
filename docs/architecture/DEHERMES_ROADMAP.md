@@ -40,7 +40,7 @@ Objetivo: reducir dependencia estructural de Hermes y dejar OpenMork soberano si
 
 ### Política de retirada de compat legacy (`hermes`)
 - **Objetivo de retirada**: OpenMork `v1.0.0` o, como máximo, `2026-06-30` (lo que ocurra primero).
-- **Criterio de salida**: retirar alias `hermes` cuando se cumpla al menos una condición:
+- **Criterio de salida**: retirar alias `hermes` y envoltorios (shims) cuando se alcance el 30 de abril de 2026, o cuando menos del 5% de la comunidad de OpenClaw requiera migración (lo que ocurra primero).
   - adopción de comando `openmork` >= **90%** en telemetría de instaladores/smoke logs durante 30 días, o
   - llegada de release mayor `v1.0.0` con nota de breaking change publicada.
 - **Condición de seguridad**: mantener fallback documentado solo durante la ventana de transición; después, eliminar wrappers `hermes.*` del installer.

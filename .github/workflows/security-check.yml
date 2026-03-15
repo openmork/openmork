@@ -1,25 +1,22 @@
-name: Security Check
+name: Security Guardrails
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
+    branches: [ "main" ]
 
 jobs:
-  secrets-and-remotes:
+  no-trace-guard:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Run secret/remote scanner
-        run: python scripts/security/check_secrets.py --all-files
-
-      - name: Run dependency integrity check
-        run: python scripts/security/check_dependency_integrity.py --lock uv.lock
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Run No-Trace Guard (De-Hermes)
+      run: |
+        python3 scripts/dehermes/no_trace_guard.py

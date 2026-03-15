@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-03-15T23:35:19.978655+00:00",
-  "score": 43,
+  "generated_at": "2026-03-15T23:56:10.562705+00:00",
+  "score": 29,
   "formula": "score = round(100 / (1 + penalty/40)); penalty = weighted_refs + dependency_legacy_hits*6 + path_legacy_hits*4",
   "weights": {
     "category_weight": {
@@ -14,14 +14,16 @@
   },
   "totals": {
     "refs_by_category": {
-      "code": 10
+      "code": 15,
+      "docs": 9,
+      "config": 1
     },
     "dependency_legacy_hits": 0,
-    "path_legacy_hits": 6,
-    "weighted_refs": 30,
+    "path_legacy_hits": 10,
+    "weighted_refs": 56,
     "dependency_penalty": 0,
-    "path_penalty": 24,
-    "penalty": 54
+    "path_penalty": 40,
+    "penalty": 96
   },
   "top_files": [
     {
@@ -31,6 +33,30 @@
         "hermes_home_env": 2,
         "legacy_path_dot_hermes": 4,
         "brand_hermes": 4
+      }
+    },
+    {
+      "file": "docs/architecture/DEHERMES_NOTRACE_AUDIT.md",
+      "total_refs": 9,
+      "breakdown": {
+        "hermes_home_env": 1,
+        "legacy_path_dot_hermes": 1,
+        "brand_hermes": 7
+      }
+    },
+    {
+      "file": "scripts/dehermes/no_trace_guard.py",
+      "total_refs": 5,
+      "breakdown": {
+        "legacy_path_dot_hermes": 2,
+        "brand_hermes": 3
+      }
+    },
+    {
+      "file": ".github/workflows/security-check.yml",
+      "total_refs": 1,
+      "breakdown": {
+        "brand_hermes": 1
       }
     }
   ]
