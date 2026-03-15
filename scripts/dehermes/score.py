@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compute a simple De-Hermes independence score (0-100)."""
+"""Compute a De-Hermes independence score (0-100) with transparent components."""
 
 from __future__ import annotations
 
@@ -31,6 +31,11 @@ PATTERNS = {
     "brand_hermes": re.compile(r"\bHermes\b|\bHERMES\b|\bhermes\b"),
 }
 
+CATEGORY_WEIGHT = {"code": 3, "config": 2, "docs": 1}
+DEPENDENCY_HIT_WEIGHT = 6
+PATH_HIT_WEIGHT = 4
+PENALTY_SCALE = 40
+
 
 def iter_files(root: Path):
     for p in root.rglob("*"):
@@ -55,9 +60,13 @@ def classify(path: Path) -> str:
     return "code"
 
 
-def main() -> int:
-    category_weight = {"code": 3, "config": 2, "docs": 1}
+def compute_score(penalty: int) -> int:
+    # Smooth decay to avoid permanent clamp at 0 while keeping monotonic behavior.
+    score = round(100 / (1 + (penalty / PENALTY_SCALE)))
+    return max(0, min(100, score))
 
+
+def main() -> int:
     per_file = defaultdict(lambda: Counter())
     category_totals = Counter()
 
@@ -74,21 +83,21 @@ def main() -> int:
                 per_file[rel][key] += count
                 category_totals[cat] += count
 
-    # focused legacy-dependency counters
     dep_files = [ROOT / "pyproject.toml", ROOT / "uv.lock", ROOT / "package-lock.json"]
     dependency_legacy_hits = 0
     for dp in dep_files:
         if dp.exists():
             dependency_legacy_hits += len(PATTERNS["hermes_agent_name"].findall(dp.read_text(encoding="utf-8")))
 
-    # paths legacy are explicit filesystem/env couplings
     path_legacy_hits = 0
     for stats in per_file.values():
         path_legacy_hits += stats.get("legacy_path_dot_hermes", 0) + stats.get("hermes_home_env", 0)
 
-    weighted_refs = sum(category_totals[c] * category_weight[c] for c in category_totals)
-    penalty = weighted_refs + (dependency_legacy_hits * 6) + (path_legacy_hits * 4)
-    score = max(0, min(100, 100 - penalty))
+    weighted_refs = sum(category_totals[c] * CATEGORY_WEIGHT[c] for c in category_totals)
+    dependency_penalty = dependency_legacy_hits * DEPENDENCY_HIT_WEIGHT
+    path_penalty = path_legacy_hits * PATH_HIT_WEIGHT
+    penalty = weighted_refs + dependency_penalty + path_penalty
+    score = compute_score(penalty)
 
     top_files = []
     for rel, stats in per_file.items():
@@ -99,12 +108,20 @@ def main() -> int:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "score": score,
-        "formula": "score = max(0, 100 - (weighted_refs + dependency_legacy_hits*6 + path_legacy_hits*4)); weighted_refs: code*3 + config*2 + docs*1",
+        "formula": "score = round(100 / (1 + penalty/40)); penalty = weighted_refs + dependency_legacy_hits*6 + path_legacy_hits*4",
+        "weights": {
+            "category_weight": CATEGORY_WEIGHT,
+            "dependency_hit_weight": DEPENDENCY_HIT_WEIGHT,
+            "path_hit_weight": PATH_HIT_WEIGHT,
+            "penalty_scale": PENALTY_SCALE,
+        },
         "totals": {
             "refs_by_category": dict(category_totals),
             "dependency_legacy_hits": dependency_legacy_hits,
             "path_legacy_hits": path_legacy_hits,
             "weighted_refs": weighted_refs,
+            "dependency_penalty": dependency_penalty,
+            "path_penalty": path_penalty,
             "penalty": penalty,
         },
         "top_files": top_files[:20],
@@ -112,8 +129,14 @@ def main() -> int:
 
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"De-Hermes score: {score}")
-    print(f"Report: {REPORT_PATH}")
+
+    print(f"refs_by_category={dict(category_totals)}")
+    print(
+        "penalty_components="
+        f"weighted_refs:{weighted_refs},dependency_penalty:{dependency_penalty},path_penalty:{path_penalty},total:{penalty}"
+    )
+    print(f"score={score}")
+    print(f"report={REPORT_PATH}")
     return 0
 
 

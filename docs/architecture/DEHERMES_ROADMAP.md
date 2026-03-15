@@ -38,6 +38,13 @@ Objetivo: reducir dependencia estructural de Hermes y dejar OpenMork soberano si
 
 ## Fase 3 — Independencia core
 
+### Política de retirada de compat legacy (`hermes`)
+- **Objetivo de retirada**: OpenMork `v1.0.0` o, como máximo, `2026-06-30` (lo que ocurra primero).
+- **Criterio de salida**: retirar alias `hermes` cuando se cumpla al menos una condición:
+  - adopción de comando `openmork` >= **90%** en telemetría de instaladores/smoke logs durante 30 días, o
+  - llegada de release mayor `v1.0.0` con nota de breaking change publicada.
+- **Condición de seguridad**: mantener fallback documentado solo durante la ventana de transición; después, eliminar wrappers `hermes.*` del installer.
+
 ### Trabajo
 - Eliminar alias y rutas legacy tras ventana de transición.
 - Depurar assets/docs de branding Hermes en website y ejemplos.

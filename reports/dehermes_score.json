@@ -1,16 +1,27 @@
 {
-  "generated_at": "2026-03-15T23:21:00.855067+00:00",
-  "score": 0,
-  "formula": "score = max(0, 100 - (weighted_refs + dependency_legacy_hits*6 + path_legacy_hits*4)); weighted_refs: code*3 + config*2 + docs*1",
+  "generated_at": "2026-03-15T23:28:58.741534+00:00",
+  "score": 29,
+  "formula": "score = round(100 / (1 + penalty/40)); penalty = weighted_refs + dependency_legacy_hits*6 + path_legacy_hits*4",
+  "weights": {
+    "category_weight": {
+      "code": 3,
+      "config": 2,
+      "docs": 1
+    },
+    "dependency_hit_weight": 6,
+    "path_hit_weight": 4,
+    "penalty_scale": 40
+  },
   "totals": {
     "refs_by_category": {
-      "code": 20,
-      "docs": 9
+      "code": 20
     },
     "dependency_legacy_hits": 0,
     "path_legacy_hits": 9,
-    "weighted_refs": 69,
-    "penalty": 105
+    "weighted_refs": 60,
+    "dependency_penalty": 0,
+    "path_penalty": 36,
+    "penalty": 96
   },
   "top_files": [
     {
@@ -20,20 +31,6 @@
         "hermes_home_env": 4,
         "legacy_path_dot_hermes": 5,
         "brand_hermes": 10
-      }
-    },
-    {
-      "file": "website/static/img/docs/cli-layout.svg",
-      "total_refs": 6,
-      "breakdown": {
-        "brand_hermes": 6
-      }
-    },
-    {
-      "file": "website/static/img/docs/session-recap.svg",
-      "total_refs": 3,
-      "breakdown": {
-        "brand_hermes": 3
       }
     },
     {
