@@ -158,9 +158,9 @@
 
 <header class="hero">
   <h1>honcho<span>-integration-spec</span></h1>
-  <p class="subtitle">Comparison of OpenMork vs. openclaw-honcho — and a porting spec for bringing OPENMORK patterns into other Honcho integrations.</p>
+  <p class="subtitle">Comparison of openmork vs. openclaw-honcho — and a porting spec for bringing OPENMORK patterns into other Honcho integrations.</p>
   <div class="meta">
-    <span>OpenMork / openclaw-honcho</span>
+    <span>openmork / openclaw-honcho</span>
     <span>Python + TypeScript</span>
     <span>2026-03-09</span>
   </div>
@@ -188,7 +188,7 @@
 <section id="overview">
   <h2>Overview</h2>
 
-  <p>Two independent Honcho integrations have been built for two different agent runtimes: <strong>OpenMork</strong> (Python, baked into the runner) and <strong>openclaw-honcho</strong> (TypeScript plugin via hook/tool API). Both use the same Honcho peer paradigm — dual peer model, <code>session.context()</code>, <code>peer.chat()</code> — but they made different tradeoffs at every layer.</p>
+  <p>Two independent Honcho integrations have been built for two different agent runtimes: <strong>openmork</strong> (Python, baked into the runner) and <strong>openclaw-honcho</strong> (TypeScript plugin via hook/tool API). Both use the same Honcho peer paradigm — dual peer model, <code>session.context()</code>, <code>peer.chat()</code> — but they made different tradeoffs at every layer.</p>
 
   <p>This document maps those tradeoffs and defines a porting spec: a set of OPENMORK-originated patterns, each stated as an integration-agnostic interface, that any Honcho integration can adopt regardless of runtime or language.</p>
 
@@ -262,7 +262,7 @@ flowchart TD
       <thead>
         <tr>
           <th>Dimension</th>
-          <th>OpenMork</th>
+          <th>openmork</th>
           <th>openclaw-honcho</th>
         </tr>
       </thead>
@@ -339,7 +339,7 @@ flowchart TD
         </tr>
         <tr>
           <td><strong>AI peer name in identity</strong></td>
-          <td>Replaces "OpenMork" in DEFAULT_AGENT_IDENTITY when configured.</td>
+          <td>Replaces "openmork" in DEFAULT_AGENT_IDENTITY when configured.</td>
           <td>Not implemented.</td>
         </tr>
         <tr>

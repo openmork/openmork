@@ -1,5 +1,5 @@
 """
-OpenMork Uninstaller.
+openmork Uninstaller.
 
 Provides options for:
 - Full uninstall: Remove everything including configs and data
@@ -68,13 +68,13 @@ def remove_path_from_shell_configs():
             content = config_path.read_text()
             original_content = content
             
-            # Remove lines containing OpenMork or openmork PATH entries
+            # Remove lines containing openmork or openmork PATH entries
             new_lines = []
             skip_next = False
             
             for line in content.split('\n'):
-                # Skip the "# OpenMork" comment and following line
-                if '# OpenMork' in line or '# OpenMork' in line:
+                # Skip the "# openmork" comment and following line
+                if '# openmork' in line or '# openmork' in line:
                     skip_next = True
                     continue
                 if skip_next and ('openmork' in line.lower() and 'PATH' in line):
@@ -117,7 +117,7 @@ def remove_wrapper_script():
             try:
                 # Check if it's our wrapper (contains openmork_cli reference)
                 content = wrapper.read_text()
-                if 'openmork_cli' in content or 'OpenMork' in content:
+                if 'openmork_cli' in content or 'openmork' in content:
                     wrapper.unlink()
                     removed.append(wrapper)
             except Exception as e:
@@ -183,7 +183,7 @@ def run_uninstall(args):
     
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.MAGENTA, Colors.BOLD))
-    print(color("│            ⚕ OpenMork Uninstaller                  │", Colors.MAGENTA, Colors.BOLD))
+    print(color("│            ⚕ openmork Uninstaller                  │", Colors.MAGENTA, Colors.BOLD))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.MAGENTA, Colors.BOLD))
     print()
     
@@ -278,7 +278,7 @@ def run_uninstall(args):
     # We need to be careful here
     try:
         if project_root.exists():
-            # If the install is inside ~/.openmork/, just remove the OpenMork subdir
+            # If the install is inside ~/.openmork/, just remove the openmork subdir
             if openmork_home in project_root.parents or project_root.parent == openmork_home:
                 shutil.rmtree(project_root)
                 log_success(f"Removed {project_root}")
@@ -315,11 +315,11 @@ def run_uninstall(args):
         print(f"  {openmork_home}/")
         print()
         print("To reinstall later with your existing settings:")
-        print(color("  curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash", Colors.DIM))
+        print(color("  curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash", Colors.DIM))
         print()
     
     print(color("Reload your shell to complete the process:", Colors.YELLOW))
     print("  source ~/.bashrc  # or ~/.zshrc")
     print()
-    print("Thank you for using OpenMork! ⚕")
+    print("Thank you for using openmork! ⚕")
     print()

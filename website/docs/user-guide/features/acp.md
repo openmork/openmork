@@ -1,12 +1,12 @@
 ---
 sidebar_position: 11
 title: "ACP Editor Integration"
-description: "Use OpenMork inside ACP-compatible editors such as VS Code, Zed, and JetBrains"
+description: "Use openmork inside ACP-compatible editors such as VS Code, Zed, and JetBrains"
 ---
 
 # ACP Editor Integration
 
-OpenMork can run as an ACP server, letting ACP-compatible editors talk to OPENMORK over stdio and render:
+openmork can run as an ACP server, letting ACP-compatible editors talk to OPENMORK over stdio and render:
 
 - chat messages
 - tool activity
@@ -75,8 +75,8 @@ Example settings snippet:
 {
   "acpClient.agents": [
     {
-      "name": "OpenMork",
-      "registryDir": "/path/to/OpenMork/acp_registry"
+      "name": "openmork",
+      "registryDir": "/path/to/openmork/acp_registry"
     }
   ]
 }
@@ -91,8 +91,8 @@ Example settings snippet:
   "acp": {
     "agents": [
       {
-        "name": "OpenMork",
-        "registry_dir": "/path/to/OpenMork/acp_registry"
+        "name": "openmork",
+        "registry_dir": "/path/to/openmork/acp_registry"
       }
     ]
   }
@@ -104,7 +104,7 @@ Example settings snippet:
 Use an ACP-compatible plugin and point it at:
 
 ```text
-/path/to/OpenMork/acp_registry
+/path/to/openmork/acp_registry
 ```
 
 ## Registry manifest

@@ -1,6 +1,6 @@
-# Migrating from OpenClaw to OpenMork
+# Migrating from OpenClaw to openmork
 
-This guide covers how to import your OpenClaw settings, memories, skills, and API keys into OpenMork.
+This guide covers how to import your OpenClaw settings, memories, skills, and API keys into openmork.
 
 ## Three Ways to Migrate
 
@@ -101,7 +101,7 @@ openmork claw migrate --source /path/to/.openclaw
 ```
 
 ### "Migration script not found"
-The migration script ships with OpenMork. If you installed via pip (not git clone), the `optional-skills/` directory may not be present. Install the skill from the Skills Hub:
+The migration script ships with openmork. If you installed via pip (not git clone), the `optional-skills/` directory may not be present. Install the skill from the Skills Hub:
 ```bash
 openmork skills install openclaw-migration
 ```

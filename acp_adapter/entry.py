@@ -1,4 +1,4 @@
-"""CLI entry point for the OpenMork ACP adapter.
+"""CLI entry point for the openmork ACP adapter.
 
 Loads environment variables from ``~/.openmork/.env``, configures logging
 to write to stderr (so stdout is reserved for ACP JSON-RPC transport),
@@ -61,7 +61,7 @@ def main() -> None:
     _load_env()
 
     logger = logging.getLogger(__name__)
-    logger.info("Starting OpenMork ACP adapter")
+    logger.info("Starting openmork ACP adapter")
 
     # Ensure the project root is on sys.path so ``from run_agent import AIAgent`` works
     project_root = str(Path(__file__).resolve().parent.parent)

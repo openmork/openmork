@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-OpenMork CLI - Interactive Terminal Interface
+openmork CLI - Interactive Terminal Interface
 
-A beautiful command-line interface for the OpenMork, inspired by Claude Code.
+A beautiful command-line interface for the openmork, inspired by Claude Code.
 Features ASCII art branding, interactive REPL, toolset selection, and rich formatting.
 
 Usage:
     python cli.py                          # Start interactive mode with all tools
     python cli.py --toolsets web,terminal  # Start with specific toolsets
-    python cli.py --skills OpenMork-dev,github-auth
+    python cli.py --skills openmork-dev,github-auth
     python cli.py -q "your question"       # Single query mode
     python cli.py --list-tools             # List available tools and exit
 """
@@ -963,7 +963,7 @@ def save_config_value(key_path: str, value: any) -> bool:
 
 class OPENMORKCLI:
     """
-    Interactive CLI for the OpenMork.
+    Interactive CLI for the openmork.
     
     Provides a REPL interface with rich formatting, command history,
     and tool execution capabilities.
@@ -3607,7 +3607,7 @@ class OPENMORKCLI:
             raise RuntimeError(
                 "Voice mode requires sounddevice and numpy.\n"
                 "Install with: pip install sounddevice numpy\n"
-                "Or: pip install OpenMork[voice]"
+                "Or: pip install openmork[voice]"
             )
         if not reqs.get("stt_available", reqs.get("stt_key_set")):
             raise RuntimeError(
@@ -3871,7 +3871,7 @@ class OPENMORKCLI:
                 _cprint(f"  {_DIM}{line}{_RST}")
             if reqs["missing_packages"]:
                 _cprint(f"\n  {_BOLD}Install: pip install {' '.join(reqs['missing_packages'])}{_RST}")
-                _cprint(f"  {_DIM}Or: pip install OpenMork[voice]{_RST}")
+                _cprint(f"  {_DIM}Or: pip install openmork[voice]{_RST}")
             return
 
         with self._voice_lock:
@@ -4735,10 +4735,10 @@ class OPENMORKCLI:
         try:
             from openmork_cli.skin_engine import get_active_skin
             _welcome_skin = get_active_skin()
-            _welcome_text = _welcome_skin.get_branding("welcome", "Welcome to OpenMork! Type your message or /help for commands.")
+            _welcome_text = _welcome_skin.get_branding("welcome", "Welcome to openmork! Type your message or /help for commands.")
             _welcome_color = _welcome_skin.get_color("banner_text", "#FFF8DC")
         except Exception:
-            _welcome_text = "Welcome to OpenMork! Type your message or /help for commands."
+            _welcome_text = "Welcome to openmork! Type your message or /help for commands."
             _welcome_color = "#FFF8DC"
         self.console.print(f"[{_welcome_color}]{_welcome_text}[/]")
         self.console.print()
@@ -5847,7 +5847,7 @@ def main(
     pass_session_id: bool = False,
 ):
     """
-    OpenMork CLI - Interactive AI Assistant
+    openmork CLI - Interactive AI Assistant
     
     Args:
         query: Single query to execute (then exit). Alias: -q
@@ -5870,7 +5870,7 @@ def main(
     Examples:
         python cli.py                            # Start interactive mode
         python cli.py --toolsets web,terminal    # Use specific toolsets
-        python cli.py --skills OpenMork-dev,github-auth
+        python cli.py --skills openmork-dev,github-auth
         python cli.py -q "What is Python?"       # Single query mode
         python cli.py --list-tools               # List tools and exit
         python cli.py --resume 20260225_143052_a1b2c3  # Resume session

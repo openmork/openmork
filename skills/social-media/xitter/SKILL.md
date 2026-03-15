@@ -2,7 +2,7 @@
 name: xitter
 description: Interact with X/Twitter via the x-cli terminal client using official X API credentials. Use for posting, reading timelines, searching tweets, liking, retweeting, bookmarks, mentions, and user lookups.
 version: 1.0.0
-author: Siddharth Balyan + OpenMork
+author: Siddharth Balyan + openmork
 license: MIT
 platforms: [linux, macos]
 prerequisites:

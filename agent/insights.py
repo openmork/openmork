@@ -1,11 +1,11 @@
 """
-Session Insights Engine for OpenMork.
+Session Insights Engine for openmork.
 
 Analyzes historical session data from the SQLite state database to produce
 comprehensive usage insights — token consumption, cost estimates, tool usage
 patterns, activity trends, model/platform breakdowns, and session metrics.
 
-Inspired by Claude Code's /insights command, adapted for OpenMork's
+Inspired by Claude Code's /insights command, adapted for openmork's
 multi-platform architecture with additional cost estimation and platform
 breakdown capabilities.
 

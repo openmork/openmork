@@ -11,7 +11,7 @@ body:
         **Quick checks first:**
         - Run `openmork doctor` and include the output below
         - Try `openmork update` to get the latest version
-        - Check the [README troubleshooting section](https://github.com/openmork/OpenMork#troubleshooting)
+        - Check the [README troubleshooting section](https://github.com/openmork/openmork#troubleshooting)
         - For general questions, consider the [Nous Research Discord](https://discord.gg/NousResearch) for faster help
 
   - type: textarea

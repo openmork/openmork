@@ -3,7 +3,7 @@
 Mini-SWE-Agent Runner with OPENMORK Trajectory Format
 
 This module provides a runner that uses mini-swe-agent's execution environments
-(local, docker, modal) but outputs trajectories in the OpenMork format
+(local, docker, modal) but outputs trajectories in the openmork format
 compatible with batch_runner.py and trajectory_compressor.py.
 
 Features:
@@ -50,7 +50,7 @@ ensure_minisweagent_on_path(Path(__file__).resolve().parent)
 
 
 # ============================================================================
-# Terminal Tool Definition (matches OpenMork format)
+# Terminal Tool Definition (matches openmork format)
 # ============================================================================
 
 TERMINAL_TOOL_DEFINITION = {
@@ -145,7 +145,7 @@ def create_environment(
 class MiniSWERunner:
     """
     Agent runner that uses mini-swe-agent environments but outputs
-    trajectories in OpenMork format.
+    trajectories in openmork format.
     """
     
     def __init__(

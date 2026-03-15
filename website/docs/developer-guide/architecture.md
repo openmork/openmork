@@ -1,17 +1,17 @@
 ---
 sidebar_position: 1
 title: "Architecture"
-description: "OpenMork internals — major subsystems, execution paths, and where to read next"
+description: "openmork internals — major subsystems, execution paths, and where to read next"
 ---
 
 # Architecture
 
-This page is the top-level map of OpenMork internals. The project has grown beyond a single monolithic loop, so the best way to understand it is by subsystem.
+This page is the top-level map of openmork internals. The project has grown beyond a single monolithic loop, so the best way to understand it is by subsystem.
 
 ## High-level structure
 
 ```text
-OpenMork/
+openmork/
 ├── run_agent.py              # AIAgent core loop
 ├── cli.py                    # interactive terminal UI
 ├── model_tools.py            # tool discovery/orchestration

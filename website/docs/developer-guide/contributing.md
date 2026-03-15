@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "Contributing"
-description: "How to contribute to OpenMork — dev setup, code style, PR process"
+description: "How to contribute to openmork — dev setup, code style, PR process"
 ---
 
 # Contributing
 
-Thank you for contributing to OpenMork! This guide covers setting up your dev environment, understanding the codebase, and getting your PR merged.
+Thank you for contributing to openmork! This guide covers setting up your dev environment, understanding the codebase, and getting your PR merged.
 
 ## Contribution Priorities
 
@@ -40,8 +40,8 @@ We value contributions in this order:
 ### Clone and Install
 
 ```bash
-git clone --recurse-submodules https://github.com/openmork/OpenMork.git
-cd OpenMork
+git clone --recurse-submodules https://github.com/openmork/openmork.git
+cd openmork
 
 # Create venv with Python 3.11
 uv venv venv --python 3.11
@@ -216,7 +216,7 @@ fix(security): prevent shell injection in sudo password piping
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/openmork/OpenMork/issues)
+- Use [GitHub Issues](https://github.com/openmork/openmork/issues)
 - Include: OS, Python version, OPENMORK version (`openmork version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates
@@ -230,4 +230,4 @@ fix(security): prevent shell injection in sudo password piping
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](https://github.com/openmork/OpenMork/blob/main/LICENSE).
+By contributing, you agree that your contributions will be licensed under the [MIT License](https://github.com/openmork/openmork/blob/main/LICENSE).

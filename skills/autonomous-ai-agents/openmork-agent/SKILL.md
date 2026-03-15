@@ -1,19 +1,19 @@
 ---
-name: OpenMork-spawning
-description: Spawn additional OpenMork instances as autonomous subprocesses for independent long-running tasks. Supports non-interactive one-shot mode (-q) and interactive PTY mode for multi-turn collaboration. Different from delegate_task — this runs a full separate openmork process.
+name: openmork-spawning
+description: Spawn additional openmork instances as autonomous subprocesses for independent long-running tasks. Supports non-interactive one-shot mode (-q) and interactive PTY mode for multi-turn collaboration. Different from delegate_task — this runs a full separate openmork process.
 version: 1.1.0
-author: OpenMork
+author: openmork
 license: MIT
 metadata:
   openmork:
     tags: [Agent, OPENMORK, Multi-Agent, Orchestration, Subprocess, Interactive]
-    homepage: https://github.com/openmork/OpenMork
+    homepage: https://github.com/openmork/openmork
     related_skills: [claude-code, codex]
 ---
 
-# Spawning OpenMork Instances
+# Spawning openmork Instances
 
-Run additional OpenMork processes as autonomous subprocesses. Unlike `delegate_task` (which spawns lightweight subagents sharing the same process), this launches fully independent `openmork` CLI processes with their own sessions, tools, and terminal environments.
+Run additional openmork processes as autonomous subprocesses. Unlike `delegate_task` (which spawns lightweight subagents sharing the same process), this launches fully independent `openmork` CLI processes with their own sessions, tools, and terminal environments.
 
 ## When to Use This vs delegate_task
 
@@ -37,10 +37,10 @@ Run additional OpenMork processes as autonomous subprocesses. Unlike `delegate_t
 Requires an interactive shell (the installer runs a setup wizard):
 
 ```
-curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash
 ```
 
-This installs uv, Python 3.11, clones the repo, sets up the venv, and launches an interactive setup wizard to configure your API provider and model. See the [GitHub repo](https://github.com/openmork/OpenMork) for details.
+This installs uv, Python 3.11, clones the repo, sets up the venv, and launches an interactive setup wizard to configure your API provider and model. See the [GitHub repo](https://github.com/openmork/openmork) for details.
 
 ## Resuming Previous Sessions
 

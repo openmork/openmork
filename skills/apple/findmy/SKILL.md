@@ -2,7 +2,7 @@
 name: findmy
 description: Track Apple devices and AirTags via FindMy.app on macOS using AppleScript and screen capture.
 version: 1.0.0
-author: OpenMork
+author: openmork
 license: MIT
 platforms: [macos]
 metadata:

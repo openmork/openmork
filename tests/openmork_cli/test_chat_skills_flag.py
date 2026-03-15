@@ -14,13 +14,13 @@ def test_top_level_skills_flag_defaults_to_chat(monkeypatch):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["openmork", "-s", "OpenMork-dev,github-auth"],
+        ["openmork", "-s", "openmork-dev,github-auth"],
     )
 
     main_mod.main()
 
     assert captured == {
-        "skills": ["OpenMork-dev,github-auth"],
+        "skills": ["openmork-dev,github-auth"],
         "command": None,
     }
 
@@ -64,7 +64,7 @@ def test_continue_worktree_and_skills_flags_work_together(monkeypatch):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["openmork", "-c", "-w", "-s", "OpenMork-dev"],
+        ["openmork", "-c", "-w", "-s", "openmork-dev"],
     )
 
     main_mod.main()
@@ -72,6 +72,6 @@ def test_continue_worktree_and_skills_flags_work_together(monkeypatch):
     assert captured == {
         "continue_last": True,
         "worktree": True,
-        "skills": ["OpenMork-dev"],
+        "skills": ["openmork-dev"],
         "command": "chat",
     }

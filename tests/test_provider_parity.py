@@ -143,7 +143,7 @@ class TestBuildApiKwargsNousPortal:
         messages = [{"role": "user", "content": "hi"}]
         kwargs = agent._build_api_kwargs(messages)
         extra = kwargs.get("extra_body", {})
-        assert extra.get("tags") == ["product=OpenMork"]
+        assert extra.get("tags") == ["product=openmork"]
 
     def test_uses_chat_completions_format(self, monkeypatch):
         agent = _make_agent(monkeypatch, "nous", base_url="https://inference-api.nousresearch.com/v1")

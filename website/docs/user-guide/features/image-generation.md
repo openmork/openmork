@@ -7,7 +7,7 @@ sidebar_position: 6
 
 # Image Generation
 
-OpenMork can generate images from text prompts using FAL.ai's **FLUX 2 Pro** model with automatic 2x upscaling via the **Clarity Upscaler** for enhanced quality.
+openmork can generate images from text prompts using FAL.ai's **FLUX 2 Pro** model with automatic 2x upscaling via the **Clarity Upscaler** for enhanced quality.
 
 ## Setup
 

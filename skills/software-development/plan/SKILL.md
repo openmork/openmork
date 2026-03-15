@@ -2,7 +2,7 @@
 name: plan
 description: Plan mode for OPENMORK — inspect context, write a markdown plan into the active workspace's `.openmork/plans/` directory, and do not execute the work.
 version: 1.0.0
-author: OpenMork
+author: openmork
 license: MIT
 metadata:
   openmork:

@@ -30,10 +30,10 @@ load_dotenv()
 # Default datasets to sample from
 DEFAULT_DATASETS = [
     "NousResearch/swe-terminus-agent-glm-kimi-minimax",
-    "openmork/OpenMork-megascience-sft1",
-    "NousResearch/OpenMork-Thinking-GLM-4.7-SFT2",
-    "NousResearch/OpenMork-Thinking-GLM-4.7-SFT1",
-    "NousResearch/terminal-tasks-glm-OpenMork"
+    "openmork/openmork-megascience-sft1",
+    "NousResearch/openmork-Thinking-GLM-4.7-SFT2",
+    "NousResearch/openmork-Thinking-GLM-4.7-SFT1",
+    "NousResearch/terminal-tasks-glm-openmork"
 ]
 
 

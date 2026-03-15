@@ -2,7 +2,7 @@
 """OpenClaw -> OPENMORK migration helper.
 
 This script migrates the parts of an OpenClaw user footprint that map cleanly
-into OpenMork, archives selected unmapped docs for manual review, and
+into openmork, archives selected unmapped docs for manual review, and
 reports exactly what was skipped and why.
 """
 
@@ -1461,7 +1461,7 @@ class Migrator:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into OpenMork.")
+    parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into openmork.")
     parser.add_argument("--source", default=str(Path.home() / ".openclaw"), help="OpenClaw home directory")
     parser.add_argument("--target", default=str(Path.home() / ".openmork"), help="OPENMORK home directory")
     parser.add_argument(

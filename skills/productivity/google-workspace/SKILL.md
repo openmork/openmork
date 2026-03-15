@@ -7,7 +7,7 @@ license: MIT
 metadata:
   openmork:
     tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Email, OAuth]
-    homepage: https://github.com/openmork/OpenMork
+    homepage: https://github.com/openmork/openmork
     related_skills: [himalaya]
 ---
 

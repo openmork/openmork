@@ -2,7 +2,7 @@
 name: qmd
 description: Search personal knowledge bases, notes, docs, and meeting transcripts locally using qmd — a hybrid retrieval engine with BM25, vector search, and LLM reranking. Supports CLI and MCP integration.
 version: 1.0.0
-author: OpenMork + Teknium
+author: openmork + Teknium
 license: MIT
 platforms: [macos, linux]
 metadata:
@@ -220,7 +220,7 @@ qmd multi-get "journals/*.md" --json  # Batch retrieve by glob
 ## MCP Integration (Recommended)
 
 qmd exposes an MCP server that provides search tools directly to
-OpenMork via the native MCP client. This is the preferred
+openmork via the native MCP client. This is the preferred
 integration — once configured, the agent gets qmd tools automatically
 without needing to load this skill.
 
@@ -254,7 +254,7 @@ qmd mcp --http --daemon
 # Runs on http://localhost:8181 by default
 ```
 
-Then configure OpenMork to connect via HTTP:
+Then configure openmork to connect via HTTP:
 
 ```yaml
 mcp_servers:

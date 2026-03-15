@@ -3,7 +3,7 @@
 MCP (Model Context Protocol) Client Support
 
 Connects to external MCP servers via stdio or HTTP/StreamableHTTP transport,
-discovers their tools, and registers them into the OpenMork tool registry
+discovers their tools, and registers them into the openmork tool registry
 so the agent can call them like any built-in tool.
 
 Configuration is read from ~/.openmork/config.yaml under the ``mcp_servers`` key.

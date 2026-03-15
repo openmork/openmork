@@ -31,8 +31,8 @@ Usage:
         --openai.model_name YourModel
 
 Built by: github.com/jackx707
-Inspired by: GroceryMind — production OpenMork doing live web research
-             across German grocery stores (firecrawl + OpenMork)
+Inspired by: GroceryMind — production openmork doing live web research
+             across German grocery stores (firecrawl + openmork)
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ from urllib.parse import urlparse
 
 from pydantic import Field
 
-# Ensure OpenMork root is on path
+# Ensure openmork root is on path
 _repo_root = Path(__file__).resolve().parent.parent
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))

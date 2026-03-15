@@ -1,5 +1,5 @@
 """
-Monkey patches for making OpenMork tools work inside async frameworks (Atropos).
+Monkey patches for making openmork tools work inside async frameworks (Atropos).
 
 Problem:
     Some tools use asyncio.run() internally (e.g., mini-swe-agent's Modal backend,

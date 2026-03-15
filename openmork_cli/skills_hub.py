@@ -383,7 +383,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
         if bundle.source == "official":
             c.print(Panel(
                 "[bold bright_cyan]This is an official optional skill maintained by Nous Research.[/]\n\n"
-                "It ships with OpenMork but is not activated by default.\n"
+                "It ships with openmork but is not activated by default.\n"
                 "Installing will copy it to your skills directory where the agent can use it.\n\n"
                 f"Files will be at: [cyan]~/.openmork/skills/{category + '/' if category else ''}{bundle.name}/[/]",
                 title="Official Skill",

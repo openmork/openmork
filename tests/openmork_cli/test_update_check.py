@@ -20,7 +20,7 @@ def test_check_for_updates_uses_cache(tmp_path):
     from openmork_cli.banner import check_for_updates
 
     # Create a fake git repo and fresh cache
-    repo_dir = tmp_path / "OpenMork"
+    repo_dir = tmp_path / "openmork"
     repo_dir.mkdir()
     (repo_dir / ".git").mkdir()
 
@@ -39,7 +39,7 @@ def test_check_for_updates_expired_cache(tmp_path):
     """When cache is expired, check_for_updates should call git fetch."""
     from openmork_cli.banner import check_for_updates
 
-    repo_dir = tmp_path / "OpenMork"
+    repo_dir = tmp_path / "openmork"
     repo_dir.mkdir()
     (repo_dir / ".git").mkdir()
 
@@ -86,7 +86,7 @@ def test_check_for_updates_fallback_to_project_root():
     if not (project_root / ".git").exists():
         pytest.skip("Not running from a git checkout")
 
-    # Point OPENMORK_HOME at a temp dir with no OpenMork/.git
+    # Point OPENMORK_HOME at a temp dir with no openmork/.git
     import tempfile
     with tempfile.TemporaryDirectory() as td:
         with patch("openmork_cli.banner.os.getenv", return_value=td):

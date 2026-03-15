@@ -1,12 +1,12 @@
 ---
 sidebar_position: 9
 title: "Personality & SOUL.md"
-description: "Customize OpenMork's personality with a global SOUL.md, built-in personalities, and custom persona definitions"
+description: "Customize openmork's personality with a global SOUL.md, built-in personalities, and custom persona definitions"
 ---
 
 # Personality & SOUL.md
 
-OpenMork's personality is customizable, but there are two different layers that matter:
+openmork's personality is customizable, but there are two different layers that matter:
 
 - `SOUL.md` — a durable persona file that lives in `OPENMORK_HOME` and is loaded automatically for that OPENMORK instance
 - built-in or custom `/personality` presets — session-level system-prompt overlays

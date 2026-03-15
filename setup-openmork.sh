@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# OpenMork Setup Script
+# openmork Setup Script
 # ============================================================================
 # Quick setup for developers who cloned the repo manually.
 # Uses uv for fast Python provisioning and package management.
@@ -32,7 +32,7 @@ cd "$SCRIPT_DIR"
 PYTHON_VERSION="3.11"
 
 echo ""
-echo -e "${CYAN}⚕ OpenMork Setup${NC}"
+echo -e "${CYAN}⚕ openmork Setup${NC}"
 echo ""
 
 # ============================================================================
@@ -240,7 +240,7 @@ if [ -n "$SHELL_CONFIG" ]; then
     if ! echo "$PATH" | tr ':' '\n' | grep -q "^$HOME/.local/bin$"; then
         if ! grep -q '\.local/bin' "$SHELL_CONFIG" 2>/dev/null; then
             echo "" >> "$SHELL_CONFIG"
-            echo "# OpenMork — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
+            echo "# openmork — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
             echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_CONFIG"
             echo -e "${GREEN}✓${NC} Added ~/.local/bin to PATH in $SHELL_CONFIG"
         else

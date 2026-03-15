@@ -1,5 +1,5 @@
 """
-Interactive setup wizard for OpenMork.
+Interactive setup wizard for openmork.
 
 Modular wizard with independently-runnable sections:
   1. Model & Provider — choose your AI provider and model
@@ -2533,7 +2533,7 @@ def run_setup_wizard(args):
     )
     print(
         color(
-            "│             ⚕ OpenMork Setup Wizard                │", Colors.MAGENTA
+            "│             ⚕ openmork Setup Wizard                │", Colors.MAGENTA
         )
     )
     print(
@@ -2544,7 +2544,7 @@ def run_setup_wizard(args):
     )
     print(
         color(
-            "│  Let's configure your OpenMork installation.       │", Colors.MAGENTA
+            "│  Let's configure your openmork installation.       │", Colors.MAGENTA
         )
     )
     print(

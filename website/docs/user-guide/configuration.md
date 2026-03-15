@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: "Configuration"
-description: "Configure OpenMork — config.yaml, providers, models, API keys, and more"
+description: "Configure openmork — config.yaml, providers, models, API keys, and more"
 ---
 
 # Configuration
@@ -146,7 +146,7 @@ Base URLs can be overridden with `GLM_BASE_URL`, `KIMI_BASE_URL`, `MINIMAX_BASE_
 
 ## Custom & Self-Hosted LLM Providers
 
-OpenMork works with **any OpenAI-compatible API endpoint**. If a server implements `/v1/chat/completions`, you can point OPENMORK at it. This means you can use local models, GPU inference servers, multi-provider routers, or any third-party API.
+openmork works with **any OpenAI-compatible API endpoint**. If a server implements `/v1/chat/completions`, you can point OPENMORK at it. This means you can use local models, GPU inference servers, multi-provider routers, or any third-party API.
 
 ### General Setup
 
@@ -813,13 +813,13 @@ Define custom commands that run shell commands without invoking the LLM — zero
 quick_commands:
   status:
     type: exec
-    command: systemctl status OpenMork
+    command: systemctl status openmork
   disk:
     type: exec
     command: df -h /
   update:
     type: exec
-    command: cd ~/.openmork/OpenMork && git pull && pip install -e .
+    command: cd ~/.openmork/openmork && git pull && pip install -e .
   gpu:
     type: exec
     command: nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total --format=csv,noheader

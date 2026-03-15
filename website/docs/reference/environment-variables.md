@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
 title: "Environment Variables"
-description: "Complete reference of all environment variables used by OpenMork"
+description: "Complete reference of all environment variables used by openmork"
 ---
 
 # Environment Variables Reference

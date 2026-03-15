@@ -1,5 +1,5 @@
 {
-  "name": "OpenMork",
+  "name": "openmork",
   "version": "1.0.0",
   "description": "An AI agent with advanced tool-calling capabilities, featuring a flexible toolsets system for organizing and managing tools.",
   "private": true,
@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NousResearch/OpenMork.git"
+    "url": "git+https://github.com/NousResearch/openmork.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NousResearch/OpenMork/issues"
+    "url": "https://github.com/NousResearch/openmork/issues"
   },
-  "homepage": "https://github.com/NousResearch/OpenMork#readme",
+  "homepage": "https://github.com/NousResearch/openmork#readme",
   "dependencies": {
     "agent-browser": "^0.13.0"
   },

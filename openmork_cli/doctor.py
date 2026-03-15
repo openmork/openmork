@@ -1,7 +1,7 @@
 """
 Doctor command for openmork CLI.
 
-Diagnoses issues with OpenMork setup.
+Diagnoses issues with openmork setup.
 """
 
 import os
@@ -336,7 +336,7 @@ def run_doctor(args):
         if should_fix:
             soul_path.parent.mkdir(parents=True, exist_ok=True)
             soul_path.write_text(
-                "# OpenMork Persona\n\n"
+                "# openmork Persona\n\n"
                 "<!-- Edit this file to customize how OPENMORK communicates. -->\n\n"
                 "You are OPENMORK, a helpful AI assistant.\n",
                 encoding="utf-8",
@@ -567,7 +567,7 @@ def run_doctor(args):
     _apikey_providers = [
         ("Z.AI / GLM",      ("GLM_API_KEY", "ZAI_API_KEY", "Z_AI_API_KEY"), "https://api.z.ai/api/paas/v4/models", "GLM_BASE_URL", True),
         ("Kimi / Moonshot",  ("KIMI_API_KEY",),                              "https://api.moonshot.ai/v1/models",   "KIMI_BASE_URL", True),
-        # MiniMax APIs don't support /models endpoint — https://github.com/openmork/OpenMork/issues/811
+        # MiniMax APIs don't support /models endpoint — https://github.com/openmork/openmork/issues/811
         ("MiniMax",          ("MINIMAX_API_KEY",),                            None,                                  "MINIMAX_BASE_URL", False),
         ("MiniMax (China)",  ("MINIMAX_CN_API_KEY",),                         None,                                  "MINIMAX_CN_BASE_URL", False),
     ]

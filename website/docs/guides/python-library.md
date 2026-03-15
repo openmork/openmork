@@ -15,19 +15,19 @@ OPENMORK isn't just a CLI tool. You can import `AIAgent` directly and use it pro
 Install OPENMORK directly from the repository:
 
 ```bash
-pip install git+https://github.com/openmork/OpenMork.git
+pip install git+https://github.com/openmork/openmork.git
 ```
 
 Or with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv pip install git+https://github.com/openmork/OpenMork.git
+uv pip install git+https://github.com/openmork/openmork.git
 ```
 
 You can also pin it in your `requirements.txt`:
 
 ```text
-OpenMork @ git+https://github.com/openmork/OpenMork.git
+openmork @ git+https://github.com/openmork/openmork.git
 ```
 
 :::tip

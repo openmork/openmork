@@ -75,7 +75,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import Field
 
-# Ensure OpenMork root is on path
+# Ensure openmork root is on path
 _repo_root = Path(__file__).resolve().parent.parent
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))

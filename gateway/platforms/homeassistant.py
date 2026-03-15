@@ -397,7 +397,7 @@ class HomeAssistantAdapter(BasePlatformAdapter):
             "Content-Type": "application/json",
         }
         payload = {
-            "title": "OpenMork",
+            "title": "openmork",
             "message": content[:self.MAX_MESSAGE_LENGTH],
         }
 

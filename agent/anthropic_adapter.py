@@ -1,4 +1,4 @@
-"""Anthropic Messages API adapter for OpenMork.
+"""Anthropic Messages API adapter for openmork.
 
 Translates between OPENMORK's internal OpenAI-style message format and
 Anthropic's Messages API. Follows the same pattern as the codex_responses

@@ -1,13 +1,13 @@
 """
 OPENMORKAgentLoop -- Reusable Multi-Turn Agent Engine
 
-Runs the OpenMork tool-calling loop using standard OpenAI-spec tool calling.
+Runs the openmork tool-calling loop using standard OpenAI-spec tool calling.
 Works with any server that returns ChatCompletion objects with tool_calls:
     - Phase 1: OpenAI server type (VLLM, SGLang, OpenRouter, OpenAI API)
     - Phase 2: ManagedServer with client-side tool call parser
 
 The loop passes tools= and checks response.choices[0].message.tool_calls,
-identical to OpenMork's run_agent.py. Tool execution is dispatched via
+identical to openmork's run_agent.py. Tool execution is dispatched via
 handle_function_call() from model_tools.py.
 """
 
@@ -116,7 +116,7 @@ def _extract_reasoning_from_message(message) -> Optional[str]:
 
 class OPENMORKAgentLoop:
     """
-    Runs OpenMork's tool-calling loop using standard OpenAI-spec tool calling.
+    Runs openmork's tool-calling loop using standard OpenAI-spec tool calling.
 
     Same pattern as run_agent.py:
     - Pass tools= to the API
@@ -254,7 +254,7 @@ class OPENMORKAgentLoop:
             # Check for tool calls -- standard OpenAI spec.
             # Fallback: if response has no structured tool_calls but content
             # contains raw tool call tags (e.g. <tool_call>), parse them using
-            # OpenMork's standalone parsers. This handles the case where
+            # openmork's standalone parsers. This handles the case where
             # ManagedServer's ToolCallTranslator couldn't parse because vLLM
             # isn't installed.
             if (
@@ -317,7 +317,7 @@ class OPENMORKAgentLoop:
 
                 messages.append(msg_dict)
 
-                # Execute each tool call via OpenMork's dispatch
+                # Execute each tool call via openmork's dispatch
                 for tc in assistant_msg.tool_calls:
                     # Handle both object (OpenAI) and dict (vLLM) formats
                     if isinstance(tc, dict):

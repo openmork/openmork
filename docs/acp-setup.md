@@ -1,6 +1,6 @@
-# OpenMork — ACP (Agent Client Protocol) Setup Guide
+# openmork — ACP (Agent Client Protocol) Setup Guide
 
-OpenMork supports the **Agent Client Protocol (ACP)**, allowing it to run as
+openmork supports the **Agent Client Protocol (ACP)**, allowing it to run as
 a coding agent inside your editor. ACP lets your IDE send tasks to OPENMORK, and
 OPENMORK responds with file edits, terminal commands, and explanations — all shown
 natively in the editor UI.
@@ -9,7 +9,7 @@ natively in the editor UI.
 
 ## Prerequisites
 
-- OpenMork installed and configured (`openmork setup` completed)
+- openmork installed and configured (`openmork setup` completed)
 - An API key / provider set up in `~/.openmork/.env` or via `openmork login`
 - Python 3.11+
 
@@ -45,22 +45,22 @@ Open your VS Code settings (`Ctrl+,` → click the `{}` icon for JSON) and add:
 {
   "acpClient.agents": [
     {
-      "name": "OpenMork",
-      "registryDir": "/path/to/OpenMork/acp_registry"
+      "name": "openmork",
+      "registryDir": "/path/to/openmork/acp_registry"
     }
   ]
 }
 ```
 
-Replace `/path/to/OpenMork` with the actual path to your OpenMork
-installation (e.g. `~/.openmork/OpenMork`).
+Replace `/path/to/openmork` with the actual path to your openmork
+installation (e.g. `~/.openmork/openmork`).
 
 Alternatively, if `openmork` is on your PATH, the ACP Client can discover it
 automatically via the registry directory.
 
 ### 3. Restart VS Code
 
-After configuring, restart VS Code. You should see **OpenMork** appear in
+After configuring, restart VS Code. You should see **openmork** appear in
 the ACP agent picker in the chat/agent panel.
 
 ---
@@ -79,8 +79,8 @@ Open Zed settings (`Cmd+,` on macOS or `Ctrl+,` on Linux) and add to your
   "acp": {
     "agents": [
       {
-        "name": "OpenMork",
-        "registry_dir": "/path/to/OpenMork/acp_registry"
+        "name": "openmork",
+        "registry_dir": "/path/to/openmork/acp_registry"
       }
     ]
   }
@@ -89,7 +89,7 @@ Open Zed settings (`Cmd+,` on macOS or `Ctrl+,` on Linux) and add to your
 
 ### 2. Restart Zed
 
-OpenMork will appear in the agent panel. Select it and start a conversation.
+openmork will appear in the agent panel. Select it and start a conversation.
 
 ---
 
@@ -106,18 +106,18 @@ OpenMork will appear in the agent panel. Select it and start a conversation.
 - Open **Settings** → **Tools** → **ACP Agents**
 - Click **+** to add a new agent
 - Set the registry directory to your `acp_registry/` folder:
-  `/path/to/OpenMork/acp_registry`
+  `/path/to/openmork/acp_registry`
 - Click **OK**
 
 ### 3. Use the agent
 
-Open the ACP panel (usually in the right sidebar) and select **OpenMork**.
+Open the ACP panel (usually in the right sidebar) and select **openmork**.
 
 ---
 
 ## What You Will See
 
-Once connected, your editor provides a native interface to OpenMork:
+Once connected, your editor provides a native interface to openmork:
 
 ### Chat Panel
 A conversational interface where you can describe tasks, ask questions, and
@@ -146,7 +146,7 @@ approval before OPENMORK proceeds. This includes:
 
 ## Configuration
 
-OpenMork under ACP uses the **same configuration** as the CLI:
+openmork under ACP uses the **same configuration** as the CLI:
 
 - **API keys / providers**: `~/.openmork/.env`
 - **Agent config**: `~/.openmork/config.yaml`
@@ -210,7 +210,7 @@ settings for auto-approval or manual-approval preferences.
 ### Logs
 
 OPENMORK logs are written to stderr when running in ACP mode. Check:
-- VS Code: **Output** panel → select **ACP Client** or **OpenMork**
+- VS Code: **Output** panel → select **ACP Client** or **openmork**
 - Zed: **View** → **Toggle Terminal** and check the process output
 - JetBrains: **Event Log** or the ACP tool window
 
@@ -225,5 +225,5 @@ OPENMORK_LOG_LEVEL=DEBUG openmork acp
 ## Further Reading
 
 - [ACP Specification](https://github.com/anysphere/acp)
-- [OpenMork Documentation](https://github.com/openmork/OpenMork)
+- [openmork Documentation](https://github.com/openmork/openmork)
 - Run `openmork --help` for all CLI options

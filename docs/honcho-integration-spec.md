@@ -1,12 +1,12 @@
 # honcho-integration-spec
 
-Comparison of OpenMork vs. openclaw-honcho — and a porting spec for bringing OPENMORK patterns into other Honcho integrations.
+Comparison of openmork vs. openclaw-honcho — and a porting spec for bringing OPENMORK patterns into other Honcho integrations.
 
 ---
 
 ## Overview
 
-Two independent Honcho integrations have been built for two different agent runtimes: **OpenMork** (Python, baked into the runner) and **openclaw-honcho** (TypeScript plugin via hook/tool API). Both use the same Honcho peer paradigm — dual peer model, `session.context()`, `peer.chat()` — but they made different tradeoffs at every layer.
+Two independent Honcho integrations have been built for two different agent runtimes: **openmork** (Python, baked into the runner) and **openclaw-honcho** (TypeScript plugin via hook/tool API). Both use the same Honcho peer paradigm — dual peer model, `session.context()`, `peer.chat()` — but they made different tradeoffs at every layer.
 
 This document maps those tradeoffs and defines a porting spec: a set of OPENMORK-originated patterns, each stated as an integration-agnostic interface, that any Honcho integration can adopt regardless of runtime or language.
 
@@ -55,7 +55,7 @@ user message
 
 ## Diff table
 
-| Dimension | OpenMork | openclaw-honcho |
+| Dimension | openmork | openclaw-honcho |
 |---|---|---|
 | **Context injection timing** | Once per session (cached). Zero HTTP on response path after turn 1. | Every turn, blocking. Fresh context per turn but adds latency. |
 | **Prefetch strategy** | Daemon threads fire at turn end; consumed next turn from cache. | None. Blocking call at prompt-build time. |
@@ -71,7 +71,7 @@ user message
 | **Platform metadata** | Not stripped. | Explicitly stripped before Honcho storage. |
 | **Message dedup** | None. | `lastSavedIndex` in session metadata prevents re-sending. |
 | **CLI surface in prompt** | Management commands injected into system prompt. Agent knows its own CLI. | Not injected. |
-| **AI peer name in identity** | Replaces "OpenMork" in DEFAULT_AGENT_IDENTITY when configured. | Not implemented. |
+| **AI peer name in identity** | Replaces "openmork" in DEFAULT_AGENT_IDENTITY when configured. | Not implemented. |
 | **QMD / local file search** | Not implemented. | Passthrough tools when QMD backend configured. |
 | **Workspace metadata** | Not implemented. | `agentPeerMap` in workspace metadata tracks agent→peer ID. |
 

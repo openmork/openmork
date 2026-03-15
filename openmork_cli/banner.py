@@ -142,7 +142,7 @@ def check_for_updates() -> Optional[int]:
     or ``None`` if the check fails or isn't applicable.
     """
     openmork_home = Path(os.getenv("OPENMORK_HOME", Path.home() / ".openmork"))
-    repo_dir = openmork_home / "OpenMork"
+    repo_dir = openmork_home / "openmork"
     cache_file = openmork_home / ".update_check"
 
     # Must be a git repo — fall back to project root for dev installs
@@ -411,7 +411,7 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
     right_content = "\n".join(right_lines)
     layout_table.add_row(left_content, right_content)
 
-    agent_name = _skin_branding("agent_name", "OpenMork")
+    agent_name = _skin_branding("agent_name", "openmork")
     title_color = _skin_color("banner_title", "#FFD700")
     border_color = _skin_color("banner_border", "#CD7F32")
     outer_panel = Panel(

@@ -1,7 +1,7 @@
 """
 Status command for openmork CLI.
 
-Shows the status of all OpenMork components.
+Shows the status of all openmork components.
 """
 
 import os
@@ -78,13 +78,13 @@ def _effective_provider_label() -> str:
 
 
 def show_status(args):
-    """Show status of all OpenMork components."""
+    """Show status of all openmork components."""
     show_all = getattr(args, 'all', False)
     deep = getattr(args, 'deep', False)
     
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│                 ⚕ OpenMork Status                  │", Colors.CYAN))
+    print(color("│                 ⚕ openmork Status                  │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.CYAN))
     
     # =========================================================================

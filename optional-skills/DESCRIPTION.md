@@ -2,7 +2,7 @@
 
 Official skills maintained by Nous Research that are **not activated by default**.
 
-These skills ship with the OpenMork repository but are not copied to
+These skills ship with the openmork repository but are not copied to
 `~/.openmork/skills/` during setup. They are discoverable via the Skills Hub:
 
 ```bash

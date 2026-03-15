@@ -1,7 +1,7 @@
 """
-OpenMork Atropos Environments
+openmork Atropos Environments
 
-Provides a layered integration between OpenMork's tool-calling capabilities
+Provides a layered integration between openmork's tool-calling capabilities
 and the Atropos RL training framework.
 
 Core layers:

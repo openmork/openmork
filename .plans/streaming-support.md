@@ -1,4 +1,4 @@
-# Streaming LLM Response Support for OpenMork
+# Streaming LLM Response Support for openmork
 
 ## Overview
 

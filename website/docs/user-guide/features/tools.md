@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: "Tools & Toolsets"
-description: "Overview of OpenMork's tools — what's available, how toolsets work, and terminal backends"
+description: "Overview of openmork's tools — what's available, how toolsets work, and terminal backends"
 ---
 
 # Tools & Toolsets

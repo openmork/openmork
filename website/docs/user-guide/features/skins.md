@@ -32,10 +32,10 @@ display:
 
 | Skin | Description | Agent branding |
 |------|-------------|----------------|
-| `default` | Classic OPENMORK — gold and kawaii | `OpenMork` |
+| `default` | Classic OPENMORK — gold and kawaii | `openmork` |
 | `ares` | War-god theme — crimson and bronze | `Ares Agent` |
-| `mono` | Monochrome — clean grayscale | `OpenMork` |
-| `slate` | Cool blue — developer-focused | `OpenMork` |
+| `mono` | Monochrome — clean grayscale | `openmork` |
+| `slate` | Cool blue — developer-focused | `openmork` |
 | `poseidon` | Ocean-god theme — deep blue and seafoam | `Poseidon Agent` |
 | `sisyphus` | Sisyphean theme — austere grayscale with persistence | `Sisyphus Agent` |
 | `charizard` | Volcanic theme — burnt orange and ember | `Charizard Agent` |

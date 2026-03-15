@@ -1,12 +1,12 @@
 ---
 sidebar_position: 5
 title: "Environments, Benchmarks & Data Generation"
-description: "Building RL training environments, running evaluation benchmarks, and generating SFT data with the OpenMork Atropos integration"
+description: "Building RL training environments, running evaluation benchmarks, and generating SFT data with the openmork Atropos integration"
 ---
 
 # Environments, Benchmarks & Data Generation
 
-OpenMork includes a full environment framework that connects its tool-calling capabilities to the [Atropos](https://github.com/NousResearch/atropos) RL training framework. This enables three workflows:
+openmork includes a full environment framework that connects its tool-calling capabilities to the [Atropos](https://github.com/NousResearch/atropos) RL training framework. This enables three workflows:
 
 1. **RL Training** — Train language models on multi-turn agentic tasks with GRPO
 2. **Benchmarks** — Evaluate models on standardised agentic benchmarks
@@ -83,9 +83,9 @@ The foundation from `atroposlib`. Provides:
 
 ### OPENMORKAgentBaseEnv
 
-The OpenMork layer (`environments/openmork_base_env.py`). Adds:
+The openmork layer (`environments/openmork_base_env.py`). Adds:
 - **Terminal backend configuration** — sets `TERMINAL_ENV` for sandboxed execution (local, Docker, Modal, Daytona, SSH, Singularity)
-- **Tool resolution** — `_resolve_tools_for_group()` calls OpenMork's `get_tool_definitions()` to get the right tool schemas based on enabled/disabled toolsets
+- **Tool resolution** — `_resolve_tools_for_group()` calls openmork's `get_tool_definitions()` to get the right tool schemas based on enabled/disabled toolsets
 - **Agent loop integration** — `collect_trajectory()` runs `OPENMORKAgentLoop` and scores the result
 - **Two-phase operation** — Phase 1 (OpenAI server) for eval/SFT, Phase 2 (VLLM ManagedServer) for full RL with logprobs
 - **Async safety patches** — monkey-patches Modal backend to work inside Atropos's event loop
@@ -106,7 +106,7 @@ Your environment inherits from `OPENMORKAgentBaseEnv` and implements five method
 
 ### Agent Loop
 
-`OPENMORKAgentLoop` (`environments/agent_loop.py`) is the reusable multi-turn agent engine. It runs the same tool-calling pattern as OpenMork's main loop:
+`OPENMORKAgentLoop` (`environments/agent_loop.py`) is the reusable multi-turn agent engine. It runs the same tool-calling pattern as openmork's main loop:
 
 1. Send messages + tool schemas to the API via `server.chat_completion()`
 2. If the response contains `tool_calls`, dispatch each via `handle_function_call()`
@@ -158,7 +158,7 @@ Available methods:
 | **Transfers** | `upload_file()`, `upload_dir()`, `download_file()`, `download_dir()` |
 | **Web** | `web_search(query)`, `web_extract(urls)` |
 | **Browser** | `browser_navigate(url)`, `browser_snapshot()` |
-| **Generic** | `call_tool(name, args)` — escape hatch for any OpenMork tool |
+| **Generic** | `call_tool(name, args)` — escape hatch for any openmork tool |
 | **Cleanup** | `cleanup()` — release all resources |
 
 ### Tool Call Parsers
@@ -241,7 +241,7 @@ TBLite is a thin subclass of TerminalBench2 — only the dataset and timeouts di
 
 ```bash
 # Install yc-bench (optional dependency)
-pip install "OpenMork[yc-bench]"
+pip install "openmork[yc-bench]"
 
 # Run evaluation
 bash environments/benchmarks/yc_bench/run_eval.sh
@@ -477,12 +477,12 @@ python my_env.py evaluate \
 
 ### For Modal-sandboxed benchmarks (TB2, TBLite)
 
-- [Modal](https://modal.com) account and CLI: `pip install "OpenMork[modal]"`
+- [Modal](https://modal.com) account and CLI: `pip install "openmork[modal]"`
 - `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` environment variables
 
 ### For YC-Bench
 
-- `pip install "OpenMork[yc-bench]"` (installs the yc-bench CLI + SQLAlchemy)
+- `pip install "openmork[yc-bench]"` (installs the yc-bench CLI + SQLAlchemy)
 - No Modal needed — runs with local terminal backend
 
 ### For RL training

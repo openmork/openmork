@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/openmork-banner.png" alt="OpenMork" width="100%">
+<img src="assets/openmork-banner.png" alt="openmork" width="100%">
 
 <br/>
 <br/>
@@ -24,9 +24,9 @@
 
 <br/>
 
-## ⚙️ What is OpenMork?
+## ⚙️ What is openmork?
 
-OpenMork is a **modular AI agent platform** that you assemble yourself.
+openmork is a **modular AI agent platform** that you assemble yourself.
 
 Every piece is swappable. Memory, gateway, security, skills, personality — all of it.
 You control what goes in and what stays out.
@@ -135,8 +135,8 @@ OpenAI, Claude, Grok, Qwen<br/>
 
 ```bash
 # Clone
-git clone https://github.com/openmork/OpenMork.git
-cd OpenMork
+git clone https://github.com/openmork/openmork.git
+cd openmork
 
 # Install
 bash setup-openmork.sh
@@ -183,7 +183,7 @@ openmork claw migrate --dry-run   # Preview (nothing is modified)
 
 ## 🛡️ Controllable Safety
 
-OpenMork **never** silently blocks you. Every security decision goes through you.
+openmork **never** silently blocks you. Every security decision goes through you.
 
 ```yaml
 # ~/.openmork/safety.yaml — YOUR rules, YOUR control
@@ -276,7 +276,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 🙏 Acknowledgements
 
-OpenMork is built on the shoulders of great open-source projects:
+openmork is built on the shoulders of great open-source projects:
 
 - [Hermes-Agent](https://github.com/NousResearch/hermes-agent) by Nous Research
 - [OpenClaw](https://github.com/anthropics/claude-code)

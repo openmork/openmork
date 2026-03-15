@@ -7,7 +7,7 @@ sidebar_position: 8
 
 # Fallback Providers
 
-OpenMork has two separate fallback systems that keep your sessions running when providers hit issues:
+openmork has two separate fallback systems that keep your sessions running when providers hit issues:
 
 1. **Primary model fallback** — automatically switches to a backup provider:model when your main model fails
 2. **Auxiliary task fallback** — independent provider resolution for side tasks like vision, compression, and web extraction

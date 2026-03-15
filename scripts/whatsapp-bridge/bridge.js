@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * OpenMork WhatsApp Bridge
+ * openmork WhatsApp Bridge
  *
  * Standalone Node.js process that connects to WhatsApp via Baileys
  * and exposes HTTP endpoints for the Python gateway adapter.
@@ -59,7 +59,7 @@ async function startSocket() {
     auth: state,
     logger,
     printQRInTerminal: false,
-    browser: ['OpenMork', 'Chrome', '120.0'],
+    browser: ['openmork', 'Chrome', '120.0'],
     syncFullHistory: false,
     markOnlineOnConnect: false,
   });
@@ -210,7 +210,7 @@ app.post('/send', async (req, res) => {
   try {
     // Prefix responses so the user can distinguish agent replies from their
     // own messages (especially in self-chat / "Message Yourself").
-    const prefixed = `⚕ *OpenMork*\n────────────\n${message}`;
+    const prefixed = `⚕ *openmork*\n────────────\n${message}`;
     const sent = await sock.sendMessage(chatId, { text: prefixed });
     res.json({ success: true, messageId: sent?.key?.id });
   } catch (err) {
@@ -230,7 +230,7 @@ app.post('/edit', async (req, res) => {
   }
 
   try {
-    const prefixed = `⚕ *OpenMork*\n────────────\n${message}`;
+    const prefixed = `⚕ *openmork*\n────────────\n${message}`;
     const key = { id: messageId, fromMe: true, remoteJid: chatId };
     await sock.sendMessage(chatId, { text: prefixed, edit: key });
     res.json({ success: true });

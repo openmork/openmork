@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
 title: "Use SOUL.md with OPENMORK"
-description: "How to use SOUL.md to shape OpenMork's default voice, what belongs there, and how it differs from AGENTS.md and /personality"
+description: "How to use SOUL.md to shape openmork's default voice, what belongs there, and how it differs from AGENTS.md and /personality"
 ---
 
 # Use SOUL.md with OPENMORK

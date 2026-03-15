@@ -2,12 +2,12 @@
 name: claude-code
 description: Delegate coding tasks to Claude Code (Anthropic's CLI agent). Use for building features, refactoring, PR reviews, and iterative coding. Requires the claude CLI installed.
 version: 1.0.0
-author: OpenMork
+author: openmork
 license: MIT
 metadata:
   openmork:
     tags: [Coding-Agent, Claude, Anthropic, Code-Review, Refactoring]
-    related_skills: [codex, OpenMork]
+    related_skills: [codex, openmork]
 ---
 
 # Claude Code

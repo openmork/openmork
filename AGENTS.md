@@ -1,6 +1,6 @@
-# OpenMork - Development Guide
+# openmork - Development Guide
 
-Instructions for AI coding assistants and developers working on the OpenMork codebase.
+Instructions for AI coding assistants and developers working on the openmork codebase.
 
 ## Development Environment
 
@@ -11,7 +11,7 @@ source .venv/bin/activate  # ALWAYS activate before running Python
 ## Project Structure
 
 ```
-OpenMork/
+openmork/
 ├── run_agent.py          # AIAgent class — core conversation loop
 ├── model_tools.py        # Tool orchestration, _discover_tools(), handle_function_call()
 ├── toolsets.py           # Toolset definitions, _OPENMORK_CORE_TOOLS list
@@ -294,7 +294,7 @@ Activate with `/skin cyberpunk` or `display.skin: cyberpunk` in config.yaml.
 ## Important Policies
 ### Prompt Caching Must Not Break
 
-OpenMork ensures caching remains valid throughout a conversation. **Do NOT implement changes that would:**
+openmork ensures caching remains valid throughout a conversation. **Do NOT implement changes that would:**
 - Alter past context mid-conversation
 - Change toolsets mid-conversation
 - Reload memories or rebuild system prompts mid-conversation

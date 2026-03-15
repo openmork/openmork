@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OpenMork"
+name = "openmork"
 version = "0.2.0"
 description = "The self-improving AI agent — creates skills from experience, improves them during use, and runs anywhere"
 readme = "README.md"
@@ -66,25 +66,25 @@ rl = [
 ]
 yc-bench = ["yc-bench @ git+https://github.com/collinear-ai/yc-bench.git"]
 all = [
-  "OpenMork[modal]",
-  "OpenMork[daytona]",
-  "OpenMork[messaging]",
-  "OpenMork[cron]",
-  "OpenMork[cli]",
-  "OpenMork[dev]",
-  "OpenMork[tts-premium]",
-  "OpenMork[slack]",
-  "OpenMork[pty]",
-  "OpenMork[honcho]",
-  "OpenMork[mcp]",
-  "OpenMork[homeassistant]",
-  "OpenMork[acp]",
-  "OpenMork[voice]",
+  "openmork[modal]",
+  "openmork[daytona]",
+  "openmork[messaging]",
+  "openmork[cron]",
+  "openmork[cli]",
+  "openmork[dev]",
+  "openmork[tts-premium]",
+  "openmork[slack]",
+  "openmork[pty]",
+  "openmork[honcho]",
+  "openmork[mcp]",
+  "openmork[homeassistant]",
+  "openmork[acp]",
+  "openmork[voice]",
 ]
 
 [project.scripts]
 openmork = "openmork_cli.main:main"
-OpenMork = "run_agent:main"
+openmork = "run_agent:main"
 openmork-acp = "acp_adapter.entry:main"
 
 [tool.setuptools]

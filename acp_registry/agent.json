@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "name": "OpenMork",
-  "display_name": "OpenMork",
+  "name": "openmork",
+  "display_name": "openmork",
   "description": "AI agent by Nous Research with 90+ tools, persistent memory, and multi-platform support",
   "icon": "icon.svg",
   "distribution": {

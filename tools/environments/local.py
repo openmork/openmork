@@ -19,7 +19,7 @@ _OUTPUT_FENCE = "__OPENMORK_FENCE_a9f7b3__"
 # OPENMORK-internal env vars that should NOT leak into terminal subprocesses.
 # These are loaded from ~/.openmork/.env for OPENMORK' own LLM/provider calls
 # but can break external CLIs (e.g. codex) that also honor them.
-# See: https://github.com/openmork/OpenMork/issues/1002
+# See: https://github.com/openmork/openmork/issues/1002
 #
 # Built dynamically from the provider registry so new providers are
 # automatically covered without manual blocklist maintenance.
@@ -182,7 +182,7 @@ def _find_bash() -> str:
             return candidate
 
     raise RuntimeError(
-        "Git Bash not found. OpenMork requires Git for Windows on Windows.\n"
+        "Git Bash not found. openmork requires Git for Windows on Windows.\n"
         "Install it from: https://git-scm.com/download/win\n"
         "Or set OPENMORK_GIT_BASH_PATH to your bash.exe location."
     )

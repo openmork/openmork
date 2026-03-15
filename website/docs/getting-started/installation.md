@@ -1,23 +1,23 @@
 ---
 sidebar_position: 2
 title: "Installation"
-description: "Install OpenMork on Linux, macOS, or WSL2"
+description: "Install openmork on Linux, macOS, or WSL2"
 ---
 
 # Installation
 
-Get OpenMork up and running in under two minutes with the one-line installer, or follow the manual steps for full control.
+Get openmork up and running in under two minutes with the one-line installer, or follow the manual steps for full control.
 
 ## Quick Install
 
 ### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash
 ```
 
 :::warning Windows
-Native Windows is **not supported**. Please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run OpenMork from there. The install command above works inside WSL2.
+Native Windows is **not supported**. Please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run openmork from there. The install command above works inside WSL2.
 :::
 
 ### What the Installer Does
@@ -70,8 +70,8 @@ If you prefer full control over the installation process, follow these steps.
 Clone with `--recurse-submodules` to pull the required submodules:
 
 ```bash
-git clone --recurse-submodules https://github.com/openmork/OpenMork.git
-cd OpenMork
+git clone --recurse-submodules https://github.com/openmork/openmork.git
+cd openmork
 ```
 
 If you already cloned without `--recurse-submodules`:
@@ -229,8 +229,8 @@ For those who just want the commands:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone & enter
-git clone --recurse-submodules https://github.com/openmork/OpenMork.git
-cd OpenMork
+git clone --recurse-submodules https://github.com/openmork/openmork.git
+cd openmork
 
 # Create venv with Python 3.11
 uv venv venv --python 3.11

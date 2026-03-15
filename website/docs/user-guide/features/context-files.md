@@ -6,7 +6,7 @@ description: "Project context files — AGENTS.md, global SOUL.md, and .cursorru
 
 # Context Files
 
-OpenMork automatically discovers and loads context files that shape how it behaves. Some are project-local and discovered from your working directory. `SOUL.md` is now global to the OPENMORK instance and is loaded from `OPENMORK_HOME` only.
+openmork automatically discovers and loads context files that shape how it behaves. Some are project-local and discovered from your working directory. `SOUL.md` is now global to the OPENMORK instance and is loaded from `OPENMORK_HOME` only.
 
 ## Supported Context Files
 

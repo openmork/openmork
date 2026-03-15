@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "Slack"
-description: "Set up OpenMork as a Slack bot using Socket Mode"
+description: "Set up openmork as a Slack bot using Socket Mode"
 ---
 
 # Slack Setup
 
-Connect OpenMork to Slack as a bot using Socket Mode. Socket Mode uses WebSockets instead of
+Connect openmork to Slack as a bot using Socket Mode. Socket Mode uses WebSockets instead of
 public HTTP endpoints, so your OPENMORK instance doesn't need to be publicly accessible — it works
 behind firewalls, on your laptop, or on a private server.
 
@@ -32,7 +32,7 @@ the steps below.
 1. Go to [https://api.slack.com/apps](https://api.slack.com/apps)
 2. Click **Create New App**
 3. Choose **From scratch**
-4. Enter an app name (e.g., "OpenMork") and select your workspace
+4. Enter an app name (e.g., "openmork") and select your workspace
 5. Click **Create App**
 
 You'll land on the app's **Basic Information** page.
@@ -179,7 +179,7 @@ sudo openmork gateway install --system   # Linux only: boot-time system service
 After starting the gateway, you need to **invite the bot** to any channel where you want it to respond:
 
 ```
-/invite @OpenMork
+/invite @openmork
 ```
 
 The bot will **not** automatically join channels. You must invite it to each channel individually.
@@ -193,7 +193,7 @@ Understanding how OPENMORK behaves in different contexts:
 | Context | Behavior |
 |---------|----------|
 | **DMs** | Bot responds to every message — no @mention needed |
-| **Channels** | Bot **only responds when @mentioned** (e.g., `@OpenMork what time is it?`). In channels, OPENMORK replies in a thread attached to that message. |
+| **Channels** | Bot **only responds when @mentioned** (e.g., `@openmork what time is it?`). In channels, OPENMORK replies in a thread attached to that message. |
 | **Threads** | If you @mention OPENMORK inside an existing thread, it replies in that same thread. |
 
 :::tip
@@ -217,7 +217,7 @@ cron job results, and other proactive notifications. To find a channel ID:
 SLACK_HOME_CHANNEL=C01234567890
 ```
 
-Make sure the bot has been **invited to the channel** (`/invite @OpenMork`).
+Make sure the bot has been **invited to the channel** (`/invite @openmork`).
 
 ---
 
@@ -235,11 +235,11 @@ OPENMORK supports voice on Slack:
 | Problem | Solution |
 |---------|----------|
 | Bot doesn't respond to DMs | Verify `message.im` is in your event subscriptions and the app is reinstalled |
-| Bot works in DMs but not in channels | **Most common issue.** Add `message.channels` and `message.groups` to event subscriptions, reinstall the app, and invite the bot to the channel with `/invite @OpenMork` |
+| Bot works in DMs but not in channels | **Most common issue.** Add `message.channels` and `message.groups` to event subscriptions, reinstall the app, and invite the bot to the channel with `/invite @openmork` |
 | Bot doesn't respond to @mentions in channels | 1) Check `message.channels` event is subscribed. 2) Bot must be invited to the channel. 3) Ensure `channels:history` scope is added. 4) Reinstall the app after scope/event changes |
 | Bot ignores messages in private channels | Add both the `message.groups` event subscription and `groups:history` scope, then reinstall the app and `/invite` the bot |
 | "not_authed" or "invalid_auth" errors | Regenerate your Bot Token and App Token, update `.env` |
-| Bot responds but can't post in a channel | Invite the bot to the channel with `/invite @OpenMork` |
+| Bot responds but can't post in a channel | Invite the bot to the channel with `/invite @openmork` |
 | "missing_scope" error | Add the required scope in OAuth & Permissions, then **reinstall** the app |
 | Socket disconnects frequently | Check your network; Bolt auto-reconnects but unstable connections cause lag |
 | Changed scopes/events but nothing changed | You **must reinstall** the app to your workspace after any scope or event subscription change |
@@ -254,7 +254,7 @@ If the bot isn't working in channels, verify **all** of the following:
 4. ✅ `channels:history` scope is added (for public channels)
 5. ✅ `groups:history` scope is added (for private channels)
 6. ✅ App was **reinstalled** after adding scopes/events
-7. ✅ Bot was **invited** to the channel (`/invite @OpenMork`)
+7. ✅ Bot was **invited** to the channel (`/invite @openmork`)
 8. ✅ You are **@mentioning** the bot in your message
 
 ---

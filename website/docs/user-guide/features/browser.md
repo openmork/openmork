@@ -7,7 +7,7 @@ sidebar_position: 5
 
 # Browser Automation
 
-OpenMork includes a full browser automation toolset that can run in two modes:
+openmork includes a full browser automation toolset that can run in two modes:
 
 - **Browserbase cloud mode** via [Browserbase](https://browserbase.com) for managed cloud browsers and anti-bot tooling
 - **Local browser mode** via the `agent-browser` CLI and a local Chromium installation
@@ -112,7 +112,7 @@ Click @e5 to press the "Sign In" button
 Type text into an input field. Clears the field first, then types the new text.
 
 ```
-Type "OpenMork" into the search field @e3
+Type "openmork" into the search field @e3
 ```
 
 ### `browser_scroll`

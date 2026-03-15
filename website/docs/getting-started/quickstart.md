@@ -1,20 +1,20 @@
 ---
 sidebar_position: 1
 title: "Quickstart"
-description: "Your first conversation with OpenMork — from install to chatting in 2 minutes"
+description: "Your first conversation with openmork — from install to chatting in 2 minutes"
 ---
 
 # Quickstart
 
-This guide walks you through installing OpenMork, setting up a provider, and having your first conversation. By the end, you'll know the key features and how to explore further.
+This guide walks you through installing openmork, setting up a provider, and having your first conversation. By the end, you'll know the key features and how to explore further.
 
-## 1. Install OpenMork
+## 1. Install openmork
 
 Run the one-line installer:
 
 ```bash
 # Linux / macOS / WSL2
-curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash
 ```
 
 :::tip Windows Users
@@ -134,7 +134,7 @@ openmork gateway setup    # Interactive platform configuration
 Want microphone input in the CLI or spoken replies in messaging?
 
 ```bash
-pip install OpenMork[voice]
+pip install openmork[voice]
 
 # Optional but recommended for free local speech-to-text
 pip install faster-whisper

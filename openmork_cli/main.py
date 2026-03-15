@@ -36,7 +36,7 @@ Usage:
     openmork honcho migrate                  # Step-by-step migration guide: OpenClaw native → OPENMORK + Honcho
     openmork version             Show version
     openmork update              Update to latest version
-    openmork uninstall           Uninstall OpenMork
+    openmork uninstall           Uninstall openmork
     openmork acp                 Run as an ACP server for editor integration
     openmork sessions browse     Interactive session picker with search
 
@@ -698,14 +698,14 @@ def cmd_whatsapp(args):
             print("    2. Send a message to the bot's WhatsApp number")
             print("    3. The agent will reply automatically")
             print()
-            print("  Tip: Agent responses are prefixed with '⚕ OpenMork'")
+            print("  Tip: Agent responses are prefixed with '⚕ openmork'")
         else:
             print("  Next steps:")
             print("    1. Start the gateway:  openmork gateway")
             print("    2. Open WhatsApp → Message Yourself")
             print("    3. Type a message — the agent will reply")
             print()
-            print("  Tip: Agent responses are prefixed with '⚕ OpenMork'")
+            print("  Tip: Agent responses are prefixed with '⚕ openmork'")
             print("  so you can tell them apart from your own messages.")
         print()
         print("  Or install as a service: openmork gateway install")
@@ -1852,7 +1852,7 @@ def cmd_config(args):
 
 def cmd_version(args):
     """Show version."""
-    print(f"OpenMork v{__version__} ({__release_date__})")
+    print(f"openmork v{__version__} ({__release_date__})")
     print(f"Project: {PROJECT_ROOT}")
     
     # Show Python version
@@ -1879,13 +1879,13 @@ def cmd_version(args):
 
 
 def cmd_uninstall(args):
-    """Uninstall OpenMork."""
+    """Uninstall openmork."""
     from openmork_cli.uninstall import run_uninstall
     run_uninstall(args)
 
 
 def _update_via_zip(args):
-    """Update OpenMork by downloading a ZIP archive.
+    """Update openmork by downloading a ZIP archive.
     
     Used on Windows when git file I/O is broken (antivirus, NTFS filter 
     drivers causing 'Invalid argument' errors on file creation).
@@ -1896,20 +1896,20 @@ def _update_via_zip(args):
     from urllib.request import urlretrieve
     
     branch = "main"
-    zip_url = f"https://github.com/openmork/OpenMork/archive/refs/heads/{branch}.zip"
+    zip_url = f"https://github.com/openmork/openmork/archive/refs/heads/{branch}.zip"
     
     print("→ Downloading latest version...")
     try:
         tmp_dir = tempfile.mkdtemp(prefix="openmork-update-")
-        zip_path = os.path.join(tmp_dir, f"OpenMork-{branch}.zip")
+        zip_path = os.path.join(tmp_dir, f"openmork-{branch}.zip")
         urlretrieve(zip_url, zip_path)
         
         print("→ Extracting...")
         with zipfile.ZipFile(zip_path, 'r') as zf:
             zf.extractall(tmp_dir)
         
-        # GitHub ZIPs extract to OpenMork-<branch>/
-        extracted = os.path.join(tmp_dir, f"OpenMork-{branch}")
+        # GitHub ZIPs extract to openmork-<branch>/
+        extracted = os.path.join(tmp_dir, f"openmork-{branch}")
         if not os.path.isdir(extracted):
             # Try to find it
             for d in os.listdir(tmp_dir):
@@ -2101,10 +2101,10 @@ def _restore_stashed_changes(
 
 
 def cmd_update(args):
-    """Update OpenMork to the latest version."""
+    """Update openmork to the latest version."""
     import shutil
     
-    print("⚕ Updating OpenMork...")
+    print("⚕ Updating openmork...")
     print()
     
     # Try git-based update first, fall back to ZIP download on Windows
@@ -2117,7 +2117,7 @@ def cmd_update(args):
             use_zip_update = True
         else:
             print("✗ Not a git repository. Please reinstall:")
-            print("  curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash")
+            print("  curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash")
             sys.exit(1)
     
     # On Windows, git can fail with "unable to write loose object file: Invalid argument"
@@ -2355,7 +2355,7 @@ def main():
     """Main entry point for openmork CLI."""
     parser = argparse.ArgumentParser(
         prog="openmork",
-        description="OpenMork - AI assistant with tool-calling capabilities",
+        description="openmork - AI assistant with tool-calling capabilities",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -2371,7 +2371,7 @@ Examples:
     openmork config edit            Edit config in $EDITOR
     openmork config set model gpt-4 Set a config value
     openmork gateway                Run messaging gateway
-    openmork -s OpenMork-dev,github-auth
+    openmork -s openmork-dev,github-auth
     openmork -w                     Start in isolated git worktree
     openmork gateway install        Install gateway background service
     openmork sessions list          List past sessions
@@ -2437,7 +2437,7 @@ For more help on a command:
     chat_parser = subparsers.add_parser(
         "chat",
         help="Interactive chat with the agent",
-        description="Start an interactive chat session with OpenMork"
+        description="Start an interactive chat session with openmork"
     )
     chat_parser.add_argument(
         "-q", "--query",
@@ -2577,7 +2577,7 @@ For more help on a command:
     setup_parser = subparsers.add_parser(
         "setup",
         help="Interactive setup wizard",
-        description="Configure OpenMork with an interactive wizard. "
+        description="Configure openmork with an interactive wizard. "
                     "Run a specific section: openmork setup model|terminal|gateway|tools|agent"
     )
     setup_parser.add_argument(
@@ -2685,7 +2685,7 @@ For more help on a command:
     status_parser = subparsers.add_parser(
         "status",
         help="Show status of all components",
-        description="Display status of OpenMork components"
+        description="Display status of openmork components"
     )
     status_parser.add_argument(
         "--all",
@@ -2762,7 +2762,7 @@ For more help on a command:
     doctor_parser = subparsers.add_parser(
         "doctor",
         help="Check configuration and dependencies",
-        description="Diagnose issues with OpenMork setup"
+        description="Diagnose issues with openmork setup"
     )
     doctor_parser.add_argument(
         "--fix",
@@ -2777,7 +2777,7 @@ For more help on a command:
     config_parser = subparsers.add_parser(
         "config",
         help="View and edit configuration",
-        description="Manage OpenMork configuration"
+        description="Manage openmork configuration"
     )
     config_subparsers = config_parser.add_subparsers(dest="config_command")
     
@@ -3308,7 +3308,7 @@ For more help on a command:
     # =========================================================================
     update_parser = subparsers.add_parser(
         "update",
-        help="Update OpenMork to the latest version",
+        help="Update openmork to the latest version",
         description="Pull the latest changes from git and reinstall dependencies"
     )
     update_parser.set_defaults(func=cmd_update)
@@ -3318,8 +3318,8 @@ For more help on a command:
     # =========================================================================
     uninstall_parser = subparsers.add_parser(
         "uninstall",
-        help="Uninstall OpenMork",
-        description="Remove OpenMork from your system. Can keep configs/data for reinstall."
+        help="Uninstall openmork",
+        description="Remove openmork from your system. Can keep configs/data for reinstall."
     )
     uninstall_parser.add_argument(
         "--full",
@@ -3338,12 +3338,12 @@ For more help on a command:
     # =========================================================================
     acp_parser = subparsers.add_parser(
         "acp",
-        help="Run OpenMork as an ACP (Agent Client Protocol) server",
-        description="Start OpenMork in ACP mode for editor integration (VS Code, Zed, JetBrains)",
+        help="Run openmork as an ACP (Agent Client Protocol) server",
+        description="Start openmork in ACP mode for editor integration (VS Code, Zed, JetBrains)",
     )
 
     def cmd_acp(args):
-        """Launch OpenMork as an ACP server."""
+        """Launch openmork as an ACP server."""
         try:
             from acp_adapter.entry import main as acp_main
             acp_main()

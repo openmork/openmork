@@ -3,7 +3,7 @@
 **Target:** {target_url}
 **Date:** {date}
 **Scope:** {scope_description}
-**Tester:** OpenMork (automated exploratory QA)
+**Tester:** openmork (automated exploratory QA)
 
 ---
 

@@ -6,7 +6,7 @@ sounddevice or system audio players.
 
 Dependencies (optional):
     pip install sounddevice numpy
-    or: pip install OpenMork[voice]
+    or: pip install openmork[voice]
 """
 
 import logging
@@ -364,7 +364,7 @@ class AudioRecorder:
             raise RuntimeError(
                 "Voice mode requires sounddevice and numpy.\n"
                 "Install with: pip install sounddevice numpy\n"
-                "Or: pip install OpenMork[voice]"
+                "Or: pip install openmork[voice]"
             ) from e
 
         with self._lock:

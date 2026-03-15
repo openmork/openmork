@@ -1,5 +1,5 @@
 """
-Unified tool configuration for OpenMork.
+Unified tool configuration for openmork.
 
 `openmork tools` and `openmork setup tools` both enter this module.
 Select a platform → toggle toolsets on/off → for newly enabled tools
@@ -260,9 +260,9 @@ def _run_post_setup(post_setup_key: str):
             if result.returncode == 0:
                 _print_success("    Node.js dependencies installed")
             else:
-                _print_warning("    npm install failed - run manually: cd ~/.openmork/OpenMork && npm install")
+                _print_warning("    npm install failed - run manually: cd ~/.openmork/openmork && npm install")
         elif not node_modules.exists():
-            _print_warning("    Node.js not found - browser tools require: npm install (in OpenMork directory)")
+            _print_warning("    Node.js not found - browser tools require: npm install (in openmork directory)")
 
     elif post_setup_key == "rl_training":
         try:

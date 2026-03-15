@@ -1,12 +1,12 @@
 // =========================================================================
-// OpenMork Landing Page — Interactions
+// openmork Landing Page — Interactions
 // =========================================================================
 
 // --- Platform install commands ---
 const PLATFORMS = {
   linux: {
     command:
-      "curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash",
+      "curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash",
     prompt: "$",
     note: "Works on Linux, macOS & WSL2 · No prerequisites · Installs everything automatically",
     stepNote:
@@ -223,7 +223,7 @@ const demoSequence = [
   { type: "prompt", text: "❯ " },
   {
     type: "type",
-    text: "Review the PR at openmork/OpenMork#42 and fix any issues",
+    text: "Review the PR at openmork/openmork#42 and fix any issues",
     delay: 30,
   },
   { type: "pause", ms: 600 },

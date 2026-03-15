@@ -89,7 +89,7 @@ openmork gateway status --system         # Linux only: inspect the system servic
 | `/rollback [number]` | List or restore filesystem checkpoints |
 | `/background <prompt>` | Run a prompt in a separate background session |
 | `/reload-mcp` | Reload MCP servers from config |
-| `/update` | Update OpenMork to the latest version |
+| `/update` | Update openmork to the latest version |
 | `/help` | Show available commands |
 | `/<skill-name>` | Invoke any installed skill |
 

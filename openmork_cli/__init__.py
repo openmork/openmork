@@ -1,5 +1,5 @@
 """
-OPENMORK CLI - Unified command-line interface for OpenMork.
+OPENMORK CLI - Unified command-line interface for openmork.
 
 Provides subcommands for:
 - openmork chat          - Interactive chat (same as ./openmork)

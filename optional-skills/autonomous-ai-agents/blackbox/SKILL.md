@@ -2,12 +2,12 @@
 name: blackbox
 description: Delegate coding tasks to Blackbox AI CLI agent. Multi-model agent with built-in judge that runs tasks through multiple LLMs and picks the best result. Requires the blackbox CLI and a Blackbox AI API key.
 version: 1.0.0
-author: OpenMork (Nous Research)
+author: openmork (Nous Research)
 license: MIT
 metadata:
   openmork:
     tags: [Coding-Agent, Blackbox, Multi-Agent, Judge, Multi-Model]
-    related_skills: [claude-code, codex, OpenMork]
+    related_skills: [claude-code, codex, openmork]
 ---
 
 # Blackbox CLI

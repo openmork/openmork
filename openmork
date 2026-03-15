@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenMork CLI Launcher
+openmork CLI Launcher
 
 This is a convenience wrapper to launch the OPENMORK CLI.
 Usage: ./openmork [options]

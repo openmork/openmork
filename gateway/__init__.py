@@ -1,7 +1,7 @@
 """
 OPENMORK Gateway - Multi-platform messaging integration.
 
-This module provides a unified gateway for connecting the OpenMork
+This module provides a unified gateway for connecting the openmork
 to various messaging platforms (Telegram, Discord, WhatsApp) with:
 - Session management (persistent conversations with reset policies)
 - Dynamic context injection (agent knows where messages come from)

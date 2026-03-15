@@ -1,12 +1,12 @@
 ---
 sidebar_position: 1
 title: "CLI Interface"
-description: "Master the OpenMork terminal interface — commands, keybindings, personalities, and more"
+description: "Master the openmork terminal interface — commands, keybindings, personalities, and more"
 ---
 
 # CLI Interface
 
-OpenMork's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
+openmork's CLI is a full terminal user interface (TUI) — not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 ## Running the CLI
 
@@ -28,7 +28,7 @@ openmork chat --provider openrouter  # Force OpenRouter
 openmork chat --toolsets "web,terminal,skills"
 
 # Start with one or more skills preloaded
-openmork -s OpenMork-dev,github-auth
+openmork -s openmork-dev,github-auth
 openmork chat -s github-pr-workflow -q "open a draft PR"
 
 # Resume previous sessions
@@ -103,7 +103,7 @@ You can define custom commands that run shell commands instantly without invokin
 quick_commands:
   status:
     type: exec
-    command: systemctl status OpenMork
+    command: systemctl status openmork
   gpu:
     type: exec
     command: nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader
@@ -116,7 +116,7 @@ Then type `/status` or `/gpu` in any chat. See the [Configuration guide](/docs/u
 If you already know which skills you want active for the session, pass them at launch time:
 
 ```bash
-openmork -s OpenMork-dev,github-auth
+openmork -s openmork-dev,github-auth
 openmork chat -s github-pr-workflow -s github-auth
 ```
 

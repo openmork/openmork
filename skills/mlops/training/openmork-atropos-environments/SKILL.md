@@ -1,8 +1,8 @@
 ---
 name: openmork-atropos-environments
-description: Build, test, and debug OpenMork RL environments for Atropos training. Covers the OPENMORKAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the OpenMork repo.
+description: Build, test, and debug openmork RL environments for Atropos training. Covers the OPENMORKAgentBaseEnv interface, reward functions, agent loop integration, evaluation with tools, wandb logging, and the three CLI modes (serve/process/evaluate). Use when creating, reviewing, or fixing RL environments in the openmork repo.
 version: 1.1.0
-author: OpenMork
+author: openmork
 license: MIT
 metadata:
   openmork:
@@ -10,9 +10,9 @@ metadata:
     related_skills: [axolotl, grpo-rl-training, trl-fine-tuning, lm-evaluation-harness]
 ---
 
-# OpenMork Atropos Environments
+# openmork Atropos Environments
 
-Guide for building RL environments in the OpenMork repo that integrate with the Atropos training framework.
+Guide for building RL environments in the openmork repo that integrate with the Atropos training framework.
 
 ## Architecture Overview
 
@@ -146,7 +146,7 @@ return 1.0 if result["exit_code"] == 0 else 0.0
 ### 5. `evaluate()` — Periodic evaluation with full agent loop
 
 **MUST use the full agent loop with tools**, not single-turn chat_completion.
-The whole point of OpenMork environments is agentic evaluation:
+The whole point of openmork environments is agentic evaluation:
 
 ```python
 async def evaluate(self, *args, **kwargs) -> None:
@@ -242,7 +242,7 @@ Config priority: CLI args > YAML file > config_init() defaults.
 
 1. **AgentResult has .messages, not .final_response** — Extract the final response by iterating reversed(result.messages) looking for the last assistant message with content.
 
-2. **evaluate() must use OPENMORKAgentLoop, not chat_completion** — Single-turn chat_completion has no tools. The whole point of OpenMork benchmarks is agentic evaluation with tool use.
+2. **evaluate() must use OPENMORKAgentLoop, not chat_completion** — Single-turn chat_completion has no tools. The whole point of openmork benchmarks is agentic evaluation with tool use.
 
 3. **Don't call _llm_judge twice** — If compute_reward already calls it, extract the score from the buffer instead of calling judge separately in evaluate().
 

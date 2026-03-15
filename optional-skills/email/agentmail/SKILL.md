@@ -1,6 +1,6 @@
 ---
 name: agentmail
-description: Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. OpenMork@agentmail.to).
+description: Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. openmork@agentmail.to).
 version: 1.0.0
 metadata:
   openmork:
@@ -70,8 +70,8 @@ All 11 AgentMail tools are now available automatically.
 
 ### Create an inbox and send an email
 1. Create a dedicated inbox:
-   - Use `create_inbox` with a username (e.g. `OpenMork`)
-   - The agent gets address: `OpenMork@agentmail.to`
+   - Use `create_inbox` with a username (e.g. `openmork`)
+   - The agent gets address: `openmork@agentmail.to`
 2. Send an email:
    - Use `send_message` with `inbox_id`, `to`, `subject`, `text`
 3. Check for replies:

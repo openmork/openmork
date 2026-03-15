@@ -81,15 +81,15 @@ def test_main_applies_preloaded_skills_to_system_prompt(monkeypatch):
     monkeypatch.setattr(
         cli_mod,
         "build_preloaded_skills_prompt",
-        lambda skills, task_id=None: ("skill prompt", ["OpenMork-dev", "github-auth"], []),
+        lambda skills, task_id=None: ("skill prompt", ["openmork-dev", "github-auth"], []),
     )
 
     with pytest.raises(SystemExit):
-        cli_mod.main(skills="OpenMork-dev,github-auth", list_tools=True)
+        cli_mod.main(skills="openmork-dev,github-auth", list_tools=True)
 
     cli_obj = created["cli"]
     assert cli_obj.system_prompt == "base prompt\n\nskill prompt"
-    assert cli_obj.preloaded_skills == ["OpenMork-dev", "github-auth"]
+    assert cli_obj.preloaded_skills == ["openmork-dev", "github-auth"]
 
 
 def test_main_raises_for_unknown_preloaded_skill(monkeypatch):
@@ -108,7 +108,7 @@ def test_main_raises_for_unknown_preloaded_skill(monkeypatch):
 
 def test_show_banner_prints_preloaded_skills_once_before_banner():
     cli_obj = _make_real_cli(compact=False)
-    cli_obj.preloaded_skills = ["OpenMork-dev", "github-auth"]
+    cli_obj.preloaded_skills = ["openmork-dev", "github-auth"]
     cli_obj.console = MagicMock()
 
     with patch("cli.build_welcome_banner") as mock_banner, patch(
@@ -126,5 +126,5 @@ def test_show_banner_prints_preloaded_skills_once_before_banner():
 
     assert len(startup_lines) == 1
     assert "Activated skills:" in startup_lines[0]
-    assert "OpenMork-dev, github-auth" in startup_lines[0]
+    assert "openmork-dev, github-auth" in startup_lines[0]
     assert mock_banner.call_count == 2

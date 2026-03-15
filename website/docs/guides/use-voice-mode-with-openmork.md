@@ -57,25 +57,25 @@ If that is not solid yet, fix text mode first.
 ### CLI microphone + playback
 
 ```bash
-pip install OpenMork[voice]
+pip install openmork[voice]
 ```
 
 ### Messaging platforms
 
 ```bash
-pip install OpenMork[messaging]
+pip install openmork[messaging]
 ```
 
 ### Premium ElevenLabs TTS
 
 ```bash
-pip install OpenMork[tts-premium]
+pip install openmork[tts-premium]
 ```
 
 ### Everything
 
 ```bash
-pip install OpenMork[all]
+pip install openmork[all]
 ```
 
 ## Step 3: install system dependencies
@@ -406,7 +406,7 @@ By default, the bot needs an `@mention` in Discord server text channels unless c
 If you want the shortest path to success:
 
 1. get text OPENMORK working
-2. install `OpenMork[voice]`
+2. install `openmork[voice]`
 3. use CLI voice mode with local STT + Edge TTS
 4. then enable `/voice on` in Telegram or Discord
 5. only after that, try Discord VC mode

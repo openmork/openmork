@@ -1,12 +1,12 @@
 ---
 sidebar_position: 4
 title: "MCP (Model Context Protocol)"
-description: "Connect OpenMork to external tool servers via MCP — and control exactly which MCP tools OPENMORK loads"
+description: "Connect openmork to external tool servers via MCP — and control exactly which MCP tools OPENMORK loads"
 ---
 
 # MCP (Model Context Protocol)
 
-MCP lets OpenMork connect to external tool servers so the agent can use tools that live outside OPENMORK itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.
+MCP lets openmork connect to external tool servers so the agent can use tools that live outside OPENMORK itself — GitHub, databases, file systems, browser stacks, internal APIs, and more.
 
 If you have ever wanted OPENMORK to use a tool that already exists somewhere else, MCP is usually the cleanest way to do it.
 
@@ -23,7 +23,7 @@ If you have ever wanted OPENMORK to use a tool that already exists somewhere els
 1. Install MCP support:
 
 ```bash
-pip install OpenMork[mcp]
+pip install openmork[mcp]
 ```
 
 2. Add an MCP server to `~/.openmork/config.yaml`:
@@ -374,7 +374,7 @@ Inspect the project root and explain the directory layout.
 Check:
 
 ```bash
-pip install OpenMork[mcp]
+pip install openmork[mcp]
 node --version
 npx --version
 ```

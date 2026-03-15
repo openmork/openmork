@@ -1,4 +1,4 @@
-"""ACP agent server — exposes OpenMork via the Agent Client Protocol."""
+"""ACP agent server — exposes openmork via the Agent Client Protocol."""
 
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ class OPENMORKACPAgent(acp.Agent):
 
         return InitializeResponse(
             protocol_version=acp.PROTOCOL_VERSION,
-            agent_info=Implementation(name="OpenMork", version=OPENMORK_VERSION),
+            agent_info=Implementation(name="openmork", version=OPENMORK_VERSION),
             agent_capabilities=AgentCapabilities(
                 session_capabilities=SessionCapabilities(
                     fork=SessionForkCapabilities(),

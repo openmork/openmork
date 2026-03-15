@@ -1,7 +1,7 @@
 """
-OPENMORKAgentBaseEnv -- Abstract Base Environment for OpenMork + Atropos
+OPENMORKAgentBaseEnv -- Abstract Base Environment for openmork + Atropos
 
-Provides the Atropos integration plumbing that all OpenMork environments share:
+Provides the Atropos integration plumbing that all openmork environments share:
 - Two-mode operation (OpenAI server for Phase 1, VLLM ManagedServer for Phase 2)
 - Per-group toolset/distribution resolution
 - Agent loop orchestration via OPENMORKAgentLoop
@@ -26,7 +26,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-# Ensure the OpenMork repo root is on sys.path so that imports like
+# Ensure the openmork repo root is on sys.path so that imports like
 # `from model_tools import ...` and `from environments.X import ...` work
 # regardless of where the script is invoked from.
 _repo_root = Path(__file__).resolve().parent.parent
@@ -36,7 +36,7 @@ if str(_repo_root) not in sys.path:
 from dotenv import load_dotenv
 from pydantic import Field
 
-# Load API keys from OpenMork/.env so all environments can access them
+# Load API keys from openmork/.env so all environments can access them
 _env_path = _repo_root / ".env"
 if _env_path.exists():
     load_dotenv(dotenv_path=_env_path)
@@ -63,7 +63,7 @@ from atroposlib.type_definitions import Item
 from environments.agent_loop import AgentResult, OPENMORKAgentLoop
 from environments.tool_context import ToolContext
 
-# Import OpenMork toolset infrastructure
+# Import openmork toolset infrastructure
 from model_tools import get_tool_definitions
 from toolset_distributions import sample_toolsets_from_distribution
 
@@ -72,7 +72,7 @@ logger = logging.getLogger(__name__)
 
 class OPENMORKAgentEnvConfig(BaseEnvConfig):
     """
-    Configuration for OpenMork Atropos environments.
+    Configuration for openmork Atropos environments.
 
     Extends BaseEnvConfig with agent-specific settings for toolsets,
     terminal backend, dataset loading, and tool call parsing.
@@ -179,7 +179,7 @@ class OPENMORKAgentEnvConfig(BaseEnvConfig):
 
 class OPENMORKAgentBaseEnv(BaseEnv):
     """
-    Abstract base environment for OpenMork Atropos integration.
+    Abstract base environment for openmork Atropos integration.
 
     Handles two modes of operation:
     - Phase 1 (OpenAI server type): Uses server.chat_completion() directly.
@@ -199,7 +199,7 @@ class OPENMORKAgentBaseEnv(BaseEnv):
         evaluate()        -- Periodic evaluation
     """
 
-    name: Optional[str] = "OpenMork"
+    name: Optional[str] = "openmork"
     env_config_cls = OPENMORKAgentEnvConfig
 
     def __init__(
@@ -645,7 +645,7 @@ class OPENMORKAgentBaseEnv(BaseEnv):
         Score the rollout. Has full access to:
         - item: the original dataset item (ground truth, test commands, etc.)
         - result: AgentResult with full messages, turn count, reasoning, etc.
-        - ctx: ToolContext -- call ANY OpenMork tool (terminal, file, web,
+        - ctx: ToolContext -- call ANY openmork tool (terminal, file, web,
                browser, vision...) scoped to this rollout's sandbox. Nothing
                is off-limits.
 

@@ -1,11 +1,11 @@
-# OpenAI-Compatible API Server for OpenMork
+# OpenAI-Compatible API Server for openmork
 
 ## Motivation
 
 Every major chat frontend (Open WebUI 126k★, LobeChat 73k★, LibreChat 34k★,
 AnythingLLM 56k★, NextChat 87k★, ChatBox 39k★, Jan 26k★, HF Chat-UI 8k★,
 big-AGI 7k★) connects to backends via the OpenAI-compatible REST API with
-SSE streaming. By exposing this endpoint, OpenMork becomes instantly
+SSE streaming. By exposing this endpoint, openmork becomes instantly
 usable as a backend for all of them — no custom adapters needed.
 
 ## What It Enables
@@ -15,7 +15,7 @@ usable as a backend for all of them — no custom adapters needed.
 │  Open WebUI      │──┐
 │  LobeChat        │  │    POST /v1/chat/completions
 │  LibreChat       │  ├──► Authorization: Bearer <key>     ┌─────────────────┐
-│  AnythingLLM     │  │    {"messages": [...]}             │  OpenMork   │
+│  AnythingLLM     │  │    {"messages": [...]}             │  openmork   │
 │  NextChat        │  │                                    │  gateway        │
 │  Any OAI client  │──┘    ◄── SSE streaming response      │  (API server)   │
 └──────────────────┘                                        └─────────────────┘
@@ -25,14 +25,14 @@ A user would:
 1. Set `API_SERVER_ENABLED=true` in `~/.openmork/.env`
 2. Run `openmork gateway` (API server starts alongside Telegram/Discord/etc.)
 3. Point Open WebUI (or any frontend) at `http://localhost:8642/v1`
-4. Chat with OpenMork through any OpenAI-compatible UI
+4. Chat with openmork through any OpenAI-compatible UI
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
 | POST | `/v1/chat/completions` | Chat with the agent (streaming + non-streaming) |
-| GET | `/v1/models` | List available "models" (returns OpenMork as a model) |
+| GET | `/v1/models` | List available "models" (returns openmork as a model) |
 | GET | `/health` | Health check |
 
 ## Architecture
@@ -69,7 +69,7 @@ Authorization: Bearer openmork-api-key-here
 Content-Type: application/json
 
 {
-  "model": "OpenMork",
+  "model": "openmork",
   "messages": [
     {"role": "system", "content": "You are a helpful assistant."},
     {"role": "user", "content": "What files are in the current directory?"}
@@ -85,7 +85,7 @@ Response:
   "id": "chatcmpl-abc123",
   "object": "chat.completion",
   "created": 1710000000,
-  "model": "OpenMork",
+  "model": "openmork",
   "choices": [{
     "index": 0,
     "message": {
@@ -130,10 +130,10 @@ Response:
 {
   "object": "list",
   "data": [{
-    "id": "OpenMork",
+    "id": "openmork",
     "object": "model",
     "created": 1710000000,
-    "owned_by": "OpenMork"
+    "owned_by": "openmork"
   }]
 }
 ```
@@ -143,7 +143,7 @@ Response:
 ### 1. Session Management
 
 The OpenAI API is stateless — each request includes the full conversation.
-But OpenMork sessions have persistent state (memory, skills, tool context).
+But openmork sessions have persistent state (memory, skills, tool context).
 
 **Approach: Hybrid**
 - Default: Stateless. Each request is independent. The `messages` array IS
@@ -187,9 +187,9 @@ Two modes:
 
 ### 5. Model Mapping
 
-Frontends send `"model": "OpenMork"` (or whatever). The actual LLM model
+Frontends send `"model": "openmork"` (or whatever). The actual LLM model
 used is configured server-side in config.yaml. The API server maps any
-requested model name to the configured OpenMork model.
+requested model name to the configured openmork model.
 
 Optionally, allow model passthrough: if the frontend sends
 `"model": "anthropic/claude-sonnet-4"`, the agent uses that model. Controlled
@@ -232,7 +232,7 @@ API_SERVER_KEY=your-secret-key
    - Responses API: server-side conversation storage via previous_response_id
      - Store full internal conversation (including tool calls) keyed by response ID
      - On subsequent requests, reconstruct full context from stored chain
-   - Frontend system prompt layered on top of OpenMork's core prompt
+   - Frontend system prompt layered on top of openmork's core prompt
 
 2. `gateway/config.py` — add `Platform.API_SERVER` enum + config
 
@@ -273,7 +273,7 @@ API_SERVER_KEY=your-secret-key
 
 ## Compatibility Matrix
 
-Once implemented, OpenMork works as a drop-in backend for:
+Once implemented, openmork works as a drop-in backend for:
 
 | Frontend | Stars | How to Connect |
 |----------|-------|---------------|

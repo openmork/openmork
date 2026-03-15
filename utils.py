@@ -1,4 +1,4 @@
-"""Shared utility functions for OpenMork."""
+"""Shared utility functions for openmork."""
 
 import json
 import os

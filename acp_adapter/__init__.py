@@ -1,1 +1,1 @@
-"""ACP (Agent Communication Protocol) adapter for OpenMork."""
+"""ACP (Agent Communication Protocol) adapter for openmork."""

@@ -1,5 +1,5 @@
 """
-Multi-provider authentication system for OpenMork.
+Multi-provider authentication system for openmork.
 
 Supports OAuth device code flows (Nous Portal, future: OpenAI Codex) and
 traditional API key providers (OpenRouter, custom endpoints). Auth state

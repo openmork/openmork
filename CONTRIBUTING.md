@@ -1,6 +1,6 @@
-# Contributing to OpenMork
+# Contributing to openmork
 
-Thank you for contributing to OpenMork! This guide covers everything you need: setting up your dev environment, understanding the architecture, deciding what to build, and getting your PR merged.
+Thank you for contributing to openmork! This guide covers everything you need: setting up your dev environment, understanding the architecture, deciding what to build, and getting your PR merged.
 
 ---
 
@@ -63,8 +63,8 @@ If your skill is specialized, community-contributed, or niche, it's better suite
 ### Clone and install
 
 ```bash
-git clone --recurse-submodules https://github.com/openmork/OpenMork.git
-cd OpenMork
+git clone --recurse-submodules https://github.com/openmork/openmork.git
+cd openmork
 
 # Create venv with Python 3.11
 uv venv venv --python 3.11
@@ -113,7 +113,7 @@ pytest tests/ -v
 ## Project Structure
 
 ```
-OpenMork/
+openmork/
 ├── run_agent.py              # AIAgent class — core conversation loop, tool dispatch, session persistence
 ├── cli.py                    # OPENMORKCLI class — interactive TUI, prompt_toolkit integration
 ├── model_tools.py            # Tool orchestration (thin layer over tools/registry.py)
@@ -638,7 +638,7 @@ test(tools): add unit tests for file_operations
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/openmork/OpenMork/issues)
+- Use [GitHub Issues](https://github.com/openmork/openmork/issues)
 - Include: OS, Python version, OPENMORK version (`openmork version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates

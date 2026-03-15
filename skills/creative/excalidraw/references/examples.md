@@ -6,7 +6,7 @@ Complete, copy-pasteable examples. Wrap each in the `.excalidraw` envelope befor
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "OpenMork",
+  "source": "openmork",
   "elements": [ ...elements from examples below... ],
   "appState": { "viewBackgroundColor": "#ffffff" }
 }

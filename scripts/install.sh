@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================================================
-# OpenMork Installer
+# openmork Installer
 # ============================================================================
 # Installation script for Linux and macOS.
 # Uses uv for fast Python provisioning and package management.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash
 #
 # Or with options:
 #   curl -fsSL ... | bash -s -- --no-venv --skip-setup
@@ -26,10 +26,10 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Configuration
-REPO_URL_SSH="git@github.com:openmork/OpenMork.git"
-REPO_URL_HTTPS="https://github.com/openmork/OpenMork.git"
+REPO_URL_SSH="git@github.com:openmork/openmork.git"
+REPO_URL_HTTPS="https://github.com/openmork/openmork.git"
 OPENMORK_HOME="$HOME/.openmork"
-INSTALL_DIR="${OPENMORK_INSTALL_DIR:-$OPENMORK_HOME/OpenMork}"
+INSTALL_DIR="${OPENMORK_INSTALL_DIR:-$OPENMORK_HOME/openmork}"
 PYTHON_VERSION="3.11"
 NODE_VERSION="22"
 
@@ -67,7 +67,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         -h|--help)
-            echo "OpenMork Installer"
+            echo "openmork Installer"
             echo ""
             echo "Usage: install.sh [OPTIONS]"
             echo ""
@@ -75,7 +75,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --no-venv      Don't create virtual environment"
             echo "  --skip-setup   Skip interactive setup wizard"
             echo "  --branch NAME  Git branch to install (default: main)"
-            echo "  --dir PATH     Installation directory (default: ~/.openmork/OpenMork)"
+            echo "  --dir PATH     Installation directory (default: ~/.openmork/openmork)"
             echo "  -h, --help     Show this help"
             exit 0
             ;;
@@ -94,7 +94,7 @@ print_banner() {
     echo ""
     echo -e "${MAGENTA}${BOLD}"
     echo "┌─────────────────────────────────────────────────────────┐"
-    echo "│             ⚕ OpenMork Installer                   │"
+    echo "│             ⚕ openmork Installer                   │"
     echo "├─────────────────────────────────────────────────────────┤"
     echo "│  An open source AI agent by Nous Research.              │"
     echo "└─────────────────────────────────────────────────────────┘"
@@ -140,7 +140,7 @@ detect_os() {
             OS="windows"
             DISTRO="windows"
             log_error "Windows detected. Please use the PowerShell installer:"
-            log_info "  irm https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.ps1 | iex"
+            log_info "  irm https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.ps1 | iex"
             exit 1
             ;;
         *)
@@ -786,7 +786,7 @@ setup_path() {
         for SHELL_CONFIG in "${SHELL_CONFIGS[@]}"; do
             if ! grep -v '^[[:space:]]*#' "$SHELL_CONFIG" 2>/dev/null | grep -qE 'PATH=.*\.local/bin'; then
                 echo "" >> "$SHELL_CONFIG"
-                echo "# OpenMork — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
+                echo "# openmork — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
                 echo "$PATH_LINE" >> "$SHELL_CONFIG"
                 log_success "Added ~/.local/bin to PATH in $SHELL_CONFIG"
             fi
@@ -838,7 +838,7 @@ copy_config_templates() {
     # Create SOUL.md if it doesn't exist (global persona file)
     if [ ! -f "$OPENMORK_HOME/SOUL.md" ]; then
         cat > "$OPENMORK_HOME/SOUL.md" << 'SOUL_EOF'
-# OpenMork Persona
+# openmork Persona
 
 <!--
 This file defines the agent's personality and tone.
@@ -1054,7 +1054,7 @@ print_success() {
     echo -e "   ${YELLOW}Config:${NC}    ~/.openmork/config.yaml"
     echo -e "   ${YELLOW}API Keys:${NC}  ~/.openmork/.env"
     echo -e "   ${YELLOW}Data:${NC}      ~/.openmork/cron/, sessions/, logs/"
-    echo -e "   ${YELLOW}Code:${NC}      ~/.openmork/OpenMork/"
+    echo -e "   ${YELLOW}Code:${NC}      ~/.openmork/openmork/"
     echo ""
 
     echo -e "${CYAN}─────────────────────────────────────────────────────────${NC}"

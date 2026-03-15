@@ -24,7 +24,7 @@ Official optional skills live in the repository under `optional-skills/`. Instal
 
 | Skill | Description | Path |
 |-------|-------------|------|
-| `agentmail` | Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. OpenMork@agentmail.to). | `email/agentmail` |
+| `agentmail` | Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. openmork@agentmail.to). | `email/agentmail` |
 
 ## health
 
@@ -36,7 +36,7 @@ Official optional skills live in the repository under `optional-skills/`. Instal
 
 | Skill | Description | Path |
 |-------|-------------|------|
-| `openclaw-migration` | Migrate a user's OpenClaw customization footprint into OpenMork. Imports OPENMORK-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be migrated and why. | `migration/openclaw-migration` |
+| `openclaw-migration` | Migrate a user's OpenClaw customization footprint into openmork. Imports OPENMORK-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be migrated and why. | `migration/openclaw-migration` |
 
 ## research
 

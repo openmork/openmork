@@ -1,5 +1,5 @@
 """
-Configuration management for OpenMork.
+Configuration management for openmork.
 
 Config files are stored in ~/.openmork/ for easy access:
 - ~/.openmork/config.yaml  - All settings (model, toolsets, terminal, etc.)

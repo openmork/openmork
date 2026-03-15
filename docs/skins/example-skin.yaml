@@ -1,5 +1,5 @@
 # ============================================================================
-# OpenMork — Example Skin Template
+# openmork — Example Skin Template
 # ============================================================================
 #
 # Copy this file to ~/.openmork/skins/<name>.yaml to create a custom skin.
@@ -72,7 +72,7 @@ spinner:
 # ── Branding ────────────────────────────────────────────────────────────────
 # Text strings used throughout the CLI interface.
 branding:
-  agent_name: "OpenMork"          # Banner title, about display
+  agent_name: "openmork"          # Banner title, about display
   welcome: "Welcome! Type your message or /help for commands."
   goodbye: "Goodbye! ⚕"              # Exit message
   response_label: " ⚕ OPENMORK "       # Response box header label

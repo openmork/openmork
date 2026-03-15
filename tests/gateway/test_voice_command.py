@@ -753,7 +753,7 @@ class TestVoiceChannelCommands:
         result = await runner._handle_voice_channel_join(event)
 
         assert "voice dependencies are missing" in result.lower()
-        assert "OpenMork[messaging]" in result
+        assert "openmork[messaging]" in result
 
     # -- _handle_voice_channel_leave --
 

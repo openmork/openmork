@@ -46,7 +46,7 @@ if env_path.exists():
 # =============================================================================
 
 SERVICE_NAME = "openmork-gateway"
-SERVICE_DESCRIPTION = "OpenMork Gateway - Messaging Platform Integration"
+SERVICE_DESCRIPTION = "openmork Gateway - Messaging Platform Integration"
 
 def get_systemd_unit_path() -> Path:
     """Get the path for the systemd user service file."""

@@ -2,12 +2,12 @@
 name: opencode
 description: Delegate coding tasks to OpenCode CLI agent for feature implementation, refactoring, PR review, and long-running autonomous sessions. Requires the opencode CLI installed and authenticated.
 version: 1.2.0
-author: OpenMork
+author: openmork
 license: MIT
 metadata:
   openmork:
     tags: [Coding-Agent, OpenCode, Autonomous, Refactoring, Code-Review]
-    related_skills: [claude-code, codex, OpenMork]
+    related_skills: [claude-code, codex, openmork]
 ---
 
 # OpenCode CLI

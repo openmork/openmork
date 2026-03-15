@@ -1,5 +1,5 @@
 """
-Skills configuration for OpenMork.
+Skills configuration for openmork.
 `openmork skills` enters this module.
 
 Toggle individual skills or categories on/off, globally or per-platform.

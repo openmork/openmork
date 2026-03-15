@@ -1,8 +1,8 @@
 # Terminal Test Environment -- Default Configuration
 #
-# Simple file-creation tasks for validating the full Atropos + OpenMork stack.
+# Simple file-creation tasks for validating the full Atropos + openmork stack.
 # Uses Modal terminal backend and OpenRouter (Claude) for inference.
-# API keys loaded from ~/OpenMork/.env
+# API keys loaded from ~/openmork/.env
 #
 # Usage:
 #   run-api

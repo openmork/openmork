@@ -1,12 +1,12 @@
 ---
 sidebar_position: 10
 title: "Voice Mode"
-description: "Real-time voice conversations with OpenMork — CLI, Telegram, Discord (DMs, text channels, and voice channels)"
+description: "Real-time voice conversations with openmork — CLI, Telegram, Discord (DMs, text channels, and voice channels)"
 ---
 
 # Voice Mode
 
-OpenMork supports full voice interaction across CLI and messaging platforms. Talk to the agent using your microphone, hear spoken replies, and have live voice conversations in Discord voice channels.
+openmork supports full voice interaction across CLI and messaging platforms. Talk to the agent using your microphone, hear spoken replies, and have live voice conversations in Discord voice channels.
 
 If you want a practical setup walkthrough with recommended configurations and real usage patterns, see [Use Voice Mode with OPENMORK](/docs/guides/use-voice-mode-with-openmork).
 
@@ -14,7 +14,7 @@ If you want a practical setup walkthrough with recommended configurations and re
 
 Before using voice features, make sure you have:
 
-1. **OpenMork installed** — `pip install OpenMork` (see [Installation](/docs/getting-started/installation))
+1. **openmork installed** — `pip install openmork` (see [Installation](/docs/getting-started/installation))
 2. **An LLM provider configured** — run `openmork model` or set your preferred provider credentials in `~/.openmork/.env`
 3. **A working base setup** — run `openmork` to verify the agent responds to text before enabling voice
 
@@ -36,16 +36,16 @@ The `~/.openmork/` directory and default `config.yaml` are created automatically
 
 ```bash
 # CLI voice mode (microphone + audio playback)
-pip install OpenMork[voice]
+pip install openmork[voice]
 
 # Discord + Telegram messaging (includes discord.py[voice] for VC support)
-pip install OpenMork[messaging]
+pip install openmork[messaging]
 
 # Premium TTS (ElevenLabs)
-pip install OpenMork[tts-premium]
+pip install openmork[tts-premium]
 
 # Everything at once
-pip install OpenMork[all]
+pip install openmork[all]
 ```
 
 | Extra | Packages | Required For |

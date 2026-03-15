@@ -6,7 +6,7 @@ description: "Session persistence, resume, search, management, and per-platform 
 
 # Sessions
 
-OpenMork automatically saves every conversation as a session. Sessions enable conversation resume, cross-session search, and full conversation history management.
+openmork automatically saves every conversation as a session. Sessions enable conversation resume, cross-session search, and full conversation history management.
 
 ## How Sessions Work
 

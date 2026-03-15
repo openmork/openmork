@@ -2,7 +2,7 @@
 """
 Tools Package
 
-This package contains all the specific tool implementations for the OpenMork.
+This package contains all the specific tool implementations for the openmork.
 Each module provides specialized functionality for different capabilities:
 
 - web_tools: Web search, content extraction, and crawling

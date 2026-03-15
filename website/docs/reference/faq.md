@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 title: "FAQ & Troubleshooting"
-description: "Frequently asked questions and solutions to common issues with OpenMork"
+description: "Frequently asked questions and solutions to common issues with openmork"
 ---
 
 # FAQ & Troubleshooting
@@ -14,7 +14,7 @@ Quick answers and fixes for the most common questions and issues.
 
 ### What LLM providers work with OPENMORK?
 
-OpenMork works with any OpenAI-compatible API. Supported providers include:
+openmork works with any OpenAI-compatible API. Supported providers include:
 
 - **[OpenRouter](https://openrouter.ai/)** — access hundreds of models through one API key (recommended for flexibility)
 - **Nous Portal** — Nous Research's own inference endpoint
@@ -30,15 +30,15 @@ Set your provider with `openmork model` or by editing `~/.openmork/.env`. See th
 
 ### Does it work on Windows?
 
-**Not natively.** OpenMork requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run OPENMORK from inside it. The standard install command works perfectly in WSL2:
+**Not natively.** openmork requires a Unix-like environment. On Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run OPENMORK from inside it. The standard install command works perfectly in WSL2:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash
 ```
 
 ### Is my data sent anywhere?
 
-API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your local Ollama instance). OpenMork does not collect telemetry, usage data, or analytics. Your conversations, memory, and skills are stored locally in `~/.openmork/`.
+API calls go **only to the LLM provider you configure** (e.g., OpenRouter, your local Ollama instance). openmork does not collect telemetry, usage data, or analytics. Your conversations, memory, and skills are stored locally in `~/.openmork/`.
 
 ### Can I use it offline / with local models?
 
@@ -56,11 +56,11 @@ This works with Ollama, vLLM, llama.cpp server, SGLang, LocalAI, and others. See
 
 ### How much does it cost?
 
-OpenMork itself is **free and open-source** (MIT license). You pay only for the LLM API usage from your chosen provider. Local models are completely free to run.
+openmork itself is **free and open-source** (MIT license). You pay only for the LLM API usage from your chosen provider. Local models are completely free to run.
 
 ### Can multiple people use one instance?
 
-Yes. The [messaging gateway](../user-guide/messaging/index.md) lets multiple users interact with the same OpenMork instance via Telegram, Discord, Slack, WhatsApp, or Home Assistant. Access is controlled through allowlists (specific user IDs) and DM pairing (first user to message claims access).
+Yes. The [messaging gateway](../user-guide/messaging/index.md) lets multiple users interact with the same openmork instance via Telegram, Discord, Slack, WhatsApp, or Home Assistant. Access is controlled through allowlists (specific user IDs) and DM pairing (first user to message claims access).
 
 ### What's the difference between memory and skills?
 
@@ -146,7 +146,7 @@ source ~/.bashrc
 # If you previously installed with sudo, clean up:
 sudo rm /usr/local/bin/openmork
 # Then re-run the standard installer
-curl -fsSL https://raw.githubusercontent.com/openmork/OpenMork/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/openmork/openmork/main/scripts/install.sh | bash
 ```
 
 ---
@@ -306,7 +306,7 @@ Configure in `~/.openmork/config.yaml` under your gateway's settings. See the [M
 **Solution:**
 ```bash
 # Install messaging dependencies
-pip install OpenMork[telegram]   # or [discord], [slack], [whatsapp]
+pip install openmork[telegram]   # or [discord], [slack], [whatsapp]
 
 # Check for port conflicts
 lsof -i :8080
@@ -373,7 +373,7 @@ openmork chat --continue
 **Solution:**
 ```bash
 # Ensure MCP dependencies are installed
-pip install OpenMork[mcp]
+pip install openmork[mcp]
 
 # For npm-based servers, ensure Node.js is available
 node --version
@@ -434,6 +434,6 @@ If an MCP server crashes mid-request, OPENMORK will report a timeout. Check the 
 
 If your issue isn't covered here:
 
-1. **Search existing issues:** [GitHub Issues](https://github.com/openmork/OpenMork/issues)
+1. **Search existing issues:** [GitHub Issues](https://github.com/openmork/openmork/issues)
 2. **Ask the community:** [Nous Research Discord](https://discord.gg/nousresearch)
 3. **File a bug report:** Include your OS, Python version (`python3 --version`), OPENMORK version (`openmork --version`), and the full error message

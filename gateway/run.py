@@ -965,7 +965,7 @@ class GatewayRunner:
         elif platform == Platform.SLACK:
             from gateway.platforms.slack import SlackAdapter, check_slack_requirements
             if not check_slack_requirements():
-                logger.warning("Slack: slack-bolt not installed. Run: pip install 'OpenMork[slack]'")
+                logger.warning("Slack: slack-bolt not installed. Run: pip install 'openmork[slack]'")
                 return None
             return SlackAdapter(config)
 
@@ -1940,7 +1940,7 @@ class GatewayRunner:
             "`/background <prompt>` — Run a prompt in a separate background session",
             "`/voice [on|off|tts|status]` — Toggle voice reply mode",
             "`/reload-mcp` — Reload MCP servers from config",
-            "`/update` — Update OpenMork to the latest version",
+            "`/update` — Update openmork to the latest version",
             "`/help` — Show this message",
         ]
         try:
@@ -2436,7 +2436,7 @@ class GatewayRunner:
                 return (
                     "Voice dependencies are missing (PyNaCl / davey). "
                     "Install or reinstall OPENMORK with the messaging extra, e.g. "
-                    "`pip install OpenMork[messaging]`."
+                    "`pip install openmork[messaging]`."
                 )
             return f"Failed to join voice channel: {e}"
 
@@ -3302,7 +3302,7 @@ class GatewayRunner:
             return f"❌ MCP reload failed: {e}"
 
     async def _handle_update_command(self, event: MessageEvent) -> str:
-        """Handle /update command — update OpenMork to the latest version.
+        """Handle /update command — update openmork to the latest version.
 
         Spawns ``openmork update`` in a separate systemd scope so it survives the
         gateway restart that ``openmork update`` may trigger at the end. Marker

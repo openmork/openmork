@@ -1,4 +1,4 @@
-"""Shared fixtures for the OpenMork test suite."""
+"""Shared fixtures for the openmork test suite."""
 
 import asyncio
 import os

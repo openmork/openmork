@@ -1,18 +1,18 @@
 ---
 name: openclaw-migration
-description: Migrate a user's OpenClaw customization footprint into OpenMork. Imports OPENMORK-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be migrated and why.
+description: Migrate a user's OpenClaw customization footprint into openmork. Imports OPENMORK-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be migrated and why.
 version: 1.0.0
-author: OpenMork (Nous Research)
+author: openmork (Nous Research)
 license: MIT
 metadata:
   openmork:
     tags: [Migration, OpenClaw, OPENMORK, Memory, Persona, Import]
-    related_skills: [OpenMork]
+    related_skills: [openmork]
 ---
 
 # OpenClaw -> OPENMORK Migration
 
-Use this skill when a user wants to move their OpenClaw setup into OpenMork with minimal manual cleanup.
+Use this skill when a user wants to move their OpenClaw setup into openmork with minimal manual cleanup.
 
 ## CLI Command
 
