@@ -30,7 +30,6 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 import os
-import random
 import re
 import sys
 import tempfile
@@ -85,10 +84,9 @@ from agent.model_metadata import (
     save_context_length,
 )
 from agent.context_compressor import ContextCompressor
-from agent.prompt_caching import apply_anthropic_cache_control
 from agent.prompt_builder import build_skills_system_prompt, build_context_files_prompt
 from agent.display import (
-    KawaiiSpinner, build_tool_preview as _build_tool_preview,
+    build_tool_preview as _build_tool_preview,
     get_cute_tool_message as _get_cute_tool_message_impl,
     _detect_tool_failure,
 )
@@ -118,6 +116,14 @@ from core.agent_runtime.tool_execution import (
     execute_tool_calls_concurrent as _execute_tool_calls_concurrent_impl,
     execute_tool_calls_sequential as _execute_tool_calls_sequential_impl,
     invoke_tool as _invoke_tool_impl,
+)
+from core.agent_runtime.turn_control import (
+    build_api_messages_for_turn as _build_api_messages_for_turn_impl,
+    process_final_response_without_tools as _process_final_response_without_tools_impl,
+    run_iteration_side_effects as _run_iteration_side_effects_impl,
+    setup_thinking_indicator as _setup_thinking_indicator_impl,
+    finalize_conversation_result as _finalize_conversation_result_impl,
+    normalize_assistant_message_for_turn as _normalize_assistant_message_for_turn_impl,
 )
 from utils import atomic_json_write
 
@@ -2856,6 +2862,102 @@ class AIAgent:
         """Normalize assistant message via extracted helper."""
         return _build_assistant_message_impl(self, assistant_message, finish_reason)
 
+    def _build_api_messages_for_turn(
+        self,
+        *,
+        messages: list,
+        current_turn_user_idx: int,
+        active_system_prompt: str,
+    ) -> dict:
+        """Prepare one loop iteration payload via extracted helper."""
+        return _build_api_messages_for_turn_impl(
+            self,
+            messages=messages,
+            current_turn_user_idx=current_turn_user_idx,
+            active_system_prompt=active_system_prompt,
+        )
+
+    def _process_final_response_without_tools(
+        self,
+        *,
+        assistant_message,
+        finish_reason: str,
+        messages: list,
+        user_message: str,
+        codex_ack_continuations: int,
+        truncated_response_prefix: str,
+        effective_task_id: str,
+        conversation_history: list,
+        api_call_count: int,
+    ) -> dict:
+        """Resolve non-tool assistant turn via extracted helper."""
+        return _process_final_response_without_tools_impl(
+            self,
+            assistant_message=assistant_message,
+            finish_reason=finish_reason,
+            messages=messages,
+            user_message=user_message,
+            codex_ack_continuations=codex_ack_continuations,
+            truncated_response_prefix=truncated_response_prefix,
+            effective_task_id=effective_task_id,
+            conversation_history=conversation_history,
+            api_call_count=api_call_count,
+        )
+
+    def _run_iteration_side_effects(self, *, messages: list, api_call_count: int) -> None:
+        """Run per-iteration callback/counter effects."""
+        return _run_iteration_side_effects_impl(self, messages=messages, api_call_count=api_call_count)
+
+    def _setup_thinking_indicator(
+        self,
+        *,
+        api_call_count: int,
+        max_iterations: int,
+        api_messages: list,
+        messages: list,
+        approx_tokens: int,
+        total_chars: int,
+    ):
+        """Create quiet-mode spinner / diagnostics for this turn."""
+        return _setup_thinking_indicator_impl(
+            self,
+            api_call_count=api_call_count,
+            max_iterations=max_iterations,
+            api_messages=api_messages,
+            messages=messages,
+            approx_tokens=approx_tokens,
+            total_chars=total_chars,
+        )
+
+    def _normalize_assistant_message_for_turn(self, response):
+        """Normalize provider response to assistant message + finish reason."""
+        return _normalize_assistant_message_for_turn_impl(self, response)
+
+    def _finalize_conversation_result(
+        self,
+        *,
+        messages: list,
+        conversation_history: list,
+        user_message: str,
+        original_user_message: str,
+        final_response,
+        api_call_count: int,
+        interrupted: bool,
+        effective_task_id: str,
+    ) -> dict:
+        """Finalize persistence/sync and return payload."""
+        return _finalize_conversation_result_impl(
+            self,
+            messages=messages,
+            conversation_history=conversation_history,
+            user_message=user_message,
+            original_user_message=original_user_message,
+            final_response=final_response,
+            api_call_count=api_call_count,
+            interrupted=interrupted,
+            effective_task_id=effective_task_id,
+        )
+
     def _sanitize_tool_calls_for_strict_api(api_msg: dict) -> dict:
         """Strip Codex Responses API fields from tool_calls for strict providers.
 
@@ -3512,13 +3614,7 @@ class AIAgent:
 
         active_system_prompt = self._cached_system_prompt
 
-        # ── Preflight context compression ──
-        # Before entering the main loop, check if the loaded conversation
-        # history already exceeds the model's context threshold.  This handles
-        # cases where a user switches to a model with a smaller context window
-        # while having a large existing session — compress proactively rather
-        # than waiting for an API error (which might be caught as a non-retryable
-        # 4xx and abort the request entirely).
+        # Preflight context compression
         if (
             self.compression_enabled
             and len(messages) > self.context_compressor.protect_first_n
@@ -3570,10 +3666,8 @@ class AIAgent:
         self.clear_interrupt()
         
         while api_call_count < self.max_iterations and self.iteration_budget.remaining > 0:
-            # Reset per-turn checkpoint dedup so each iteration can take one snapshot
             self._checkpoint_mgr.new_turn()
 
-            # Check for interrupt request (e.g., user sent new message)
             if self._interrupt_requested:
                 interrupted = True
                 if not self.quiet_mode:
@@ -3586,126 +3680,25 @@ class AIAgent:
                     print(f"\n⚠️  Session iteration budget exhausted ({self.iteration_budget.max_total} total across agent + subagents)")
                 break
 
-            # Fire step_callback for gateway hooks (agent:step event)
-            if self.step_callback is not None:
-                try:
-                    prev_tools = []
-                    for _m in reversed(messages):
-                        if _m.get("role") == "assistant" and _m.get("tool_calls"):
-                            prev_tools = [
-                                tc["function"]["name"]
-                                for tc in _m["tool_calls"]
-                                if isinstance(tc, dict)
-                            ]
-                            break
-                    self.step_callback(api_call_count, prev_tools)
-                except Exception as _step_err:
-                    logger.debug("step_callback error (iteration %s): %s", api_call_count, _step_err)
+            self._run_iteration_side_effects(messages=messages, api_call_count=api_call_count)
 
-            # Track tool-calling iterations for skill nudge.
-            # Counter resets whenever skill_manage is actually used.
-            if (self._skill_nudge_interval > 0
-                    and "skill_manage" in self.valid_tool_names):
-                self._iters_since_skill += 1
+            prepared_turn = self._build_api_messages_for_turn(
+                messages=messages,
+                current_turn_user_idx=current_turn_user_idx,
+                active_system_prompt=active_system_prompt,
+            )
+            api_messages = prepared_turn["api_messages"]
+            total_chars = prepared_turn["total_chars"]
+            approx_tokens = prepared_turn["approx_tokens"]  # Rough estimate: 4 chars per token
             
-            # Prepare messages for API call
-            # If we have an ephemeral system prompt, prepend it to the messages
-            # Note: Reasoning is embedded in content via <think> tags for trajectory storage.
-            # However, providers like Moonshot AI require a separate 'reasoning_content' field
-            # on assistant messages with tool_calls. We handle both cases here.
-            api_messages = []
-            for idx, msg in enumerate(messages):
-                api_msg = msg.copy()
-
-                if idx == current_turn_user_idx and msg.get("role") == "user" and self._honcho_turn_context:
-                    api_msg["content"] = _inject_honcho_turn_context(
-                        api_msg.get("content", ""), self._honcho_turn_context
-                    )
-
-                # For ALL assistant messages, pass reasoning back to the API
-                # This ensures multi-turn reasoning context is preserved
-                if msg.get("role") == "assistant":
-                    reasoning_text = msg.get("reasoning")
-                    if reasoning_text:
-                        # Add reasoning_content for API compatibility (Moonshot AI, Novita, OpenRouter)
-                        api_msg["reasoning_content"] = reasoning_text
-
-                # Remove 'reasoning' field - it's for trajectory storage only
-                # We've copied it to 'reasoning_content' for the API above
-                if "reasoning" in api_msg:
-                    api_msg.pop("reasoning")
-                # Remove finish_reason - not accepted by strict APIs (e.g. Mistral)
-                if "finish_reason" in api_msg:
-                    api_msg.pop("finish_reason")
-                # Strip Codex Responses API fields (call_id, response_item_id) for
-                # strict providers like Mistral that reject unknown fields with 422.
-                # Uses new dicts so the internal messages list retains the fields
-                # for Codex Responses compatibility.
-                if "api.mistral.ai" in self.base_url.lower():
-                    self._sanitize_tool_calls_for_strict_api(api_msg)
-                # Keep 'reasoning_details' - OpenRouter uses this for multi-turn reasoning context
-                # The signature field helps maintain reasoning continuity
-                api_messages.append(api_msg)
-
-            # Build the final system message: cached prompt + ephemeral system prompt.
-            # Ephemeral additions are API-call-time only (not persisted to session DB).
-            # Honcho later-turn recall is intentionally kept OUT of the system prompt
-            # so the stable cache prefix remains unchanged.
-            effective_system = active_system_prompt or ""
-            if self.ephemeral_system_prompt:
-                effective_system = (effective_system + "\n\n" + self.ephemeral_system_prompt).strip()
-            if effective_system:
-                api_messages = [{"role": "system", "content": effective_system}] + api_messages
-
-            # Inject ephemeral prefill messages right after the system prompt
-            # but before conversation history. Same API-call-time-only pattern.
-            if self.prefill_messages:
-                sys_offset = 1 if effective_system else 0
-                for idx, pfm in enumerate(self.prefill_messages):
-                    api_messages.insert(sys_offset + idx, pfm.copy())
-
-            # Apply Anthropic prompt caching for Claude models via OpenRouter.
-            # Auto-detected: if model name contains "claude" and base_url is OpenRouter,
-            # inject cache_control breakpoints (system + last 3 messages) to reduce
-            # input token costs by ~75% on multi-turn conversations.
-            if self._use_prompt_caching:
-                api_messages = apply_anthropic_cache_control(api_messages, cache_ttl=self._cache_ttl)
-
-            # Safety net: strip orphaned tool results / add stubs for missing
-            # results before sending to the API.  The compressor handles this
-            # during compression, but orphans can also sneak in from session
-            # loading or manual message manipulation.
-            if hasattr(self, 'context_compressor') and self.context_compressor:
-                api_messages = self.context_compressor._sanitize_tool_pairs(api_messages)
-
-            # Calculate approximate request size for logging
-            total_chars = sum(len(str(msg)) for msg in api_messages)
-            approx_tokens = total_chars // 4  # Rough estimate: 4 chars per token
-            
-            # Thinking spinner for quiet mode (animated during API call)
-            thinking_spinner = None
-            
-            if not self.quiet_mode:
-                self._vprint(f"\n{self.log_prefix}🔄 Making API call #{api_call_count}/{self.max_iterations}...")
-                self._vprint(f"{self.log_prefix}   📊 Request size: {len(api_messages)} messages, ~{approx_tokens:,} tokens (~{total_chars:,} chars)")
-                self._vprint(f"{self.log_prefix}   🔧 Available tools: {len(self.tools) if self.tools else 0}")
-            elif self._stream_callback is None:
-                # Animated thinking spinner in quiet mode (skip during streaming TTS)
-                face = random.choice(KawaiiSpinner.KAWAII_THINKING)
-                verb = random.choice(KawaiiSpinner.THINKING_VERBS)
-                if self.thinking_callback:
-                    # CLI TUI mode: use prompt_toolkit widget instead of raw spinner
-                    self.thinking_callback(f"{face} {verb}...")
-                else:
-                    spinner_type = random.choice(['brain', 'sparkle', 'pulse', 'moon', 'star'])
-                    thinking_spinner = KawaiiSpinner(f"{face} {verb}...", spinner_type=spinner_type)
-                    thinking_spinner.start()
-            
-            # Log request details if verbose
-            if self.verbose_logging:
-                logging.debug(f"API Request - Model: {self.model}, Messages: {len(messages)}, Tools: {len(self.tools) if self.tools else 0}")
-                logging.debug(f"Last message role: {messages[-1]['role'] if messages else 'none'}")
-                logging.debug(f"Total message size: ~{approx_tokens:,} tokens")
+            thinking_spinner = self._setup_thinking_indicator(
+                api_call_count=api_call_count,
+                max_iterations=self.max_iterations,
+                api_messages=api_messages,
+                messages=messages,
+                approx_tokens=approx_tokens,
+                total_chars=total_chars,
+            )
             
             api_start_time = time.time()
             retry_count = 0
@@ -4333,7 +4326,6 @@ class AIAgent:
                             }
                         time.sleep(0.2)  # Check interrupt every 200ms
             
-            # If the API call was interrupted, skip response processing
             if interrupted:
                 break
 
@@ -4345,43 +4337,13 @@ class AIAgent:
             if restart_with_length_continuation:
                 continue
 
-            # Guard: if all retries exhausted without a successful response
-            # (e.g. repeated context-length errors that exhausted retry_count),
-            # the `response` variable is still None. Break out cleanly.
             if response is None:
                 print(f"{self.log_prefix}❌ All API retries exhausted with no successful response.")
                 self._persist_session(messages, conversation_history)
                 break
 
             try:
-                if self.api_mode == "codex_responses":
-                    assistant_message, finish_reason = self._normalize_codex_response(response)
-                elif self.api_mode == "anthropic_messages":
-                    from agent.anthropic_adapter import normalize_anthropic_response
-                    assistant_message, finish_reason = normalize_anthropic_response(response)
-                else:
-                    assistant_message = response.choices[0].message
-                
-                # Normalize content to string — some OpenAI-compatible servers
-                # (llama-server, etc.) return content as a dict or list instead
-                # of a plain string, which crashes downstream .strip() calls.
-                if assistant_message.content is not None and not isinstance(assistant_message.content, str):
-                    raw = assistant_message.content
-                    if isinstance(raw, dict):
-                        assistant_message.content = raw.get("text", "") or raw.get("content", "") or json.dumps(raw)
-                    elif isinstance(raw, list):
-                        # Multimodal content list — extract text parts
-                        parts = []
-                        for part in raw:
-                            if isinstance(part, str):
-                                parts.append(part)
-                            elif isinstance(part, dict) and part.get("type") == "text":
-                                parts.append(part.get("text", ""))
-                            elif isinstance(part, dict) and "text" in part:
-                                parts.append(str(part["text"]))
-                        assistant_message.content = "\n".join(parts)
-                    else:
-                        assistant_message.content = str(raw)
+                assistant_message, finish_reason = self._normalize_assistant_message_for_turn(response)
 
                 # Handle assistant response
                 if assistant_message.content and not self.quiet_mode:
@@ -4614,18 +4576,10 @@ class AIAgent:
                     _msg_count_before_tools = len(messages)
                     self._execute_tool_calls(assistant_message, messages, effective_task_id, api_call_count)
 
-                    # Refund the iteration if the ONLY tool(s) called were
-                    # execute_code (programmatic tool calling).  These are
-                    # cheap RPC-style calls that shouldn't eat the budget.
                     _tc_names = {tc.function.name for tc in assistant_message.tool_calls}
                     if _tc_names == {"execute_code"}:
                         self.iteration_budget.refund()
                     
-                    # Estimate next prompt size using real token counts from the
-                    # last API response + rough estimate of newly appended tool
-                    # results.  This catches cases where tool results push the
-                    # context past the limit that last_prompt_tokens alone misses
-                    # (e.g. large file reads, web extractions).
                     _compressor = self.context_compressor
                     _new_tool_msgs = messages[_msg_count_before_tools:]
                     _new_chars = sum(len(str(m.get("content", "") or "")) for m in _new_tool_msgs)
@@ -4641,149 +4595,32 @@ class AIAgent:
                             task_id=effective_task_id,
                         )
                     
-                    # Save session log incrementally (so progress is visible even if interrupted)
                     self._session_messages = messages
                     self._save_session_log(messages)
-                    
-                    # Continue loop for next response
                     continue
                 
                 else:
-                    # No tool calls - this is the final response
-                    final_response = assistant_message.content or ""
-                    
-                    # Check if response only has think block with no actual content after it
-                    if not self._has_content_after_think_block(final_response):
-                        # If the previous turn already delivered real content alongside
-                        # tool calls (e.g. "You're welcome!" + memory save), the model
-                        # has nothing more to say. Use the earlier content immediately
-                        # instead of wasting API calls on retries that won't help.
-                        fallback = getattr(self, '_last_content_with_tools', None)
-                        if fallback:
-                            logger.debug("Empty follow-up after tool calls — using prior turn content as final response")
-                            self._last_content_with_tools = None
-                            self._empty_content_retries = 0
-                            for i in range(len(messages) - 1, -1, -1):
-                                msg = messages[i]
-                                if msg.get("role") == "assistant" and msg.get("tool_calls"):
-                                    tool_names = []
-                                    for tc in msg["tool_calls"]:
-                                        fn = tc.get("function", {})
-                                        tool_names.append(fn.get("name", "unknown"))
-                                    msg["content"] = f"Calling the {', '.join(tool_names)} tool{'s' if len(tool_names) > 1 else ''}..."
-                                    break
-                            final_response = self._strip_think_blocks(fallback).strip()
-                            self._response_was_previewed = True
-                            break
+                    turn_resolution = self._process_final_response_without_tools(
+                        assistant_message=assistant_message,
+                        finish_reason=finish_reason,
+                        messages=messages,
+                        user_message=user_message,
+                        codex_ack_continuations=codex_ack_continuations,
+                        truncated_response_prefix=truncated_response_prefix,
+                        effective_task_id=effective_task_id,
+                        conversation_history=conversation_history,
+                        api_call_count=api_call_count,
+                    )
+                    codex_ack_continuations = turn_resolution.get(
+                        "codex_ack_continuations", codex_ack_continuations
+                    )
 
-                        # No fallback available — this is a genuine empty response.
-                        # Retry in case the model just had a bad generation.
-                        if not hasattr(self, '_empty_content_retries'):
-                            self._empty_content_retries = 0
-                        self._empty_content_retries += 1
-                        
-                        reasoning_text = self._extract_reasoning(assistant_message)
-                        self._vprint(f"{self.log_prefix}⚠️  Response only contains think block with no content after it")
-                        if reasoning_text:
-                            reasoning_preview = reasoning_text[:500] + "..." if len(reasoning_text) > 500 else reasoning_text
-                            self._vprint(f"{self.log_prefix}   Reasoning: {reasoning_preview}")
-                        else:
-                            content_preview = final_response[:80] + "..." if len(final_response) > 80 else final_response
-                            self._vprint(f"{self.log_prefix}   Content: '{content_preview}'")
-                        
-                        if self._empty_content_retries < 3:
-                            self._vprint(f"{self.log_prefix}🔄 Retrying API call ({self._empty_content_retries}/3)...")
-                            continue
-                        else:
-                            self._vprint(f"{self.log_prefix}❌ Max retries (3) for empty content exceeded.", force=True)
-                            self._empty_content_retries = 0
-                            
-                            # If a prior tool_calls turn had real content, salvage it:
-                            # rewrite that turn's content to a brief tool description,
-                            # and use the original content as the final response here.
-                            fallback = getattr(self, '_last_content_with_tools', None)
-                            if fallback:
-                                self._last_content_with_tools = None
-                                # Find the last assistant message with tool_calls and rewrite it
-                                for i in range(len(messages) - 1, -1, -1):
-                                    msg = messages[i]
-                                    if msg.get("role") == "assistant" and msg.get("tool_calls"):
-                                        tool_names = []
-                                        for tc in msg["tool_calls"]:
-                                            fn = tc.get("function", {})
-                                            tool_names.append(fn.get("name", "unknown"))
-                                        msg["content"] = f"Calling the {', '.join(tool_names)} tool{'s' if len(tool_names) > 1 else ''}..."
-                                        break
-                                # Strip <think> blocks from fallback content for user display
-                                final_response = self._strip_think_blocks(fallback).strip()
-                                self._response_was_previewed = True
-                                break
-                            
-                            # No fallback -- append the empty message as-is
-                            empty_msg = {
-                                "role": "assistant",
-                                "content": final_response,
-                                "reasoning": reasoning_text,
-                                "finish_reason": finish_reason,
-                            }
-                            messages.append(empty_msg)
-                            
-                            self._cleanup_task_resources(effective_task_id)
-                            self._persist_session(messages, conversation_history)
-                            
-                            return {
-                                "final_response": final_response or None,
-                                "messages": messages,
-                                "api_calls": api_call_count,
-                                "completed": False,
-                                "partial": True,
-                                "error": "Model generated only think blocks with no actual response after 3 retries"
-                            }
-                    
-                    # Reset retry counter on successful content
-                    if hasattr(self, '_empty_content_retries'):
-                        self._empty_content_retries = 0
-
-                    if (
-                        self.api_mode == "codex_responses"
-                        and self.valid_tool_names
-                        and codex_ack_continuations < 2
-                        and self._looks_like_codex_intermediate_ack(
-                            user_message=user_message,
-                            assistant_content=final_response,
-                            messages=messages,
-                        )
-                    ):
-                        codex_ack_continuations += 1
-                        interim_msg = self._build_assistant_message(assistant_message, "incomplete")
-                        messages.append(interim_msg)
-
-                        continue_msg = {
-                            "role": "user",
-                            "content": (
-                                "[System: Continue now. Execute the required tool calls and only "
-                                "send your final answer after completing the task.]"
-                            ),
-                        }
-                        messages.append(continue_msg)
-                        self._session_messages = messages
-                        self._save_session_log(messages)
+                    if turn_resolution["action"] == "continue":
                         continue
+                    if turn_resolution["action"] == "return":
+                        return turn_resolution["result"]
 
-                    codex_ack_continuations = 0
-
-                    if truncated_response_prefix:
-                        final_response = truncated_response_prefix + final_response
-                    
-                    # Strip <think> blocks from user-facing response (keep raw in messages for trajectory)
-                    final_response = self._strip_think_blocks(final_response).strip()
-                    
-                    final_msg = self._build_assistant_message(assistant_message, finish_reason)
-                    
-                    messages.append(final_msg)
-                    
-                    if not self.quiet_mode:
-                        print(f"🎉 Conversation completed after {api_call_count} OpenAI-compatible API call(s)")
+                    final_response = turn_resolution["final_response"]
                     break
                 
             except Exception as e:
@@ -4843,54 +4680,16 @@ class AIAgent:
                 print(f"\n⚠️  Session iteration budget exhausted ({self.iteration_budget.used}/{self.iteration_budget.max_total} used, including subagents)")
             final_response = self._handle_max_iterations(messages, api_call_count)
         
-        # Determine if conversation completed successfully
-        completed = final_response is not None and api_call_count < self.max_iterations
-
-        # Save trajectory if enabled
-        self._save_trajectory(messages, user_message, completed)
-
-        # Clean up VM and browser for this task after conversation completes
-        self._cleanup_task_resources(effective_task_id)
-
-        # Persist session to both JSON log and SQLite
-        self._persist_session(messages, conversation_history)
-
-        # Sync conversation to Honcho for user modeling
-        if final_response and not interrupted:
-            self._honcho_sync(original_user_message, final_response)
-            self._queue_honcho_prefetch(original_user_message)
-
-        # Extract reasoning from the last assistant message (if any)
-        last_reasoning = None
-        for msg in reversed(messages):
-            if msg.get("role") == "assistant" and msg.get("reasoning"):
-                last_reasoning = msg["reasoning"]
-                break
-
-        # Build result with interrupt info if applicable
-        result = {
-            "final_response": final_response,
-            "last_reasoning": last_reasoning,
-            "messages": messages,
-            "api_calls": api_call_count,
-            "completed": completed,
-            "partial": False,  # True only when stopped due to invalid tool calls
-            "interrupted": interrupted,
-            "response_previewed": getattr(self, "_response_was_previewed", False),
-        }
-        self._response_was_previewed = False
-        
-        # Include interrupt message if one triggered the interrupt
-        if interrupted and self._interrupt_message:
-            result["interrupt_message"] = self._interrupt_message
-        
-        # Clear interrupt state after handling
-        self.clear_interrupt()
-
-        # Clear stream callback so it doesn't leak into future calls
-        self._stream_callback = None
-
-        return result
+        return self._finalize_conversation_result(
+            messages=messages,
+            conversation_history=conversation_history,
+            user_message=user_message,
+            original_user_message=original_user_message,
+            final_response=final_response,
+            api_call_count=api_call_count,
+            interrupted=interrupted,
+            effective_task_id=effective_task_id,
+        )
 
     def chat(self, message: str, stream_callback: Optional[callable] = None) -> str:
         """

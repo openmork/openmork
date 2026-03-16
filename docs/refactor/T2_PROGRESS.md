@@ -86,6 +86,44 @@ Resultado:
 - `tests/test_agent_runtime_refactor_t2.py`: **5 passed**
 - `py_compile`: **ok**
 
+## Corte 3 (actual) — estado de iteración/mensajes del loop principal
+
+Se completó una tercera extracción incremental centrada en estado de turno y control del loop principal:
+
+1. **Nuevo módulo `core/agent_runtime/turn_control.py`**
+   - Bloques extraídos desde `run_agent.py`:
+     - `build_api_messages_for_turn` (preparación de mensajes, inyección Honcho, prompt efímero/prefill, prompt cache, saneo)
+     - `run_iteration_side_effects` (step callback + contador skill-nudge)
+     - `setup_thinking_indicator` (diagnósticos/spinner por turno)
+     - `normalize_assistant_message_for_turn` (normalización provider + contenido)
+     - `process_final_response_without_tools` (rama de cierre sin tool_calls, continuations Codex, fallback de contenido)
+     - `finalize_conversation_result` (persistencia/sync/armado del resultado final)
+
+2. **Fachada compatible mantenida**
+   - `run_agent.py` conserva métodos wrapper (`_build_api_messages_for_turn`, `_process_final_response_without_tools`, etc.) delegando 1:1 al módulo nuevo.
+
+## Medición LOC (este corte)
+
+- LOC antes de este corte (`run_agent.py`): **5125**
+- LOC después de este corte (`run_agent.py`): **4924**
+- Reducción en este corte: **201 LOC**
+
+Acumulado T2 (desde baseline inicial 6250):
+- 6250 → 4924 (**-1326 LOC**)
+
+## Validación rápida (este corte)
+
+Comandos ejecutados:
+
+```bash
+pytest -q -o addopts='' tests/test_agent_runtime_refactor_t2.py
+python3 -m py_compile run_agent.py core/agent_runtime/turn_control.py
+```
+
+Resultado:
+- `tests/test_agent_runtime_refactor_t2.py`: **10 passed**
+- `py_compile`: **ok**
+
 ## Riesgos abiertos para siguiente corte T2
 
 1. **Dependencias de entorno**: parte del stack real (por ejemplo `firecrawl`) no está instalado localmente; por eso la validación se mantiene focalizada y no full-suite.
