@@ -7,16 +7,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-  no-trace-guard:
+  guardrails:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        
-    - name: Run No-Trace Guard (De-Hermes)
-      run: |
-        python3 scripts/dehermes/no_trace_guard.py
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run No-Trace Guard (De-Hermes)
+        run: python3 scripts/dehermes/no_trace_guard.py
+
+      - name: Run secret/remote scanner
+        run: python3 scripts/security/check_secrets.py --all-files
+
+      - name: Run dependency integrity check
+        run: python3 scripts/security/check_dependency_integrity.py --lock uv.lock

@@ -1,29 +1,35 @@
 import pytest
-from abc import ABC, abstractmethod
 
-# Simulación de los contratos ARM extraídos de ARM_CONTRACTS.md
-class BaseGateway(ABC):
-    @abstractmethod
-    def start(self) -> None: pass
-    
-    @abstractmethod
-    def stop(self) -> None: pass
+from openmork_contracts import ArmContractError, validate_arm_contract
 
-class BaseMemoryProvider(ABC):
-    @abstractmethod
-    def get_session_state(self, session_id: str) -> dict: pass
 
-def test_gateway_contract_enforcement():
-    class InvalidGateway(BaseGateway):
-        def start(self): pass
-        # Falta stop()
-        
-    with pytest.raises(TypeError):
-        InvalidGateway()
-        
-def test_valid_memory_provider():
-    class ValidMemory(BaseMemoryProvider):
-        def get_session_state(self, session_id): return {}
-    
-    mem = ValidMemory()
-    assert mem.get_session_state("123") == {}
+class _GoodGateway:
+    apiVersion = "1.0"
+
+    def start(self):
+        return None
+
+    def stop(self):
+        return None
+
+    def send_message(self, session_id: str, content: str, **kwargs):
+        return True
+
+    def register_callback(self, handler):
+        return None
+
+
+class _BadGateway:
+    def start(self):
+        return None
+
+
+def test_validate_arm_contract_accepts_valid_gateway_arm():
+    validate_arm_contract(_GoodGateway(), arm_kind="gateway")
+
+
+def test_validate_arm_contract_rejects_missing_api_and_methods():
+    with pytest.raises(ArmContractError) as exc:
+        validate_arm_contract(_BadGateway(), arm_kind="gateway")
+    message = str(exc.value)
+    assert "missing required API" in message or "missing required 'apiVersion'" in message
