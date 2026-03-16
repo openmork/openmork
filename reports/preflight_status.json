@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-03-16T05:55:09.655862+00:00",
+  "status": "fail",
+  "critical_failed": [
+    "provider_model",
+    "pairing_home_channel"
+  ],
+  "checks": [
+    {
+      "name": "provider_model",
+      "ok": false,
+      "critical": true,
+      "provider": "openrouter",
+      "api_mode": "chat_completions",
+      "model": "openrouter/free",
+      "base_url": "https://openrouter.ai/api/v1",
+      "error": "Missing runtime base_url or api_key"
+    },
+    {
+      "name": "web_fetch",
+      "ok": true,
+      "critical": true,
+      "url": "https://example.com",
+      "status_code": 200
+    },
+    {
+      "name": "safety",
+      "ok": true,
+      "critical": true,
+      "safety_yaml": "/home/wosmim/.openmork/safety.yaml",
+      "safety_yaml_exists": true,
+      "tirith_enabled": true,
+      "tirith_path": "tirith"
+    },
+    {
+      "name": "pairing_home_channel",
+      "ok": false,
+      "critical": true,
+      "error": "No messaging platform configured",
+      "platforms": []
+    }
+  ]
+}
