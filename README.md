@@ -7,6 +7,9 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-yellow.svg?style=for-the-badge)](https://www.python.org/)
+[![Tests](https://img.shields.io/github/actions/workflow/status/openmork/openmork/tests.yml?branch=main&label=tests&style=for-the-badge)](https://github.com/openmork/openmork/actions/workflows/tests.yml)
+[![Security Guardrails](https://img.shields.io/github/actions/workflow/status/openmork/openmork/security-check.yml?branch=main&label=security&style=for-the-badge)](https://github.com/openmork/openmork/actions/workflows/security-check.yml)
+[![Release Dry Run](https://img.shields.io/github/actions/workflow/status/openmork/openmork/release-dry-run.yml?branch=main&label=release-dry-run&style=for-the-badge)](https://github.com/openmork/openmork/actions/workflows/release-dry-run.yml)
 [![Modular](https://img.shields.io/badge/🔩_modular-architecture-00ff41.svg?style=for-the-badge)](#-modular-architecture)
 [![Gateway](https://img.shields.io/badge/📡_gateway-telegram_|_discord_|_whatsapp-7289da.svg?style=for-the-badge)](#-quick-start)
 
@@ -16,7 +19,7 @@
 
 <br/>
 
-[Quick Start](#-quick-start) · [Modular Arms](#-modular-architecture) · [Controllable Safety](#️-controllable-safety) · [Modes](#-modes) · [Roadmap](#️-roadmap)
+[Quick Start](#-quick-start) · [Modular Arms](#-modular-architecture) · [Controllable Safety](#️-controllable-safety) · [Modes](#-modes) · [Dependency Policy](docs/DEPENDENCY_POLICY.md) · [Roadmap](#️-roadmap)
 
 ---
 

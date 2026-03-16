@@ -13,7 +13,7 @@ backlog:
     title: Split run_agent.py en módulos core
     priority: P0
     owner_role: backend-architect
-    status: in_progress
+    status: done
     depends_on: [T1]
 
   - id: T3
@@ -27,14 +27,14 @@ backlog:
     title: Eliminar except pass en core y CLI
     priority: P0
     owner_role: security-engineer
-    status: in_progress
+    status: done
     depends_on: [T2, T3]
 
   - id: T5
     title: Tests unitarios en rutas críticas
     priority: P0
     owner_role: testing-test-results-analyzer
-    status: queued
+    status: done
     depends_on: [T2, T3, T4]
 
   - id: T6
@@ -48,21 +48,21 @@ backlog:
     title: Dependencia única (pyproject + lock canónico)
     priority: P0
     owner_role: devops-automator
-    status: queued
+    status: done
     depends_on: [T1]
 
   - id: T8
     title: Hardening supply-chain (tirith/autodownload)
     priority: P0
     owner_role: security-engineer
-    status: queued
+    status: done
     depends_on: [T7]
 
   - id: T9
     title: Release/versioning y badges de CI
     priority: P1
     owner_role: devops-automator
-    status: queued
+    status: done
     depends_on: [T5, T6, T7]
 
   - id: T10

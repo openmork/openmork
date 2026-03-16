@@ -1,0 +1,25 @@
+name: Release Dry Run
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/release.py'
+      - 'pyproject.toml'
+      - 'openmork_cli/__init__.py'
+      - '.github/workflows/release-dry-run.yml'
+  workflow_dispatch:
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Release script dry run
+        run: python scripts/release.py --bump patch
