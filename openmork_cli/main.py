@@ -122,8 +122,8 @@ def _has_any_provider_configured() -> bool:
                 val = val.strip().strip("'\"")
                 if key.strip() in provider_env_vars and val:
                     return True
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     # Check for Nous Portal OAuth credentials
     auth_file = get_openmork_home() / "auth.json"
@@ -136,8 +136,8 @@ def _has_any_provider_configured() -> bool:
                 status = get_auth_status(active)
                 if status.get("logged_in"):
                     return True
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     return False
 
@@ -345,8 +345,8 @@ def _session_browse_picker(sessions: list) -> Optional[str]:
         curses.wrapper(_curses_browse)
         return result_holder[0]
 
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     # Fallback: numbered list (Windows without curses, etc.)
     print("\n  Browse sessions  (enter number to resume, q to cancel)\n")
@@ -385,8 +385,8 @@ def _resolve_last_cli_session() -> Optional[str]:
         db.close()
         if sessions:
             return sessions[0]["id"]
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
     return None
 
 
@@ -411,8 +411,8 @@ def _resolve_session_by_name_or_id(name_or_id: str) -> Optional[str]:
         session_id = db.resolve_session_by_title(name_or_id)
         db.close()
         return session_id
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
     return None
 
 
@@ -479,15 +479,15 @@ def cmd_chat(args):
     try:
         from openmork_cli.banner import prefetch_update_check
         prefetch_update_check()
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     # Sync bundled skills on every CLI launch (fast -- skips unchanged skills)
     try:
         from tools.skills_sync import sync_skills
         sync_skills(quiet=True)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     # --yolo: bypass all dangerous command approvals
     if getattr(args, "yolo", False):
@@ -1054,8 +1054,8 @@ def _model_flow_openai_codex(config, current_model=""):
         from openmork_cli.auth import resolve_codex_runtime_credentials
         _codex_creds = resolve_codex_runtime_credentials()
         _codex_token = _codex_creds.get("api_key")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     codex_models = get_codex_model_ids(access_token=_codex_token)
 
@@ -1710,8 +1710,8 @@ def _model_flow_anthropic(config, current_model=""):
         cc_creds = read_claude_code_credentials()
         if cc_creds and is_claude_code_token_valid(cc_creds):
             cc_available = True
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
     has_creds = bool(existing_key) or cc_available
     needs_auth = not has_creds
@@ -1874,8 +1874,8 @@ def cmd_version(args):
             print(f"Update available: {behind} {commits_word} behind — run 'openmork update'")
         elif behind == 0:
             print("Up to date")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
 
 
 def cmd_uninstall(args):
@@ -1892,21 +1892,22 @@ def _update_via_zip(args):
     """
     import shutil
     import tempfile
-    import zipfile
     from urllib.request import urlretrieve
+
+    from openmork_cli.supply_chain import ensure_trusted_download_url, safe_extract_zip
     
     branch = "main"
     zip_url = f"https://github.com/openmork/openmork/archive/refs/heads/{branch}.zip"
     
     print("→ Downloading latest version...")
     try:
+        ensure_trusted_download_url(zip_url)
         tmp_dir = tempfile.mkdtemp(prefix="openmork-update-")
         zip_path = os.path.join(tmp_dir, f"openmork-{branch}.zip")
         urlretrieve(zip_url, zip_path)
         
         print("→ Extracting...")
-        with zipfile.ZipFile(zip_path, 'r') as zf:
-            zf.extractall(tmp_dir)
+        safe_extract_zip(Path(zip_path), Path(tmp_dir))
         
         # GitHub ZIPs extract to openmork-<branch>/
         extracted = os.path.join(tmp_dir, f"openmork-{branch}")
@@ -1973,8 +1974,8 @@ def _update_via_zip(args):
             print(f"  − {len(result['cleaned'])} removed from manifest")
         if not result["copied"] and not result.get("updated"):
             print("  ✓ Skills are up to date")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Suppressed non-fatal CLI error", exc_info=exc)
     
     print()
     print("✓ Update complete!")

@@ -358,8 +358,8 @@ def build_assistant_message(agent, assistant_message, finish_reason: str) -> dic
     if reasoning_text and agent.reasoning_callback:
         try:
             agent.reasoning_callback(reasoning_text)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Reasoning callback failed", exc_info=exc)
 
     msg = {
         "role": "assistant",

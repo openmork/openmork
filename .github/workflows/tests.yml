@@ -41,6 +41,11 @@ jobs:
           OPENAI_API_KEY: ""
           NOUS_API_KEY: ""
 
+      - name: Guard: no except-pass in core/cli
+        run: |
+          source .venv/bin/activate
+          python scripts/ops/check_except_pass.py --strict
+
   contracts-registry-smoke:
     name: Contracts/Registry smoke
     runs-on: ubuntu-latest

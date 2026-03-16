@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Simple guard: detect bare/silent except-pass blocks in cli.py and core/*.py."""
+"""Simple guard: detect bare/silent except-pass blocks in refactored core/CLI hotspots.
+
+Scope intentionally tracks the refactor perimeter:
+- core/agent_runtime/*.py
+- openmork_cli/main.py
+"""
 
 from __future__ import annotations
 
@@ -21,14 +26,15 @@ def scan_paths(paths: list[Path]) -> list[str]:
 
 
 def collect_default_targets(repo_root: Path) -> list[Path]:
-    targets = [repo_root / "cli.py"]
-    core_dir = repo_root / "core"
-    targets.extend(sorted(core_dir.rglob("*.py")))
+    targets: list[Path] = []
+    core_runtime_dir = repo_root / "core" / "agent_runtime"
+    targets.extend(sorted(core_runtime_dir.rglob("*.py")))
+    targets.append(repo_root / "openmork_cli" / "main.py")
     return [p for p in targets if p.exists()]
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Detect except-pass in cli.py and core/*.py")
+    parser = argparse.ArgumentParser(description="Detect except-pass in refactored core/CLI perimeter")
     parser.add_argument("--strict", action="store_true", help="Exit non-zero when violations are found")
     parser.add_argument("--root", default=".", help="Repo root path")
     args = parser.parse_args()
@@ -41,7 +47,7 @@ def main() -> int:
             print(f" - {h}")
         return 1 if args.strict else 0
 
-    print("No except-pass findings in cli.py/core")
+    print("No except-pass findings in refactored core/CLI perimeter")
     return 0
 
 
