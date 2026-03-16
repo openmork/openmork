@@ -129,6 +129,7 @@ def set_approval_callback(cb):
 # =============================================================================
 
 # Dangerous command detection + approval now consolidated in tools/approval.py
+from openmork_arm_registry import get_arm_registry
 from tools.approval import (
     detect_dangerous_command as _detect_dangerous_command,
     check_dangerous_command as _check_dangerous_command_impl,
@@ -145,7 +146,41 @@ def _check_dangerous_command(command: str, env_type: str) -> dict:
 
 
 def _check_all_guards(command: str, env_type: str) -> dict:
-    """Delegate to consolidated guard (tirith + dangerous cmd) with CLI callback."""
+    """Run security ARM validation + consolidated guard checks."""
+    registry = get_arm_registry()
+    security_arm = registry.resolve("security")
+    if security_arm is not None:
+        start = time.time()
+        try:
+            verdict = security_arm.validate_action(
+                "terminal.command",
+                {"command": command, "env_type": env_type},
+                {"session_key": str(os.getenv("OPENMORK_SESSION_KEY") or "")},
+            )
+            latency_ms = (time.time() - start) * 1000.0
+            blocked = not bool(getattr(verdict, "is_allowed", False))
+            registry.record_call("security", latency_ms=latency_ms, error=blocked)
+            if blocked:
+                return {
+                    "approved": False,
+                    "status": "approval_required" if getattr(verdict, "requires_approval", False) else "blocked",
+                    "command": command,
+                    "description": "security arm validation",
+                    "pattern_key": "security.arm",
+                    "message": str(getattr(verdict, "reason", "blocked by security arm")),
+                }
+        except Exception as exc:
+            latency_ms = (time.time() - start) * 1000.0
+            registry.record_call("security", latency_ms=latency_ms, error=True)
+            return {
+                "approved": False,
+                "status": "blocked",
+                "command": command,
+                "description": "security arm error",
+                "pattern_key": "security.arm",
+                "message": f"Security ARM failed: {exc}",
+            }
+
     return _check_all_guards_impl(command, env_type,
                                   approval_callback=_approval_callback)
 

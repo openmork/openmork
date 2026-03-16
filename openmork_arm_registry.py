@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -47,6 +48,19 @@ class ArmRecord:
 class ArmRegistry:
     def __init__(self) -> None:
         self._records: dict[str, ArmRecord] = {}
+        home = os.getenv("OPENMORK_HOME", os.path.expanduser("~/.openmork"))
+        self._status_file = os.getenv("OPENMORK_ARM_REGISTRY_FILE", os.path.join(home, "reports", "arm_registry_status.json"))
+
+    def _persist_state(self) -> None:
+        try:
+            parent = os.path.dirname(self._status_file)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+            with open(self._status_file, "w", encoding="utf-8") as fh:
+                json.dump(self.dump_state(), fh, ensure_ascii=False, indent=2)
+        except Exception:
+            # Observability is best-effort and must not break runtime flows.
+            pass
 
     def register(
         self,
@@ -76,6 +90,7 @@ class ArmRegistry:
             metadata=dict(metadata or {}),
             healthcheck=healthcheck,
         )
+        self._persist_state()
         return arm
 
     def resolve(self, arm_type: str, default: Any = None) -> Any:
@@ -90,6 +105,7 @@ class ArmRegistry:
         rec.metrics.total_latency_ms += max(0.0, float(latency_ms))
         if error:
             rec.metrics.errors += 1
+        self._persist_state()
 
     def run_healthcheck(self, arm_type: str) -> dict[str, Any]:
         rec = self._records.get(arm_type)
@@ -119,6 +135,7 @@ class ArmRegistry:
         self.record_call(arm_type, latency_ms=latency_ms, error=not ok)
         result = {"ok": ok, "latency_ms": round(latency_ms, 3), **payload}
         rec.last_health = result
+        self._persist_state()
         return result
 
     def dump_state(self) -> dict[str, Any]:

@@ -1269,7 +1269,13 @@ class _BuiltinSkillsetArm:
         raise ValueError(f"Unknown skillset tool: {tool_name}")
 
 
-validate_arm_contract(_BuiltinSkillsetArm(), arm_kind="skillset", expected_api_version="1.0")
+_BUILTIN_SKILLSET_ARM = _BuiltinSkillsetArm()
+validate_arm_contract(_BUILTIN_SKILLSET_ARM, arm_kind="skillset", expected_api_version="1.0")
+
+
+def get_builtin_skillset_arm() -> _BuiltinSkillsetArm:
+    """Return the runtime skillset ARM for registry integration."""
+    return _BUILTIN_SKILLSET_ARM
 
 registry.register(
     name="skills_list",

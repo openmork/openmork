@@ -335,6 +335,39 @@ def show_status(args):
     else:
         print(f"  Active:       0")
     
+
+    # =========================================================================
+    # ARM Registry Diagnostics
+    # =========================================================================
+    if getattr(args, 'arms', False):
+        print()
+        print(color("◆ ARM Registry", Colors.CYAN, Colors.BOLD))
+        arm_path = Path(os.getenv("OPENMORK_ARM_REGISTRY_FILE", str(get_openmork_home() / "reports" / "arm_registry_status.json")))
+        if not arm_path.exists():
+            print(f"  Status:       {check_mark(False)} no registry dump found")
+            print(f"  File:         {arm_path}")
+        else:
+            import json
+            try:
+                payload = json.loads(arm_path.read_text(encoding="utf-8"))
+            except Exception as exc:
+                print(f"  Status:       {check_mark(False)} invalid JSON ({exc})")
+                print(f"  File:         {arm_path}")
+            else:
+                arms = payload.get("arms") or {}
+                print(f"  Status:       {check_mark(True)} {len(arms)} arm(s) registered")
+                print(f"  Updated:      {_format_iso_timestamp(payload.get('timestamp'))}")
+                print(f"  File:         {arm_path}")
+                for arm_name in sorted(arms):
+                    metrics = (arms.get(arm_name) or {}).get("metrics") or {}
+                    print(
+                        f"  - {arm_name:<10} count={metrics.get('count', 0)} "
+                        f"error={metrics.get('error', 0)} avg_ms={metrics.get('latency_ms_avg', 0)}"
+                    )
+                if show_all:
+                    print()
+                    print(payload)
+
     # =========================================================================
     # Deep checks
     # =========================================================================

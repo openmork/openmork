@@ -566,4 +566,12 @@ class _DefaultSecurityArm:
         )
 
 
-validate_arm_contract(_DefaultSecurityArm(), arm_kind="security", expected_api_version="1.0")
+
+
+_DEFAULT_SECURITY_ARM = _DefaultSecurityArm()
+validate_arm_contract(_DEFAULT_SECURITY_ARM, arm_kind="security", expected_api_version="1.0")
+
+
+def get_default_security_arm() -> _DefaultSecurityArm:
+    """Return the runtime security ARM used by terminal guard checks."""
+    return _DEFAULT_SECURITY_ARM

@@ -2697,6 +2697,11 @@ For more help on a command:
         action="store_true",
         help="Run deep checks (may take longer)"
     )
+    status_parser.add_argument(
+        "--arms",
+        action="store_true",
+        help="Show ARM registry diagnostics (JSON summary + metrics)"
+    )
     status_parser.set_defaults(func=cmd_status)
     
     # =========================================================================

@@ -752,6 +752,8 @@ class AIAgent:
             except Exception:
                 pass  # Memory is optional -- don't break agent init
         
+        self._register_runtime_arms()
+
         # Honcho AI-native memory (cross-session user modeling)
         # Reads ~/.honcho/config.json as the single source of truth.
         self._honcho = None  # HonchoSessionManager | None
@@ -3723,6 +3725,55 @@ class AIAgent:
 
         return compressed, new_system_prompt
 
+    def _register_runtime_arms(self) -> None:
+        """Register security/skillset runtime arms into the central ARM registry."""
+        registry = get_arm_registry()
+        try:
+            from tools.approval import get_default_security_arm
+            sec_arm = get_default_security_arm()
+            registry.register(
+                "security",
+                sec_arm,
+                expected_api_version="1.0",
+                allow_legacy_api_version=True,
+                compat="command-guard",
+                version=getattr(sec_arm, "apiVersion", "1.0"),
+                metadata={"component": "run_agent", "adapter": "approval"},
+                healthcheck=lambda _a: {"ok": True, "status": "active"},
+            )
+        except Exception as exc:
+            logger.debug("Security ARM registration skipped: %s", exc)
+
+        try:
+            from tools.skills_tool import get_builtin_skillset_arm
+            skill_arm = get_builtin_skillset_arm()
+            registry.register(
+                "skillset",
+                skill_arm,
+                expected_api_version="1.0",
+                allow_legacy_api_version=True,
+                compat="builtin-skills",
+                version=getattr(skill_arm, "apiVersion", "1.0"),
+                metadata={"component": "run_agent", "adapter": "skills_tool"},
+                healthcheck=lambda a: {"ok": bool(getattr(a, "capabilities", []))},
+            )
+        except Exception as exc:
+            logger.debug("Skillset ARM registration skipped: %s", exc)
+
+    def _arm_type_for_tool(self, function_name: str) -> str | None:
+        if function_name in {"skills_list", "skill_view"}:
+            return "skillset"
+        if function_name == "memory":
+            return "memory"
+        return None
+
+    def _record_arm_metrics_for_tool(self, function_name: str, duration_seconds: float, result: str) -> None:
+        arm_type = self._arm_type_for_tool(function_name)
+        if not arm_type:
+            return
+        is_error, _ = _detect_tool_failure(function_name, result)
+        get_arm_registry().record_call(arm_type, latency_ms=max(0.0, duration_seconds) * 1000.0, error=is_error)
+
     def _execute_tool_calls(self, assistant_message, messages: list, effective_task_id: str, api_call_count: int = 0) -> None:
         """Execute tool calls from the assistant message and append results to messages.
 
@@ -4178,6 +4229,8 @@ class AIAgent:
             _is_error_result, _ = _detect_tool_failure(function_name, function_result)
             if _is_error_result:
                 logger.warning("Tool %s returned error (%.2fs): %s", function_name, tool_duration, result_preview)
+
+            self._record_arm_metrics_for_tool(function_name, tool_duration, function_result)
 
             if self.verbose_logging:
                 logging.debug(f"Tool {function_name} completed in {tool_duration:.2f}s")
