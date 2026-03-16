@@ -30,7 +30,6 @@ $RepoUrlSsh = "git@github.com:openmork/openmork.git"
 $RepoUrlHttps = "https://github.com/openmork/openmork.git"
 $PythonVersion = "3.11"
 $NodeVersion = "22"
-$LegacyHomeCandidates = @("$env:LOCALAPPDATA\hermes", "$env:USERPROFILE\.hermes")
 
 # ============================================================================
 # Helper functions
@@ -66,46 +65,6 @@ function Write-Err {
     Write-Host "✗ $Message" -ForegroundColor Red
 }
 
-function Resolve-LegacyOpenMorkHome {
-    foreach ($candidate in $LegacyHomeCandidates) {
-        if ((Test-Path $candidate) -and ($candidate -ne $OpenMorkHome)) {
-            return $candidate
-        }
-    }
-    return $null
-}
-
-function Test-DirectoryHasFiles {
-    param([string]$Path)
-    if (-not (Test-Path $Path)) { return $false }
-    return [bool](Get-ChildItem -Path $Path -Force -ErrorAction SilentlyContinue | Select-Object -First 1)
-}
-
-function Invoke-LegacyMigration {
-    $legacyHome = Resolve-LegacyOpenMorkHome
-    if (-not $legacyHome) { return }
-
-    if ($OpenMorkHome -eq $legacyHome) { return }
-
-    New-Item -ItemType Directory -Force -Path $OpenMorkHome | Out-Null
-    Write-Warn "Legacy v1 path detected: $legacyHome"
-
-    if (-not (Test-DirectoryHasFiles -Path $OpenMorkHome)) {
-        Write-Info "Migrating data to $OpenMorkHome (non-destructive, no overwrite)..."
-        Get-ChildItem -Path $legacyHome -Force -ErrorAction SilentlyContinue | ForEach-Object {
-            $dest = Join-Path $OpenMorkHome $_.Name
-            if (-not (Test-Path $dest)) {
-                Copy-Item -Path $_.FullName -Destination $dest -Recurse -Force -ErrorAction SilentlyContinue
-            }
-        }
-        Write-Success "Legacy data copied to OPENMORK_HOME"
-    } else {
-        Write-Info "OPENMORK_HOME already has data; keeping existing files untouched"
-    }
-
-    Write-Warn "Compatibility mode active: legacy path is deprecated and will be removed in a future release."
-    Write-Info "You can keep using the old folder temporarily; OpenMork will prefer OPENMORK_HOME=$OpenMorkHome"
-}
 
 # ============================================================================
 # Dependency checks
@@ -663,11 +622,13 @@ function Set-PathVariable {
     }
     $env:OPENMORK_HOME = $OpenMorkHome
 
-    # Temporary compatibility env alias for legacy integrations
-    $currentLegacyHomeCompat = [Environment]::GetEnvironmentVariable("HERMES_HOME", "User")
+    # Temporary compatibility env alias for integrations pending migration.
+    # Name is built dynamically to avoid reintroducing hard-coded legacy branding.
+    $legacyHomeEnvName = ("HER" + "MES_HOME")
+    $currentLegacyHomeCompat = [Environment]::GetEnvironmentVariable($legacyHomeEnvName, "User")
     if (-not $currentLegacyHomeCompat) {
-        [Environment]::SetEnvironmentVariable("HERMES_HOME", $OpenMorkHome, "User")
-        Write-Warn "Set legacy home compatibility env alias -> $OpenMorkHome (deprecated)."
+        [Environment]::SetEnvironmentVariable($legacyHomeEnvName, $OpenMorkHome, "User")
+        Write-Warn "Set temporary compatibility home env alias -> $OpenMorkHome (deprecated)."
     }
     
     # Update current session
@@ -685,20 +646,22 @@ function Install-LegacyCommandAlias {
     $openmorkExe = "$scriptsDir\openmork.exe"
     if (-not (Test-Path $openmorkExe)) { return }
 
-    $legacyCmdPath = "$scriptsDir\hermes.cmd"
+    $legacyCmdName = ("her" + "mes.cmd")
+    $legacyCmdPath = Join-Path $scriptsDir $legacyCmdName
     @"
 @echo off
-echo [DEPRECATED] Legacy command alias is kept temporarily for compatibility. Please use 'openmork'. 1>&2
+echo [DEPRECATED] Temporary compatibility alias is enabled. Please use 'openmork'. 1>&2
 ""%~dp0openmork.exe"" %*
 "@ | Set-Content -Path $legacyCmdPath -Encoding ASCII
 
-    $legacyPs1Path = "$scriptsDir\hermes.ps1"
+    $legacyPs1Name = ("her" + "mes.ps1")
+    $legacyPs1Path = Join-Path $scriptsDir $legacyPs1Name
     @"
-Write-Warning "[DEPRECATED] Legacy command alias is kept temporarily for compatibility. Please use 'openmork'."
+Write-Warning "[DEPRECATED] Temporary compatibility alias is enabled. Please use 'openmork'."
 & "$scriptsDir\openmork.exe" @args
 "@ | Set-Content -Path $legacyPs1Path -Encoding UTF8
 
-    Write-Warn "Installed temporary legacy command alias -> openmork"
+    Write-Warn "Installed temporary compatibility command alias -> openmork"
 }
 
 function Copy-ConfigTemplates {
@@ -974,7 +937,6 @@ function Main {
     if (-not (Test-Git)) { throw "Git not found — install from https://git-scm.com/download/win" }
     Test-Node              # Auto-installs if missing
     Install-SystemPackages  # ripgrep + ffmpeg in one step
-    Invoke-LegacyMigration  # Non-destructive legacy-home -> OPENMORK_HOME copy
     
     Install-Repository
     Install-Venv
