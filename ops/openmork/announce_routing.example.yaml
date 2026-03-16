@@ -1,0 +1,11 @@
+# Unified announce routing (MVP)
+# Priority: domain -> category -> default -> platform home channel
+routes:
+  domain:
+    design: "discord:#design"
+    marketing: "telegram:-1001234567890"
+  category:
+    incident: "telegram:-1009999999999"
+  default: "telegram"
+
+# Optional: future extensions can add per-event policies.

@@ -151,8 +151,26 @@ if _config_path.exists():
 # Gateway runs in quiet mode - suppress debug output and use cwd directly (no temp dirs)
 os.environ["OPENMORK_QUIET"] = "1"
 
-# Enable interactive exec approval for dangerous commands on messaging platforms
-os.environ["OPENMORK_EXEC_ASK"] = "1"
+# Tool policy by environment (DEV/PROD): allow | ask | deny
+# Resolution order:
+#   1) OPENMORK_TOOL_POLICY_<ENV>  (e.g. OPENMORK_TOOL_POLICY_DEV)
+#   2) OPENMORK_TOOL_POLICY_DEFAULT
+#   3) ask
+#
+# OPENMORK_ENV (or OPENMORK_RUNTIME_ENV) chooses ENV, defaults to "dev".
+def _apply_tool_policy_env() -> None:
+    env_name = (os.getenv("OPENMORK_ENV") or os.getenv("OPENMORK_RUNTIME_ENV") or "dev").strip().lower()
+    policy_key = f"OPENMORK_TOOL_POLICY_{env_name.upper()}"
+    policy = (os.getenv(policy_key) or os.getenv("OPENMORK_TOOL_POLICY_DEFAULT") or "ask").strip().lower()
+    if policy not in {"allow", "ask", "deny"}:
+        policy = "ask"
+
+    os.environ["OPENMORK_TOOL_POLICY_MODE"] = policy
+    os.environ["OPENMORK_EXEC_ASK"] = "1" if policy == "ask" else ""
+    os.environ["OPENMORK_YOLO_MODE"] = "1" if policy == "allow" else ""
+
+
+_apply_tool_policy_env()
 
 # Set terminal working directory for messaging platforms.
 # If the user set an explicit path in config.yaml (not "." or "auto"),
@@ -326,6 +344,12 @@ class GatewayRunner:
         # Event hook system
         from gateway.hooks import HookRegistry
         self.hooks = HookRegistry()
+
+        # Unified announce router + watchdog
+        from gateway.announce import AnnounceRouter
+        from gateway.watchdog import GatewayWatchdog
+        self.announce_router = AnnounceRouter()
+        self.watchdog = GatewayWatchdog()
 
         # Per-chat voice reply mode: "off" | "voice_only" | "all"
         self._voice_mode: Dict[str, str] = self._load_voice_modes()
@@ -1186,7 +1210,7 @@ class GatewayRunner:
                           "personality", "plan", "retry", "undo", "sethome", "set-home",
                           "compress", "usage", "insights", "reload-mcp", "reload_mcp",
                           "update", "title", "resume", "provider", "rollback",
-                          "background", "reasoning", "voice"}
+                          "background", "reasoning", "voice", "remind"}
         if command and command in _known_commands:
             await self.hooks.emit(f"command:{command}", {
                 "platform": source.platform.value if source.platform else "",
@@ -1203,6 +1227,9 @@ class GatewayRunner:
         
         if command == "status":
             return await self._handle_status_command(event)
+
+        if command == "remind":
+            return await self._handle_remind_command(event)
         
         if command == "stop":
             return await self._handle_stop_command(event)
@@ -1754,6 +1781,13 @@ class GatewayRunner:
             response = agent_result.get("final_response", "")
             agent_messages = agent_result.get("messages", [])
 
+            # Watchdog error tracking (MVP): detect repeated auth/rate-limit failures
+            _err_blob = f"{agent_result.get('error', '')} {response}".lower()
+            if "401" in _err_blob or "unauthorized" in _err_blob or "invalid token" in _err_blob:
+                self.watchdog.record_error_code("401")
+            if "429" in _err_blob or "rate limit" in _err_blob or "too many requests" in _err_blob:
+                self.watchdog.record_error_code("429")
+
             # If the agent's session_id changed during compression, update
             # session_entry so transcript writes below go to the right session.
             if agent_result.get("session_id") and agent_result["session_id"] != session_entry.session_id:
@@ -1916,27 +1950,95 @@ class GatewayRunner:
         """Handle /status command."""
         source = event.source
         session_entry = self.session_store.get_or_create_session(source)
-        
+
         connected_platforms = [p.value for p in self.adapters.keys()]
-        
+
         # Check if there's an active agent
         session_key = session_entry.session_key
         is_running = session_key in self._running_agents
-        
+
+        # Best-effort model + usage cost estimation from SessionDB
+        model_name = "(unknown)"
+        est_cost = 0.0
+        if self._session_db:
+            try:
+                row = self._session_db.get_session(session_entry.session_id) or {}
+                model_name = row.get("model") or model_name
+                total_toks = int(row.get("input_tokens", 0) or 0) + int(row.get("output_tokens", 0) or 0)
+                # MVP fixed estimate: $2 / 1M tokens (provider-agnostic rough cost)
+                est_cost = (total_toks / 1_000_000) * 2.0
+            except Exception:
+                pass
+
+        queue_approx = len(self._pending_messages) + len(self._pending_approvals)
+        wd = self.watchdog.snapshot() if hasattr(self, "watchdog") else {"action": "ok", "errors_401": 0, "errors_429": 0}
+
         lines = [
             "📊 **OPENMORK Gateway Status**",
             "",
             f"**Session ID:** `{session_entry.session_id[:12]}...`",
             f"**Created:** {session_entry.created_at.strftime('%Y-%m-%d %H:%M')}",
             f"**Last Activity:** {session_entry.updated_at.strftime('%Y-%m-%d %H:%M')}",
+            f"**Model:** {model_name}",
             f"**Tokens:** {session_entry.total_tokens:,}",
+            f"**Context (last prompt):** ~{session_entry.last_prompt_tokens:,} tokens",
+            f"**Estimated Cost:** ~${est_cost:.4f}",
             f"**Agent Running:** {'Yes ⚡' if is_running else 'No'}",
+            f"**Queue (approx):** {queue_approx}",
+            f"**Watchdog:** {wd.get('action', 'ok')} (401={wd.get('errors_401', 0)}, 429={wd.get('errors_429', 0)})",
             "",
             f"**Connected Platforms:** {', '.join(connected_platforms)}",
         ]
-        
+
         return "\n".join(lines)
     
+    async def _handle_remind_command(self, event: MessageEvent) -> str:
+        """Handle /remind command using cron one-shot jobs.
+
+        Syntax:
+          /remind in:30m buy milk
+          /remind at:2026-03-16T18:00 call client
+        """
+        args = (event.get_command_args() or "").strip()
+        if not args:
+            return "Usage: /remind <in:30m|at:YYYY-MM-DDTHH:MM> <message>"
+
+        parts = args.split(None, 1)
+        if len(parts) < 2:
+            return "Usage: /remind <in:30m|at:YYYY-MM-DDTHH:MM> <message>"
+        when_token, reminder_text = parts[0].strip(), parts[1].strip()
+
+        if when_token.startswith("in:"):
+            schedule = when_token[3:]
+        elif when_token.startswith("at:"):
+            schedule = when_token[3:]
+        else:
+            return "Invalid time format. Use in:30m or at:2026-03-16T18:00"
+
+        source = event.source
+        deliver = f"{source.platform.value}:{source.chat_id}"
+        if source.thread_id:
+            deliver = f"{deliver}:{source.thread_id}"
+
+        try:
+            from cron.jobs import create_job
+            job = create_job(
+                prompt=f"Reminder for user: {reminder_text}",
+                schedule=schedule,
+                name=f"reminder-{source.platform.value}",
+                repeat=1,
+                deliver=deliver,
+                origin={
+                    "platform": source.platform.value,
+                    "chat_id": source.chat_id,
+                    "thread_id": source.thread_id,
+                    "chat_name": source.chat_name,
+                },
+            )
+            return f"⏰ Reminder created: {job.get('schedule_display')} (id: {job.get('id')[:8]})"
+        except Exception as e:
+            return f"Failed to create reminder: {e}"
+
     async def _handle_stop_command(self, event: MessageEvent) -> str:
         """Handle /stop command - interrupt a running agent."""
         source = event.source
@@ -1957,6 +2059,7 @@ class GatewayRunner:
             "`/new` — Start a new conversation",
             "`/reset` — Reset conversation history",
             "`/status` — Show session info",
+            "`/remind <in:30m|at:2026-03-16T18:00> <text>` — Create one-shot reminder",
             "`/stop` — Interrupt the running agent",
             "`/model [provider:model]` — Show/change model (or switch provider)",
             "`/provider` — Show available providers and auth status",

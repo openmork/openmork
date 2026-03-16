@@ -355,6 +355,14 @@ def check_dangerous_command(command: str, env_type: str,
     if env_type in ("docker", "singularity", "modal", "daytona"):
         return {"approved": True, "message": None}
 
+    # Hard deny mode (e.g. production lockdown)
+    if (os.getenv("OPENMORK_TOOL_POLICY_MODE") or "").strip().lower() == "deny":
+        return {
+            "approved": False,
+            "message": "BLOCKED: tool policy mode is 'deny' for this environment.",
+            "status": "policy_denied",
+        }
+
     # --yolo: bypass all approval prompts
     if os.getenv("OPENMORK_YOLO_MODE"):
         return {"approved": True, "message": None}
@@ -425,6 +433,14 @@ def check_all_command_guards(command: str, env_type: str,
     # Skip containers for both checks
     if env_type in ("docker", "singularity", "modal", "daytona"):
         return {"approved": True, "message": None}
+
+    # Hard deny mode (e.g. production lockdown)
+    if (os.getenv("OPENMORK_TOOL_POLICY_MODE") or "").strip().lower() == "deny":
+        return {
+            "approved": False,
+            "message": "BLOCKED: tool policy mode is 'deny' for this environment.",
+            "status": "policy_denied",
+        }
 
     # --yolo: bypass all approval prompts and pre-exec guard checks
     if os.getenv("OPENMORK_YOLO_MODE"):
