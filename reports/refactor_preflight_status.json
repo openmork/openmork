@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-03-16T19:55:57.003537+00:00",
+  "status": "fail",
+  "critical_failed": [
+    "auth_runtime"
+  ],
+  "checks": [
+    {
+      "name": "auth_runtime",
+      "ok": false,
+      "critical": true,
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_present": false,
+      "error": "Missing runtime base_url or api_key"
+    },
+    {
+      "name": "basic_deps",
+      "ok": true,
+      "critical": true,
+      "python": "3.12.3",
+      "required_modules": [
+        "yaml",
+        "requests"
+      ],
+      "missing_modules": [],
+      "required_bins": [
+        "git",
+        "python3"
+      ],
+      "missing_bins": []
+    },
+    {
+      "name": "safety_flags",
+      "ok": true,
+      "critical": true,
+      "safety_yaml": "/home/wosmim/.openmork/safety.yaml",
+      "safety_yaml_exists": true,
+      "tirith_enabled": true,
+      "tirith_path": "tirith"
+    },
+    {
+      "name": "web_connectivity",
+      "ok": true,
+      "critical": true,
+      "url": "https://example.com",
+      "status_code": 200
+    },
+    {
+      "name": "repo_sanity",
+      "ok": true,
+      "critical": true,
+      "required_paths": [
+        ".git",
+        "run_agent.py",
+        "cli.py",
+        "openmork_cli",
+        "tests"
+      ],
+      "missing_paths": []
+    }
+  ]
+}

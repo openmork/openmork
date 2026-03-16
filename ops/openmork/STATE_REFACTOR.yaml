@@ -1,0 +1,87 @@
+version: 1
+updated_at: "2026-03-16"
+project: openmork
+backlog:
+  - id: T1
+    title: Core preflight y baseline de refactor
+    priority: P0
+    owner_role: senior-developer
+    status: done
+    depends_on: []
+
+  - id: T2
+    title: Split run_agent.py en módulos core
+    priority: P0
+    owner_role: backend-architect
+    status: queued
+    depends_on: [T1]
+
+  - id: T3
+    title: Split cli.py (parse separado de dispatch)
+    priority: P0
+    owner_role: senior-developer
+    status: queued
+    depends_on: [T1]
+
+  - id: T4
+    title: Eliminar except pass en core y CLI
+    priority: P0
+    owner_role: security-engineer
+    status: queued
+    depends_on: [T2, T3]
+
+  - id: T5
+    title: Tests unitarios en rutas críticas
+    priority: P0
+    owner_role: testing-test-results-analyzer
+    status: queued
+    depends_on: [T2, T3, T4]
+
+  - id: T6
+    title: Tipado progresivo en core (strict por perímetro)
+    priority: P1
+    owner_role: senior-developer
+    status: queued
+    depends_on: [T2, T4]
+
+  - id: T7
+    title: Dependencia única (pyproject + lock canónico)
+    priority: P0
+    owner_role: devops-automator
+    status: queued
+    depends_on: [T1]
+
+  - id: T8
+    title: Hardening supply-chain (tirith/autodownload)
+    priority: P0
+    owner_role: security-engineer
+    status: queued
+    depends_on: [T7]
+
+  - id: T9
+    title: Release/versioning y badges de CI
+    priority: P1
+    owner_role: devops-automator
+    status: queued
+    depends_on: [T5, T6, T7]
+
+  - id: T10
+    title: Observabilidad y taxonomía de errores core
+    priority: P1
+    owner_role: backend-architect
+    status: queued
+    depends_on: [T4, T5]
+
+  - id: T11
+    title: Compatibilidad y migración controlada (CLI/Core)
+    priority: P2
+    owner_role: project-manager-senior
+    status: queued
+    depends_on: [T2, T3, T9]
+
+  - id: T12
+    title: Gate final de calidad y go/no-go
+    priority: P0
+    owner_role: project-manager-senior
+    status: queued
+    depends_on: [T5, T6, T8, T9, T10, T11]
