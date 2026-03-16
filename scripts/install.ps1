@@ -622,46 +622,10 @@ function Set-PathVariable {
     }
     $env:OPENMORK_HOME = $OpenMorkHome
 
-    # Temporary compatibility env alias for integrations pending migration.
-    # Name is built dynamically to avoid reintroducing hard-coded legacy branding.
-    $legacyHomeEnvName = ("HER" + "MES_HOME")
-    $currentLegacyHomeCompat = [Environment]::GetEnvironmentVariable($legacyHomeEnvName, "User")
-    if (-not $currentLegacyHomeCompat) {
-        [Environment]::SetEnvironmentVariable($legacyHomeEnvName, $OpenMorkHome, "User")
-        Write-Warn "Set temporary compatibility home env alias -> $OpenMorkHome (deprecated)."
-    }
-    
     # Update current session
     $env:Path = "$openmorkBin;$env:Path"
     
     Write-Success "openmork command ready"
-}
-
-function Install-LegacyCommandAlias {
-    # Temporary compatibility shim for renamed CLI command.
-    # Remove after migration to canonical command in a future major release.
-    if ($NoVenv) { return }
-
-    $scriptsDir = "$InstallDir\venv\Scripts"
-    $openmorkExe = "$scriptsDir\openmork.exe"
-    if (-not (Test-Path $openmorkExe)) { return }
-
-    $legacyCmdName = ("her" + "mes.cmd")
-    $legacyCmdPath = Join-Path $scriptsDir $legacyCmdName
-    @"
-@echo off
-echo [DEPRECATED] Temporary compatibility alias is enabled. Please use 'openmork'. 1>&2
-""%~dp0openmork.exe"" %*
-"@ | Set-Content -Path $legacyCmdPath -Encoding ASCII
-
-    $legacyPs1Name = ("her" + "mes.ps1")
-    $legacyPs1Path = Join-Path $scriptsDir $legacyPs1Name
-    @"
-Write-Warning "[DEPRECATED] Temporary compatibility alias is enabled. Please use 'openmork'."
-& "$scriptsDir\openmork.exe" @args
-"@ | Set-Content -Path $legacyPs1Path -Encoding UTF8
-
-    Write-Warn "Installed temporary compatibility command alias -> openmork"
 }
 
 function Copy-ConfigTemplates {
@@ -943,7 +907,6 @@ function Main {
     Install-Dependencies
     Install-NodeDeps
     Set-PathVariable
-    Install-LegacyCommandAlias
     Copy-ConfigTemplates
     Invoke-SetupWizard
     Start-GatewayIfConfigured

@@ -26,8 +26,3 @@ if %ERRORLEVEL% NEQ 0 (
     pause
     exit /b 1
 )
-
-echo.
-echo  Legacy command alias is temporarily supported after install.
-echo  Please migrate scripts and docs to use 'openmork'.
-echo.

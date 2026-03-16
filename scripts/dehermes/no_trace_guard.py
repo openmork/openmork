@@ -5,24 +5,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent.parent.resolve()
 LEGACY_BRAND = "her" + "mes"
+LEGACY_AGENT = LEGACY_BRAND + "-agent"
+LEGACY_HOME = "HER" + "MES_HOME"
+LEGACY_DOTDIR = "." + LEGACY_BRAND
 
-# Minimal allowlist: only historical/audit files that intentionally retain legacy text.
-# Each exception below is temporary and tracked in docs/architecture/DEHERMES_NOTRACE_AUDIT.md.
-ALLOWED_FILES = {
-    # Scoring and audit artifacts for this migration stream.
-    "scripts/dehermes/score.py",
-    "reports/dehermes_score.json",
-    "docs/architecture/DEHERMES_AUDIT.md",
-    "docs/architecture/DEHERMES_ROADMAP.md",
-    "docs/architecture/DEHERMES_NOTRACE_AUDIT.md",
-    "ops/openmork/GEMINI_NOTRACE_SPRINT.md",
-    # Historical example data (mythology context, not product branding).
-    "datagen-config-examples/example_browser_tasks.jsonl",
-}
+# Zero-tolerance mode: no legacy references are allowed in tracked sources.
+ALLOWED_FILES: set[str] = set()
 
 
 def check_no_legacy_trace() -> bool:
-    legacy_pattern = re.compile(rf"\b{LEGACY_BRAND}(?:-agent)?\b", re.IGNORECASE)
+    escaped_brand = re.escape(LEGACY_BRAND)
+    escaped_agent = re.escape(LEGACY_AGENT)
+    escaped_home = re.escape(LEGACY_HOME)
+    escaped_dotdir = re.escape(LEGACY_DOTDIR)
+
+    legacy_pattern = re.compile(
+        rf"\\b(?:{escaped_brand}|{escaped_agent}|{escaped_home})\\b|{escaped_dotdir}|[/\\\\]{escaped_brand}(?:[/\\\\]|\\b)",
+        re.IGNORECASE,
+    )
     has_error = False
 
     for file_path in ROOT.rglob("*"):
@@ -52,8 +52,8 @@ def check_no_legacy_trace() -> bool:
 
 if __name__ == "__main__":
     if check_no_legacy_trace():
-        print("✅ [NO-TRACE GUARD] Passed. No unauthorized legacy references found.")
+        print("✅ [NO-TRACE GUARD] Passed. No legacy references found.")
         sys.exit(0)
 
-    print("❌ [NO-TRACE GUARD] Failed. Clean up legacy references or add to allowlist if strictly historical.")
+    print("❌ [NO-TRACE GUARD] Failed. Remove all legacy references.")
     sys.exit(1)

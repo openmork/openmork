@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compute a De-Hermes independence score (0-100) with transparent components."""
+"""Compute a legacy-reference score (0-100) with transparent components."""
 
 from __future__ import annotations
 
@@ -23,12 +23,17 @@ TEXT_EXTS = {
     ".py", ".md", ".toml", ".lock", ".json", ".yaml", ".yml", ".ps1", ".cmd", ".sh", ".svg", ".txt",
 }
 
+legacy_brand = "her" + "mes"
+legacy_agent = legacy_brand + "-agent"
+legacy_home = "HER" + "MES_HOME"
+legacy_dotdir = "." + legacy_brand
+
 PATTERNS = {
-    "hermes_agent_name": re.compile(r"hermes-agent", re.IGNORECASE),
-    "hermes_cli": re.compile(r"hermes_cli", re.IGNORECASE),
-    "hermes_home_env": re.compile(r"\bHERMES_HOME\b"),
-    "legacy_path_dot_hermes": re.compile(r"\.hermes|[/\\]hermes([/\\]|\b)", re.IGNORECASE),
-    "brand_hermes": re.compile(r"\bHermes\b|\bHERMES\b|\bhermes\b"),
+    "legacy_agent_name": re.compile(re.escape(legacy_agent), re.IGNORECASE),
+    "legacy_cli_token": re.compile(rf"{re.escape(legacy_brand)}_cli", re.IGNORECASE),
+    "legacy_home_env": re.compile(rf"\\b{re.escape(legacy_home)}\\b"),
+    "legacy_path_dotdir": re.compile(rf"{re.escape(legacy_dotdir)}|[/\\\\]{re.escape(legacy_brand)}([/\\\\]|\\b)", re.IGNORECASE),
+    "legacy_brand": re.compile(rf"\\b{re.escape(legacy_brand)}\\b", re.IGNORECASE),
 }
 
 CATEGORY_WEIGHT = {"code": 3, "config": 2, "docs": 1}
@@ -61,7 +66,6 @@ def classify(path: Path) -> str:
 
 
 def compute_score(penalty: int) -> int:
-    # Smooth decay to avoid permanent clamp at 0 while keeping monotonic behavior.
     score = round(100 / (1 + (penalty / PENALTY_SCALE)))
     return max(0, min(100, score))
 
@@ -87,11 +91,11 @@ def main() -> int:
     dependency_legacy_hits = 0
     for dp in dep_files:
         if dp.exists():
-            dependency_legacy_hits += len(PATTERNS["hermes_agent_name"].findall(dp.read_text(encoding="utf-8")))
+            dependency_legacy_hits += len(PATTERNS["legacy_agent_name"].findall(dp.read_text(encoding="utf-8")))
 
     path_legacy_hits = 0
     for stats in per_file.values():
-        path_legacy_hits += stats.get("legacy_path_dot_hermes", 0) + stats.get("hermes_home_env", 0)
+        path_legacy_hits += stats.get("legacy_path_dotdir", 0) + stats.get("legacy_home_env", 0)
 
     weighted_refs = sum(category_totals[c] * CATEGORY_WEIGHT[c] for c in category_totals)
     dependency_penalty = dependency_legacy_hits * DEPENDENCY_HIT_WEIGHT

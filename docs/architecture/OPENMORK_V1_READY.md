@@ -15,6 +15,10 @@ OpenMork v1 queda endurecido para operación estable con:
 
 ## Qué está endurecido
 
+- Compatibilidad legacy retirada en installers y guardrails (modo estricto).
+- No se mantienen alias legacy de comando ni variables de entorno de transición.
+- Los updates de upstream se integran por cherry-pick manual, con revisión antes de merge.
+
 1. **Registry integration completa**
    - `security` y `skillset` ya no son solo contratos “pasivos”: se registran en runtime con metadata y healthcheck.
    - Security arm participa en validación real de `terminal.command` en `tools/terminal_tool.py`.
