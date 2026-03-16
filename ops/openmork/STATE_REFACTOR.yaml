@@ -13,7 +13,7 @@ backlog:
     title: Split run_agent.py en módulos core
     priority: P0
     owner_role: backend-architect
-    status: queued
+    status: in_progress
     depends_on: [T1]
 
   - id: T3
