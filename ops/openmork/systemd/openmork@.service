@@ -1,0 +1,15 @@
+[Unit]
+Description=Openmork instance (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=/etc/openmork/instances/%i.env
+ExecStart=/usr/bin/env bash -lc '"$OPENMORK_REPO"/scripts/ops/instance/start_instance.sh "/etc/openmork/instances/%i.env"'
+ExecStop=/usr/bin/env bash -lc '"$OPENMORK_REPO"/scripts/ops/instance/stop_instance.sh "/etc/openmork/instances/%i.env"'
+ExecReload=/usr/bin/env bash -lc '"$OPENMORK_REPO"/scripts/ops/instance/restart_instance.sh "/etc/openmork/instances/%i.env"'
+
+[Install]
+WantedBy=multi-user.target
