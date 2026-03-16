@@ -16,6 +16,7 @@ from openmork_cli.auth import (
     resolve_api_key_provider_credentials,
 )
 from openmork_cli.config import load_config
+from openmork_cli.llm_gateway import resolve_gateway_route
 from openmork_constants import OPENROUTER_BASE_URL
 
 
@@ -205,9 +206,35 @@ def resolve_runtime_provider(
     requested: Optional[str] = None,
     explicit_api_key: Optional[str] = None,
     explicit_base_url: Optional[str] = None,
+    conversation_id: Optional[str] = None,
+    requested_model: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Resolve runtime provider credentials for agent execution."""
     requested_provider = resolve_requested_provider(requested)
+
+    model_cfg = _get_model_config()
+    requested_model_name = (
+        (requested_model or "").strip()
+        or (str(model_cfg.get("default", "")).strip() if isinstance(model_cfg, dict) else "")
+    )
+
+    # Optional DEV gateway: route provider/key via weighted RR + health policy.
+    gateway_route = resolve_gateway_route(
+        conversation_id=str(conversation_id or ""),
+        requested_model=requested_model_name,
+    )
+    if gateway_route:
+        return {
+            "provider": str(gateway_route.get("provider", "openrouter")),
+            "api_mode": str(gateway_route.get("api_mode", "chat_completions")),
+            "base_url": str(gateway_route.get("base_url", "")).rstrip("/"),
+            "api_key": str(gateway_route.get("api_key", "")),
+            "source": f"llm-gateway:{gateway_route.get('route_id', 'route')}",
+            "requested_provider": requested_provider,
+            "requested_model": requested_model_name,
+            "gateway_route_id": gateway_route.get("route_id"),
+            "gateway_sticky": bool(gateway_route.get("sticky", False)),
+        }
 
     custom_runtime = _resolve_named_custom_runtime(
         requested_provider=requested_provider,
