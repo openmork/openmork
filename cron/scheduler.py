@@ -75,10 +75,21 @@ def _resolve_delivery_target(job: dict) -> Optional[dict]:
         }
 
     if ":" in deliver:
-        platform_name, chat_id = deliver.split(":", 1)
+        parts = deliver.split(":")
+        platform_name = parts[0]
+
+        # Explicit target: platform:chat_id[:thread_id]
+        # /remind uses platform:chat_id:thread_id for topic/thread-aware delivery.
+        if len(parts) >= 3:
+            return {
+                "platform": platform_name,
+                "chat_id": parts[1],
+                "thread_id": ":".join(parts[2:]) or None,
+            }
+
         return {
             "platform": platform_name,
-            "chat_id": chat_id,
+            "chat_id": parts[1],
             "thread_id": None,
         }
 

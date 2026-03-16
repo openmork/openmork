@@ -94,6 +94,17 @@ class TestResolveDeliveryTarget:
             "thread_id": None,
         }
 
+    def test_explicit_platform_chat_thread_target(self):
+        job = {
+            "deliver": "telegram:-1001234567890:17585",
+        }
+
+        assert _resolve_delivery_target(job) == {
+            "platform": "telegram",
+            "chat_id": "-1001234567890",
+            "thread_id": "17585",
+        }
+
 
 class TestDeliverResultMirrorLogging:
     """Verify that mirror_to_session failures are logged, not silently swallowed."""
