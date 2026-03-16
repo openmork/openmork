@@ -11,6 +11,8 @@ from core.agent_runtime.conversation_utils import (
     strip_think_blocks,
 )
 from core.agent_runtime.runtime_context import IterationBudget, inject_honcho_turn_context
+from core.agent_runtime.api_client_helpers import build_api_kwargs, build_assistant_message
+from core.agent_runtime.tool_execution import invoke_tool
 
 
 def test_runtime_context_exports_keep_run_agent_compatibility():
@@ -47,7 +49,55 @@ def test_run_agent_facade_references_extracted_helpers():
     assert "return strip_think_blocks(content)" in source
     assert "return looks_like_codex_intermediate_ack(user_message, assistant_content, messages)" in source
     assert "return extract_reasoning_from_message(assistant_message)" in source
+    assert "return _build_api_kwargs_impl(self, api_messages)" in source
+    assert "return _execute_tool_calls_impl(self, assistant_message, messages, effective_task_id, api_call_count)" in source
 
     message = SimpleNamespace(reasoning="r1", reasoning_content="r2", reasoning_details=[{"summary": "r3"}])
     assert extract_reasoning_from_message(message) == "r1\n\nr2\n\nr3"
     assert inject_honcho_turn_context("hello", "ctx").endswith("ctx")
+
+
+def test_api_helper_builders_minimal_contract():
+    agent = SimpleNamespace(
+        api_mode="codex_responses",
+        reasoning_config=None,
+        model="openai/gpt-5",
+        session_id="sess-1",
+        max_tokens=321,
+        _chat_messages_to_responses_input=lambda payload: payload,
+        _responses_tools=lambda: [{"type": "function", "name": "x", "parameters": {"type": "object"}}],
+    )
+    kwargs = build_api_kwargs(agent, [{"role": "system", "content": "sys"}, {"role": "user", "content": "u"}])
+    assert kwargs["model"] == "openai/gpt-5"
+    assert kwargs["instructions"] == "sys"
+    assert kwargs["max_output_tokens"] == 321
+
+    msg = SimpleNamespace(content="ok", tool_calls=None)
+    out = build_assistant_message(SimpleNamespace(
+        _extract_reasoning=lambda _m: None,
+        verbose_logging=False,
+        reasoning_callback=None,
+    ), msg, "stop")
+    assert out["content"] == "ok"
+    assert out["finish_reason"] == "stop"
+
+
+def test_tool_invoke_falls_back_to_handle_function_call(monkeypatch):
+    calls = {}
+
+    def _fake_handle(name, args, task_id, enabled_tools=None):
+        calls["name"] = name
+        calls["args"] = args
+        calls["task_id"] = task_id
+        calls["enabled_tools"] = enabled_tools
+        return "ok"
+
+    import sys
+    import core.agent_runtime.tool_execution as te
+
+    monkeypatch.setitem(sys.modules, "model_tools", SimpleNamespace(handle_function_call=_fake_handle))
+    agent = SimpleNamespace(valid_tool_names={"x"})
+    result = te.invoke_tool(agent, "x", {"a": 1}, "t1")
+    assert result == "ok"
+    assert calls["name"] == "x"
+    assert calls["task_id"] == "t1"

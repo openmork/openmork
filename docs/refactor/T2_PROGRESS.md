@@ -42,8 +42,52 @@ Resultado:
 - `tests/test_agent_runtime_refactor_t2.py`: **3 passed**
 - `py_compile`: **ok**
 
+## Corte 2 (actual) — extracción adicional grande y cohesionada
+
+Se completó una segunda extracción incremental centrada en:
+
+1. **API client / provider call helpers**
+   - Nuevo módulo: `core/agent_runtime/api_client_helpers.py`
+   - Extraído desde `run_agent.py`:
+     - `_interruptible_api_call`
+     - `_streaming_api_call`
+     - `_build_api_kwargs`
+     - `_build_assistant_message`
+
+2. **Tool execution loop helpers**
+   - Nuevo módulo: `core/agent_runtime/tool_execution.py`
+   - Extraído desde `run_agent.py`:
+     - `_execute_tool_calls`
+     - `_invoke_tool`
+     - `_execute_tool_calls_concurrent`
+     - `_execute_tool_calls_sequential`
+
+`run_agent.py` mantiene la **fachada compatible** con wrappers 1:1 delegando a los módulos nuevos.
+
+## Medición LOC (este corte)
+
+- LOC antes de este corte (`run_agent.py`): **6063**
+- LOC después de este corte (`run_agent.py`): **5125**
+- Reducción en este corte: **938 LOC**
+
+Acumulado T2 (desde baseline inicial 6250):
+- 6250 → 5125 (**-1125 LOC**)
+
+## Validación rápida (este corte)
+
+Comandos ejecutados:
+
+```bash
+pytest -q -o addopts='' tests/test_agent_runtime_refactor_t2.py
+python3 -m py_compile run_agent.py core/agent_runtime/runtime_context.py core/agent_runtime/conversation_utils.py core/agent_runtime/api_client_helpers.py core/agent_runtime/tool_execution.py
+```
+
+Resultado:
+- `tests/test_agent_runtime_refactor_t2.py`: **5 passed**
+- `py_compile`: **ok**
+
 ## Riesgos abiertos para siguiente corte T2
 
-1. **Dependencias de test environment**: el suite completo de `run_agent` depende de paquetes no instalados en este entorno (`openai`, `dotenv`, `firecrawl`). Conviene normalizar entorno CI/local para validar regresión total.
-2. **Fachada aún grande**: `AIAgent` sigue concentrando mucha lógica; el siguiente corte debe extraer bloques internos adicionales (cliente API, ejecución de tools, ciclo principal) en módulos dedicados.
-3. **Cobertura focalizada**: se añadieron tests mínimos de regresión para este corte; falta ampliar cobertura integrada para garantizar equivalencia de comportamiento en flujos completos.
+1. **Dependencias de entorno**: parte del stack real (por ejemplo `firecrawl`) no está instalado localmente; por eso la validación se mantiene focalizada y no full-suite.
+2. **Fachada aún extensa**: pese al recorte fuerte, `run_agent.py` sigue grande; queda extraer más flujo del loop principal.
+3. **Cobertura integrada**: los tests añadidos son mínimos y de regresión estructural; conviene ampliar tests end-to-end del bucle agente+tools.
