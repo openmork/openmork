@@ -195,6 +195,7 @@ from gateway.session import (
 )
 from gateway.delivery import DeliveryRouter, DeliveryTarget
 from gateway.platforms.base import BasePlatformAdapter, MessageEvent, MessageType
+from gateway.taskguard import ReportingTaskGuard
 from openmork_arm_registry import get_arm_registry
 from openmork_contracts import ArmContractError
 
@@ -353,6 +354,12 @@ class GatewayRunner:
 
         # Per-chat voice reply mode: "off" | "voice_only" | "all"
         self._voice_mode: Dict[str, str] = self._load_voice_modes()
+
+        # Reporting guard for anti-silence tracking (auto + manual override)
+        self._taskguard = ReportingTaskGuard(
+            default_ttl_min=int(os.getenv("OPENMORK_TASKGUARD_TTL_MIN", "12")),
+            default_cooldown_min=int(os.getenv("OPENMORK_TASKGUARD_COOLDOWN_MIN", "30")),
+        )
 
     def _get_or_create_gateway_honcho(self, session_key: str):
         """Return a persistent Honcho manager/config pair for this gateway session."""
@@ -1210,7 +1217,7 @@ class GatewayRunner:
                           "personality", "plan", "retry", "undo", "sethome", "set-home",
                           "compress", "usage", "insights", "reload-mcp", "reload_mcp",
                           "update", "title", "resume", "provider", "rollback",
-                          "background", "reasoning", "voice", "remind"}
+                          "background", "reasoning", "voice", "remind", "taskguard"}
         if command and command in _known_commands:
             await self.hooks.emit(f"command:{command}", {
                 "platform": source.platform.value if source.platform else "",
@@ -1230,6 +1237,9 @@ class GatewayRunner:
 
         if command == "remind":
             return await self._handle_remind_command(event)
+
+        if command == "taskguard":
+            return await self._handle_taskguard_command(event)
         
         if command == "stop":
             return await self._handle_stop_command(event)
@@ -2039,6 +2049,37 @@ class GatewayRunner:
         except Exception as e:
             return f"Failed to create reminder: {e}"
 
+    async def _handle_taskguard_command(self, event: MessageEvent) -> str:
+        """Handle /taskguard on|off|status <task_id> (manual reporting-guard override)."""
+        args = (event.get_command_args() or "").strip().split()
+        if len(args) < 2:
+            return "Usage: /taskguard <on|off|status> <task_id>"
+
+        action = args[0].lower()
+        task_id = args[1].strip()
+        if not task_id:
+            return "Usage: /taskguard <on|off|status> <task_id>"
+
+        if action == "on":
+            self._taskguard.set_manual(task_id, True)
+            self._taskguard.start(task_id)
+            return f"🛡️ taskguard ON for `{task_id}`"
+
+        if action == "off":
+            self._taskguard.set_manual(task_id, False)
+            self._taskguard.done(task_id)
+            return f"🛑 taskguard OFF for `{task_id}`"
+
+        if action == "status":
+            st = self._taskguard.status(task_id)
+            task = st.get("task") or {}
+            status = task.get("status", "idle")
+            manual = "on" if st.get("manual_enabled") else "off"
+            ttl = task.get("ttl_min", "-")
+            return f"taskguard `{task_id}` → status: {status}, manual: {manual}, ttl: {ttl}m"
+
+        return "Usage: /taskguard <on|off|status> <task_id>"
+
     async def _handle_stop_command(self, event: MessageEvent) -> str:
         """Handle /stop command - interrupt a running agent."""
         source = event.source
@@ -2075,6 +2116,7 @@ class GatewayRunner:
             "`/reasoning [level|show|hide]` — Set reasoning effort or toggle display",
             "`/rollback [number]` — List or restore filesystem checkpoints",
             "`/background <prompt>` — Run a prompt in a separate background session",
+            "`/taskguard <on|off|status> <task_id>` — Manual override for anti-silence guard",
             "`/voice [on|off|tts|status]` — Toggle voice reply mode",
             "`/reload-mcp` — Reload MCP servers from config",
             "`/update` — Update openmork to the latest version",
@@ -2880,6 +2922,12 @@ class GatewayRunner:
         _thread_metadata = {"thread_id": source.thread_id} if source.thread_id else None
 
         try:
+            self._taskguard.start(task_id)
+            self._taskguard.progress(task_id, note="background:start")
+        except Exception as e:
+            logger.debug("taskguard background start failed: %s", e)
+
+        try:
             runtime_kwargs = _resolve_runtime_agent_kwargs()
             if not runtime_kwargs.get("api_key"):
                 await adapter.send(
@@ -2967,6 +3015,10 @@ class GatewayRunner:
 
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(None, run_sync)
+            try:
+                self._taskguard.progress(task_id, note="background:agent-complete")
+            except Exception:
+                pass
 
             response = result.get("final_response", "") if result else ""
             if not response and result and result.get("error"):
@@ -3029,6 +3081,11 @@ class GatewayRunner:
                     content=f"❌ Background task {task_id} failed: {e}",
                     metadata=_thread_metadata,
                 )
+            except Exception:
+                pass
+        finally:
+            try:
+                self._taskguard.done(task_id)
             except Exception:
                 pass
 
@@ -3976,11 +4033,58 @@ class GatewayRunner:
         last_tool = [None]  # Mutable container for tracking in closure
         last_progress_msg = [None]  # Track last message for dedup
         repeat_count = [0]  # How many times the same message repeated
+
+        taskguard_id = f"gw:{session_id}"
+        taskguard_started = [False]
+        taskguard_last_note = [""]
+        taskguard_last_progress_at = [0.0]
+
+        def _should_track_long_task(tool_name: str = "", args: dict | None = None) -> bool:
+            args = args or {}
+            if tool_name in {"delegate_task", "mixture_of_agents", "moa_query", "cronjob"}:
+                return True
+            timeout = args.get("timeout") or args.get("timeoutSeconds") or args.get("yieldMs")
+            try:
+                if timeout and float(timeout) >= 120:
+                    return True
+            except Exception:
+                pass
+            if args.get("background") is True:
+                return True
+            cmd = str(args.get("command", "")).lower()
+            return any(k in cmd for k in ("sleep ", "pytest", "npm run build", "uv run", "sessions_spawn", "subagent"))
+
+        def _ensure_taskguard_started(reason: str) -> None:
+            if taskguard_started[0]:
+                return
+            try:
+                self._taskguard.start(taskguard_id)
+                self._taskguard.progress(taskguard_id, note=reason)
+                taskguard_started[0] = True
+                taskguard_last_note[0] = reason
+                taskguard_last_progress_at[0] = time.time()
+            except Exception as e:
+                logger.debug("taskguard start failed: %s", e)
         
         def progress_callback(tool_name: str, preview: str = None, args: dict = None):
             """Callback invoked by agent when a tool is called."""
             if not progress_queue:
                 return
+
+            if self._taskguard.is_manual_enabled(taskguard_id) or _should_track_long_task(tool_name, args):
+                _ensure_taskguard_started(f"tool:{tool_name}")
+                now_ts = time.time()
+                note = f"tool:{tool_name}"
+                if taskguard_started[0] and (
+                    note != taskguard_last_note[0]
+                    or (now_ts - taskguard_last_progress_at[0]) >= 90
+                ):
+                    try:
+                        self._taskguard.progress(taskguard_id, note=note)
+                        taskguard_last_note[0] = note
+                        taskguard_last_progress_at[0] = now_ts
+                    except Exception as e:
+                        logger.debug("taskguard progress failed: %s", e)
             
             # "new" mode: only report when tool changes
             if progress_mode == "new" and tool_name == last_tool[0]:
@@ -4391,6 +4495,14 @@ class GatewayRunner:
                 "session_id": effective_session_id,
             }
         
+        # Early auto-start for explicit long-task intents in user prompt.
+        _msg_lc = (message or "").lower()
+        if (
+            self._taskguard.is_manual_enabled(taskguard_id)
+            or any(k in _msg_lc for k in ("subagent", "delegate", "background", "long task", "timeout", "job"))
+        ):
+            _ensure_taskguard_started("intent:long-task")
+
         # Start progress message sender if enabled
         progress_task = None
         if tool_progress_enabled:
@@ -4473,6 +4585,12 @@ class GatewayRunner:
                     session_key=session_key
                 )
         finally:
+            if taskguard_started[0]:
+                try:
+                    self._taskguard.done(taskguard_id)
+                except Exception as e:
+                    logger.debug("taskguard done failed: %s", e)
+
             # Stop progress sender and interrupt monitor
             if progress_task:
                 progress_task.cancel()
