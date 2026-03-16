@@ -1,5 +1,4 @@
 import json
-
 import pytest
 
 from openmork_arm_registry import ArmRegistry
@@ -53,3 +52,45 @@ def test_registry_observability_health_and_metrics_smoke():
     metrics = payload["arms"]["gateway"]["metrics"]
     assert metrics["count"] >= 3
     assert metrics["error"] >= 1
+
+
+def test_registry_integrates_security_arm_runtime_path():
+    class _SecurityArm:
+        apiVersion = "1.0"
+
+        def validate_action(self, action_type: str, payload: dict, context: dict):
+            ok = not str(payload.get("command", "")).startswith("rm -rf /")
+            return type("V", (), {"is_allowed": ok, "reason": "blocked" if not ok else ""})()
+
+    registry = ArmRegistry()
+    arm = _SecurityArm()
+    registry.register("security", arm, compat="guard")
+
+    allowed = registry.resolve("security").validate_action(
+        "terminal.command",
+        {"command": "echo safe"},
+        {"session_key": "test"},
+    )
+    assert getattr(allowed, "is_allowed", False) is True
+
+def test_registry_integrates_skillset_arm_runtime_path():
+    class _SkillsetArm:
+        apiVersion = "1.0"
+
+        @property
+        def capabilities(self):
+            return [{"name": "skills_list"}]
+
+        def execute(self, tool_name: str, arguments: dict):
+            if tool_name == "skills_list":
+                return {"skills": ["demo"]}
+            raise ValueError("unknown")
+
+    registry = ArmRegistry()
+    arm = _SkillsetArm()
+    registry.register("skillset", arm, compat="builtin")
+
+    skillset = registry.resolve("skillset")
+    assert any(c.get("name") == "skills_list" for c in skillset.capabilities)
+    payload = skillset.execute("skills_list", {})
+    assert "skills" in payload

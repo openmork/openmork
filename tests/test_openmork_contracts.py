@@ -33,3 +33,29 @@ def test_validate_arm_contract_rejects_missing_api_and_methods():
         validate_arm_contract(_BadGateway(), arm_kind="gateway")
     message = str(exc.value)
     assert "missing required API" in message or "missing required 'apiVersion'" in message
+
+
+class _GoodSecurity:
+    apiVersion = "1.0"
+
+    def validate_action(self, action_type: str, payload: dict, context: dict):
+        return {"ok": True}
+
+
+class _GoodSkillset:
+    apiVersion = "1.0"
+
+    @property
+    def capabilities(self):
+        return [{"name": "skills_list"}]
+
+    def execute(self, tool_name: str, arguments: dict):
+        return {"ok": True}
+
+
+def test_validate_arm_contract_accepts_valid_security_arm():
+    validate_arm_contract(_GoodSecurity(), arm_kind="security")
+
+
+def test_validate_arm_contract_accepts_valid_skillset_arm():
+    validate_arm_contract(_GoodSkillset(), arm_kind="skillset")

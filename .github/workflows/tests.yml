@@ -40,3 +40,28 @@ jobs:
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
           NOUS_API_KEY: ""
+
+  contracts-registry-smoke:
+    name: Contracts/Registry smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: |
+          uv venv .venv --python 3.11
+          source .venv/bin/activate
+          uv pip install -e ".[all,dev]"
+
+      - name: Run critical contracts/registry tests
+        run: |
+          source .venv/bin/activate
+          pytest -q -o addopts='' tests/test_openmork_contracts.py tests/test_arm_registry.py
