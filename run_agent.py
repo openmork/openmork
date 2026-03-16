@@ -98,6 +98,10 @@ from core.agent_runtime.runtime_context import (
     IterationBudget,
     inject_honcho_turn_context as _inject_honcho_turn_context,
 )
+from core.agent_runtime.io_safety import (
+    SafeWriter as _SafeWriter,
+    install_safe_stdio as _install_safe_stdio,
+)
 from core.agent_runtime.conversation_utils import (
     extract_reasoning_from_message,
     has_content_after_think_block,
@@ -133,58 +137,6 @@ HONCHO_TOOL_NAMES = {
     "honcho_search",
     "honcho_conclude",
 }
-
-
-class _SafeWriter:
-    """Transparent stdio wrapper that catches OSError from broken pipes.
-
-    When openmork runs as a systemd service, Docker container, or headless
-    daemon, the stdout/stderr pipe can become unavailable (idle timeout, buffer
-    exhaustion, socket reset). Any print() call then raises
-    ``OSError: [Errno 5] Input/output error``, which can crash agent setup or
-    run_conversation() — especially via double-fault when an except handler
-    also tries to print.
-
-    This wrapper delegates all writes to the underlying stream and silently
-    catches OSError. It is transparent when the wrapped stream is healthy.
-    """
-
-    __slots__ = ("_inner",)
-
-    def __init__(self, inner):
-        object.__setattr__(self, "_inner", inner)
-
-    def write(self, data):
-        try:
-            return self._inner.write(data)
-        except OSError:
-            return len(data) if isinstance(data, str) else 0
-
-    def flush(self):
-        try:
-            self._inner.flush()
-        except OSError:
-            pass
-
-    def fileno(self):
-        return self._inner.fileno()
-
-    def isatty(self):
-        try:
-            return self._inner.isatty()
-        except OSError:
-            return False
-
-    def __getattr__(self, name):
-        return getattr(self._inner, name)
-
-
-def _install_safe_stdio() -> None:
-    """Wrap stdout/stderr so best-effort console output cannot crash the agent."""
-    for stream_name in ("stdout", "stderr"):
-        stream = getattr(sys, stream_name, None)
-        if stream is not None and not isinstance(stream, _SafeWriter):
-            setattr(sys, stream_name, _SafeWriter(stream))
 
 
 # Tools that must never run concurrently (interactive / user-facing).
