@@ -57,8 +57,8 @@ def interruptible_api_call(agent, api_kwargs: dict):
                     request_client = request_client_holder.get("client")
                     if request_client is not None:
                         agent._close_request_openai_client(request_client, reason="interrupt_abort")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Interrupt cleanup failed while aborting API call: %s", e)
             raise InterruptedError("Agent interrupted during API call")
     if result["error"] is not None:
         raise result["error"]
@@ -98,8 +98,8 @@ def streaming_api_call(agent, api_kwargs: dict, stream_callback):
                     content_parts.append(delta.content)
                     try:
                         stream_callback(delta.content)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("stream_callback failed for content chunk: %s", e)
 
                 if delta and delta.tool_calls:
                     for tc_delta in delta.tool_calls:
@@ -190,8 +190,8 @@ def streaming_api_call(agent, api_kwargs: dict, stream_callback):
                     request_client = request_client_holder.get("client")
                     if request_client is not None:
                         agent._close_request_openai_client(request_client, reason="stream_interrupt_abort")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Interrupt cleanup failed while aborting stream API call: %s", e)
             raise InterruptedError("Agent interrupted during API call")
     if result["error"] is not None:
         raise result["error"]

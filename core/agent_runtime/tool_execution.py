@@ -117,8 +117,8 @@ def execute_tool_calls_concurrent(agent, assistant_message, messages: list, effe
                 if file_path:
                     work_dir = agent._checkpoint_mgr.get_working_dir_for_path(file_path)
                     agent._checkpoint_mgr.ensure_checkpoint(work_dir, f"before {function_name}")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Checkpoint pre-save failed before %s: %s", function_name, e)
 
         parsed_calls.append((tool_call, function_name, function_args))
 
@@ -269,8 +269,8 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                 if file_path:
                     work_dir = agent._checkpoint_mgr.get_working_dir_for_path(file_path)
                     agent._checkpoint_mgr.ensure_checkpoint(work_dir, f"before {function_name}")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Checkpoint pre-save failed before %s: %s", function_name, e)
 
         tool_start_time = time.time()
 

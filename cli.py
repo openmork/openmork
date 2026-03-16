@@ -425,8 +425,8 @@ CLI_CONFIG = load_cli_config()
 try:
     from openmork_cli.skin_engine import init_skin_from_config
     init_skin_from_config(CLI_CONFIG)
-except Exception:
-    pass  # Skin engine is optional — default skin used if unavailable
+except Exception as e:
+    logger.warning("Skin engine init failed; using default skin: %s", e)
 
 from rich import box as rich_box
 from rich.console import Console
@@ -472,17 +472,17 @@ def _run_cleanup():
     _cleanup_done = True
     try:
         _cleanup_all_terminals()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Terminal cleanup failed: %s", e)
     try:
         _cleanup_all_browsers()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Browser cleanup failed: %s", e)
     try:
         from tools.mcp_tool import shutdown_mcp_servers
         shutdown_mcp_servers()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("MCP shutdown failed: %s", e)
 
 
 # =============================================================================
@@ -503,8 +503,8 @@ def _git_repo_root() -> Optional[str]:
         )
         if result.returncode == 0:
             return result.stdout.strip()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("git repo root detection failed: %s", e)
     return None
 
 
@@ -5824,6 +5824,83 @@ class OPENMORKCLI:
 # Main Entry Point
 # ============================================================================
 
+def _resolve_toolsets_input(toolsets: str | list[str] | tuple[str, ...] | None) -> list[str]:
+    """Normalize toolsets input (CLI args/config) into a concrete list."""
+    if toolsets:
+        if isinstance(toolsets, str):
+            return [t.strip() for t in toolsets.split(",")]
+        if isinstance(toolsets, (list, tuple)):
+            resolved: list[str] = []
+            for t in toolsets:
+                if isinstance(t, str):
+                    resolved.extend([x.strip() for x in t.split(",")])
+                else:
+                    resolved.append(str(t))
+            return resolved
+
+    config_cli_toolsets = CLI_CONFIG.get("platform_toolsets", {}).get("cli")
+    if config_cli_toolsets and isinstance(config_cli_toolsets, list):
+        return config_cli_toolsets
+    return ["openmork-cli"]
+
+
+def _build_cli_from_main_args(*, model: str | None, toolsets: str | list[str] | tuple[str, ...] | None,
+                              provider: str | None, api_key: str | None, base_url: str | None,
+                              max_turns: int | None, verbose: bool, compact: bool, resume: str | None,
+                              checkpoints: bool, pass_session_id: bool) -> OPENMORKCLI:
+    """Construct OPENMORKCLI from normalized top-level main() args."""
+    return OPENMORKCLI(
+        model=model,
+        toolsets=_resolve_toolsets_input(toolsets),
+        provider=provider,
+        api_key=api_key,
+        base_url=base_url,
+        max_turns=max_turns,
+        verbose=verbose,
+        compact=compact,
+        resume=resume,
+        checkpoints=checkpoints,
+        pass_session_id=pass_session_id,
+    )
+
+
+def _dispatch_cli_mode(*, cli: OPENMORKCLI, query: str | None, quiet: bool, list_tools: bool, list_toolsets: bool) -> None:
+    """Dispatch CLI runtime mode (listing, one-shot query, or interactive)."""
+    if list_tools:
+        cli.show_banner()
+        cli.show_tools()
+        sys.exit(0)
+
+    if list_toolsets:
+        cli.show_banner()
+        cli.show_toolsets()
+        sys.exit(0)
+
+    # Register cleanup for single-query mode (interactive mode registers in run())
+    atexit.register(_run_cleanup)
+
+    if query:
+        if quiet:
+            # Quiet mode: suppress banner, spinner, tool previews.
+            # Only print the final response and parseable session info.
+            cli.tool_progress_mode = "off"
+            if cli._init_agent():
+                cli.agent.quiet_mode = True
+                result = cli.agent.run_conversation(query)
+                response = result.get("final_response", "") if isinstance(result, dict) else str(result)
+                if response:
+                    print(response)
+                print(f"\nsession_id: {cli.session_id}")
+        else:
+            cli.show_banner()
+            cli.console.print(f"[bold blue]Query:[/] {query}")
+            cli.chat(query)
+            cli._print_exit_summary()
+        return
+
+    cli.run()
+
+
 def main(
     query: str = None,
     q: str = None,
@@ -5918,34 +5995,12 @@ def main(
     # Handle query shorthand
     query = query or q
     
-    # Parse toolsets - handle both string and tuple/list inputs
-    # Default to openmork-cli toolset which includes cronjob management tools
-    toolsets_list = None
-    if toolsets:
-        if isinstance(toolsets, str):
-            toolsets_list = [t.strip() for t in toolsets.split(",")]
-        elif isinstance(toolsets, (list, tuple)):
-            # Fire may pass multiple --toolsets as a tuple
-            toolsets_list = []
-            for t in toolsets:
-                if isinstance(t, str):
-                    toolsets_list.extend([x.strip() for x in t.split(",")])
-                else:
-                    toolsets_list.append(str(t))
-    else:
-        # Check config for CLI toolsets, fallback to openmork-cli
-        config_cli_toolsets = CLI_CONFIG.get("platform_toolsets", {}).get("cli")
-        if config_cli_toolsets and isinstance(config_cli_toolsets, list):
-            toolsets_list = config_cli_toolsets
-        else:
-            toolsets_list = ["openmork-cli"]
-    
     parsed_skills = _parse_skills_argument(skills)
 
-    # Create CLI instance
-    cli = OPENMORKCLI(
+    # Build CLI instance from parsed args (T3 split: parse vs dispatch)
+    cli = _build_cli_from_main_args(
         model=model,
-        toolsets=toolsets_list,
+        toolsets=toolsets,
         provider=provider,
         api_key=api_key,
         base_url=base_url,
@@ -5982,42 +6037,13 @@ def main(
         )
         cli.system_prompt = (cli.system_prompt or "") + wt_note
     
-    # Handle list commands (don't init agent for these)
-    if list_tools:
-        cli.show_banner()
-        cli.show_tools()
-        sys.exit(0)
-    
-    if list_toolsets:
-        cli.show_banner()
-        cli.show_toolsets()
-        sys.exit(0)
-    
-    # Register cleanup for single-query mode (interactive mode registers in run())
-    atexit.register(_run_cleanup)
-    
-    # Handle single query mode
-    if query:
-        if quiet:
-            # Quiet mode: suppress banner, spinner, tool previews.
-            # Only print the final response and parseable session info.
-            cli.tool_progress_mode = "off"
-            if cli._init_agent():
-                cli.agent.quiet_mode = True
-                result = cli.agent.run_conversation(query)
-                response = result.get("final_response", "") if isinstance(result, dict) else str(result)
-                if response:
-                    print(response)
-                print(f"\nsession_id: {cli.session_id}")
-        else:
-            cli.show_banner()
-            cli.console.print(f"[bold blue]Query:[/] {query}")
-            cli.chat(query)
-            cli._print_exit_summary()
-        return
-    
-    # Run interactive mode
-    cli.run()
+    _dispatch_cli_mode(
+        cli=cli,
+        query=query,
+        quiet=quiet,
+        list_tools=list_tools,
+        list_toolsets=list_toolsets,
+    )
 
 
 if __name__ == "__main__":

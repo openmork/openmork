@@ -20,14 +20,14 @@ backlog:
     title: Split cli.py (parse separado de dispatch)
     priority: P0
     owner_role: senior-developer
-    status: queued
+    status: done
     depends_on: [T1]
 
   - id: T4
     title: Eliminar except pass en core y CLI
     priority: P0
     owner_role: security-engineer
-    status: queued
+    status: in_progress
     depends_on: [T2, T3]
 
   - id: T5
