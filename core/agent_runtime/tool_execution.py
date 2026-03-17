@@ -9,6 +9,7 @@ import random
 import time
 
 from agent.display import KawaiiSpinner, build_tool_preview as _build_tool_preview, get_cute_tool_message as _get_cute_tool_message_impl, _detect_tool_failure
+from core.agent_runtime.error_taxonomy import ErrorCode, emit_error
 from openmork_arm_registry import get_arm_registry
 
 logger = logging.getLogger(__name__)
@@ -118,7 +119,13 @@ def execute_tool_calls_concurrent(agent, assistant_message, messages: list, effe
                     work_dir = agent._checkpoint_mgr.get_working_dir_for_path(file_path)
                     agent._checkpoint_mgr.ensure_checkpoint(work_dir, f"before {function_name}")
             except Exception as e:
-                logger.warning("Checkpoint pre-save failed before %s: %s", function_name, e)
+                emit_error(
+                    logger,
+                    code=ErrorCode.CHECKPOINT_PRESAVE_FAILED,
+                    message="Checkpoint pre-save failed",
+                    context={"tool": function_name, "error": str(e)},
+                    severity="warning",
+                )
 
         parsed_calls.append((tool_call, function_name, function_args))
 
@@ -146,7 +153,13 @@ def execute_tool_calls_concurrent(agent, assistant_message, messages: list, effe
             result = invoke_tool(agent, function_name, function_args, effective_task_id)
         except Exception as tool_error:
             result = f"Error executing tool '{function_name}': {tool_error}"
-            logger.error("invoke_tool raised for %s: %s", function_name, tool_error, exc_info=True)
+            emit_error(
+                logger,
+                code=ErrorCode.TOOL_INVOKE_FAILED,
+                message="invoke_tool raised",
+                context={"tool": function_name, "error": str(tool_error)},
+                exc_info=True,
+            )
         duration = time.time() - start
         is_error, _ = _detect_tool_failure(function_name, result)
         results[index] = (function_name, function_args, result, duration, is_error)
@@ -177,7 +190,13 @@ def execute_tool_calls_concurrent(agent, assistant_message, messages: list, effe
             function_name, function_args, function_result, tool_duration, is_error = r
             if is_error:
                 result_preview = function_result[:200] if len(function_result) > 200 else function_result
-                logger.warning("Tool %s returned error (%.2fs): %s", function_name, tool_duration, result_preview)
+                emit_error(
+                    logger,
+                    code=ErrorCode.TOOL_RESULT_ERROR,
+                    message="Tool returned error contract",
+                    context={"tool": function_name, "duration_s": round(tool_duration, 3), "preview": result_preview},
+                    severity="warning",
+                )
             if agent.verbose_logging:
                 result_preview = function_result[:200] if len(function_result) > 200 else function_result
                 logging.debug(f"Tool {function_name} completed in {tool_duration:.2f}s")
@@ -270,7 +289,13 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                     work_dir = agent._checkpoint_mgr.get_working_dir_for_path(file_path)
                     agent._checkpoint_mgr.ensure_checkpoint(work_dir, f"before {function_name}")
             except Exception as e:
-                logger.warning("Checkpoint pre-save failed before %s: %s", function_name, e)
+                emit_error(
+                    logger,
+                    code=ErrorCode.CHECKPOINT_PRESAVE_FAILED,
+                    message="Checkpoint pre-save failed",
+                    context={"tool": function_name, "error": str(e)},
+                    severity="warning",
+                )
 
         tool_start_time = time.time()
 
@@ -337,7 +362,13 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                 _spinner_result = function_result
             except Exception as tool_error:
                 function_result = f"Error executing tool '{function_name}': {tool_error}"
-                logger.error("handle_function_call raised for %s: %s", function_name, tool_error, exc_info=True)
+                emit_error(
+                    logger,
+                    code=ErrorCode.TOOL_INVOKE_FAILED,
+                    message="invoke_tool raised",
+                    context={"tool": function_name, "error": str(tool_error)},
+                    exc_info=True,
+                )
             finally:
                 tool_duration = time.time() - tool_start_time
                 cute_msg = _get_cute_tool_message_impl(function_name, function_args, tool_duration, result=_spinner_result)
@@ -347,7 +378,13 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
                 function_result = invoke_tool(agent, function_name, function_args, effective_task_id)
             except Exception as tool_error:
                 function_result = f"Error executing tool '{function_name}': {tool_error}"
-                logger.error("invoke_tool raised for %s: %s", function_name, tool_error, exc_info=True)
+                emit_error(
+                logger,
+                code=ErrorCode.TOOL_INVOKE_FAILED,
+                message="invoke_tool raised",
+                context={"tool": function_name, "error": str(tool_error)},
+                exc_info=True,
+            )
             tool_duration = time.time() - tool_start_time
             if agent.quiet_mode and function_name != "delegate_task":
                 agent._vprint(f"  {_get_cute_tool_message_impl(function_name, function_args, tool_duration, result=function_result)}")
@@ -355,7 +392,13 @@ def execute_tool_calls_sequential(agent, assistant_message, messages: list, effe
         result_preview = function_result[:200] if len(function_result) > 200 else function_result
         _is_error_result, _ = _detect_tool_failure(function_name, function_result)
         if _is_error_result:
-            logger.warning("Tool %s returned error (%.2fs): %s", function_name, tool_duration, result_preview)
+            emit_error(
+                    logger,
+                    code=ErrorCode.TOOL_RESULT_ERROR,
+                    message="Tool returned error contract",
+                    context={"tool": function_name, "duration_s": round(tool_duration, 3), "preview": result_preview},
+                    severity="warning",
+                )
 
         arm_type = agent._arm_type_for_tool(function_name)
         if arm_type:

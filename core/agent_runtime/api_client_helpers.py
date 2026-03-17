@@ -9,6 +9,7 @@ import uuid
 from types import SimpleNamespace
 
 from agent.prompt_builder import DEFAULT_AGENT_IDENTITY
+from core.agent_runtime.error_taxonomy import ErrorCode, emit_error
 
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,13 @@ def interruptible_api_call(agent, api_kwargs: dict):
                 result["response"] = request_client_holder["client"].chat.completions.create(**api_kwargs)
         except Exception as e:
             result["error"] = e
+            emit_error(
+                logger,
+                code=ErrorCode.API_CALL_FAILED,
+                message="API request failed",
+                context={"error": str(e), "api_mode": str(getattr(agent, "api_mode", ""))},
+                exc_info=True,
+            )
         finally:
             request_client = request_client_holder.get("client")
             if request_client is not None:
@@ -58,7 +66,13 @@ def interruptible_api_call(agent, api_kwargs: dict):
                     if request_client is not None:
                         agent._close_request_openai_client(request_client, reason="interrupt_abort")
             except Exception as e:
-                logger.warning("Interrupt cleanup failed while aborting API call: %s", e)
+                emit_error(
+                    logger,
+                    code=ErrorCode.API_CALL_INTERRUPTED,
+                    message="Interrupt cleanup failed while aborting API call",
+                    context={"error": str(e), "api_mode": str(getattr(agent, "api_mode", ""))},
+                    severity="warning",
+                )
             raise InterruptedError("Agent interrupted during API call")
     if result["error"] is not None:
         raise result["error"]
@@ -167,6 +181,13 @@ def streaming_api_call(agent, api_kwargs: dict, stream_callback):
 
         except Exception as e:
             result["error"] = e
+            emit_error(
+                logger,
+                code=ErrorCode.API_STREAM_FAILED,
+                message="Streaming API request failed",
+                context={"error": str(e), "api_mode": str(getattr(agent, "api_mode", ""))},
+                exc_info=True,
+            )
         finally:
             request_client = request_client_holder.get("client")
             if request_client is not None:
@@ -191,7 +212,13 @@ def streaming_api_call(agent, api_kwargs: dict, stream_callback):
                     if request_client is not None:
                         agent._close_request_openai_client(request_client, reason="stream_interrupt_abort")
             except Exception as e:
-                logger.warning("Interrupt cleanup failed while aborting stream API call: %s", e)
+                emit_error(
+                    logger,
+                    code=ErrorCode.API_CALL_INTERRUPTED,
+                    message="Interrupt cleanup failed while aborting stream API call",
+                    context={"error": str(e), "api_mode": str(getattr(agent, "api_mode", ""))},
+                    severity="warning",
+                )
             raise InterruptedError("Agent interrupted during API call")
     if result["error"] is not None:
         raise result["error"]
