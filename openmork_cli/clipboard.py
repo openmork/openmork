@@ -218,8 +218,8 @@ def _wayland_has_image() -> bool:
         )
     except FileNotFoundError:
         logger.debug("wl-paste not installed — Wayland clipboard unavailable")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Wayland clipboard type check failed: %s", exc)
     return False
 
 
@@ -323,9 +323,9 @@ def _xclip_has_image() -> bool:
         )
         return r.returncode == 0 and "image/png" in r.stdout
     except FileNotFoundError:
-        pass
-    except Exception:
-        pass
+        logger.debug("xclip not installed — X11 clipboard probe unavailable")
+    except Exception as exc:
+        logger.debug("xclip clipboard probe failed: %s", exc)
     return False
 
 

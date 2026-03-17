@@ -158,8 +158,8 @@ def check_for_updates() -> Optional[int]:
             cached = json.loads(cache_file.read_text())
             if now - cached.get("ts", 0) < _UPDATE_CHECK_CACHE_SECONDS:
                 return cached.get("behind")
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Update-check cache read failed: %s", exc)
 
     # Fetch latest refs (fast — only downloads ref metadata, no files)
     try:
@@ -168,8 +168,8 @@ def check_for_updates() -> Optional[int]:
             capture_output=True, timeout=10,
             cwd=str(repo_dir),
         )
-    except Exception:
-        pass  # Offline or timeout — use stale refs, that's fine
+    except Exception as exc:
+        logger.debug("Update-check fetch skipped (offline/timeout): %s", exc)
 
     # Count commits behind
     try:
@@ -188,8 +188,8 @@ def check_for_updates() -> Optional[int]:
     # Write cache
     try:
         cache_file.write_text(json.dumps({"ts": now, "behind": behind}))
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Failed to write update-check cache: %s", exc)
 
     return behind
 
@@ -405,8 +405,8 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
                 f"[bold yellow]⚠ {behind} {commits_word} behind[/]"
                 f"[dim yellow] — run [bold]openmork update[/bold] to update[/]"
             )
-    except Exception:
-        pass  # Never break the banner over an update check
+    except Exception as exc:
+        logger.debug("Non-fatal update check render failure: %s", exc)  # Never break the banner over an update check
 
     right_content = "\n".join(right_lines)
     layout_table.add_row(left_content, right_content)

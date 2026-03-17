@@ -752,8 +752,8 @@ def _refresh_codex_auth_tokens(
                 err_desc = err.get("error_description") or err.get("message")
                 if isinstance(err_desc, str) and err_desc.strip():
                     message = f"Codex token refresh failed: {err_desc.strip()}"
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Provider endpoint health probe failed: %s", exc)
         if code in {"invalid_grant", "invalid_token", "invalid_request"}:
             relogin_required = True
         raise AuthError(

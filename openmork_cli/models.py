@@ -8,10 +8,13 @@ Add, remove, or reorder entries here — both `openmork setup` and
 from __future__ import annotations
 
 import json
+import logging
 import urllib.request
 import urllib.error
 from difflib import get_close_matches
 from typing import Any, Optional
+
+logger = logging.getLogger(__name__)
 
 # (model_id, display description shown in menus)
 OPENROUTER_MODELS: list[tuple[str, str]] = [
@@ -153,8 +156,8 @@ def list_available_providers() -> list[dict[str, str]]:
             from openmork_cli.runtime_provider import resolve_runtime_provider
             runtime = resolve_runtime_provider(requested=pid)
             has_creds = bool(runtime.get("api_key"))
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Provider auth probe failed for %s: %s", pid, exc)
         result.append({
             "id": pid,
             "label": label,
@@ -255,8 +258,8 @@ def provider_model_ids(provider: Optional[str]) -> list[str]:
                 live = fetch_nous_models(creds.get("api_key", ""), creds.get("base_url", ""))
                 if live:
                     return live
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("Nous model catalog fetch failed: %s", exc)
     if normalized == "anthropic":
         live = _fetch_anthropic_models()
         if live:
