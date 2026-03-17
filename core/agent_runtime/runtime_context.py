@@ -12,15 +12,7 @@ from typing import Any
 
 
 class IterationBudget:
-    """Thread-safe shared iteration counter for parent and child agents.
-
-    Tracks total LLM-call iterations consumed across a parent agent and all
-    its subagents. A single ``IterationBudget`` is created by the parent
-    and passed to every child so they share the same cap.
-
-    ``execute_code`` (programmatic tool calling) iterations are refunded via
-    :meth:`refund` so they don't eat into the budget.
-    """
+    """Thread-safe shared iteration counter for parent and child agents."""
 
     def __init__(self, max_total: int):
         self.max_total = max_total
@@ -28,7 +20,6 @@ class IterationBudget:
         self._lock = threading.Lock()
 
     def consume(self) -> bool:
-        """Try to consume one iteration. Returns True if allowed."""
         with self._lock:
             if self._used >= self.max_total:
                 return False
@@ -36,7 +27,6 @@ class IterationBudget:
             return True
 
     def refund(self) -> None:
-        """Give back one iteration (e.g. for execute_code turns)."""
         with self._lock:
             if self._used > 0:
                 self._used -= 1
@@ -51,7 +41,7 @@ class IterationBudget:
             return max(0, self.max_total - self._used)
 
 
-def inject_honcho_turn_context(content: Any, turn_context: str):
+def inject_honcho_turn_context(content: Any, turn_context: str) -> Any:
     """Append Honcho recall to current-turn user message without mutating history."""
     if not turn_context:
         return content

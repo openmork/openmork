@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from typing import Any, TextIO
 
 
 class SafeWriter:
@@ -10,31 +11,31 @@ class SafeWriter:
 
     __slots__ = ("_inner",)
 
-    def __init__(self, inner):
+    def __init__(self, inner: TextIO):
         object.__setattr__(self, "_inner", inner)
 
-    def write(self, data):
+    def write(self, data: str) -> int:
         try:
-            return self._inner.write(data)
+            return int(self._inner.write(data))
         except OSError:
             return len(data) if isinstance(data, str) else 0
 
-    def flush(self):
+    def flush(self) -> None:
         try:
             self._inner.flush()
         except OSError:
             pass
 
-    def fileno(self):
-        return self._inner.fileno()
+    def fileno(self) -> int:
+        return int(self._inner.fileno())
 
-    def isatty(self):
+    def isatty(self) -> bool:
         try:
-            return self._inner.isatty()
+            return bool(self._inner.isatty())
         except OSError:
             return False
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         return getattr(self._inner, name)
 
 

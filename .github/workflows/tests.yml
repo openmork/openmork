@@ -46,6 +46,11 @@ jobs:
           source .venv/bin/activate
           python scripts/ops/check_except_pass.py --strict
 
+      - name: Type-check core perimeter (strict)
+        run: |
+          source .venv/bin/activate
+          python -m mypy
+
   contracts-registry-smoke:
     name: Contracts/Registry smoke
     runs-on: ubuntu-latest
