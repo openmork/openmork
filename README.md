@@ -279,10 +279,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## 🙏 Acknowledgements
 
-openmork is built on the shoulders of great open-source projects:
+openmork is independently maintained by the **openmork core maintainers**.
 
-- [OpenMork](https://github.com/NousResearch/openmork) by Nous Research
-- [OpenClaw](https://github.com/anthropics/claude-code)
+We still credit upstream inspiration from great open-source work:
+
+- [OpenMork](https://github.com/NousResearch/openmork) (original upstream base)
 - [Superpowers](https://github.com/obra/superpowers)
 - [MetaClaw](https://github.com/aiming-lab/MetaClaw)
 

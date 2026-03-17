@@ -68,5 +68,5 @@ Resultado:
 
 ## T4 pendiente tras este corte
 
-- Quedan múltiples `except Exception: pass` en `cli.py` y al menos uno en `core/agent_runtime/api_client_helpers.py`.
-- Siguiente paso recomendado: barrido incremental por zonas de bajo riesgo (callbacks opcionales, shutdown hooks, render paths), sustituyendo por logging semántico (warning/error/debug según criticidad).
+- Estado actualizado (2026-03-17): el check anti-regresión se amplió a alcance repo (excluyendo `tests/`, `docs/`, `optional-skills/`, `reports/`) y actualmente no detecta `except Exception: pass` en superficie productiva.
+- Siguiente paso recomendado: mantener vigilancia en PRs y exigir manejo explícito + logging semántico en nuevos bloques `except`.

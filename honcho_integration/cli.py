@@ -575,7 +575,7 @@ def cmd_migrate(args) -> None:
 
     # ── Step 2: Detected files ────────────────────────────────────────────────
     print()
-    print("Step 2  Detected OpenClaw memory files")
+    print("Step 2  Detected local memory files")
     print()
     if user_files or agent_files:
         if user_files:
@@ -587,7 +587,7 @@ def cmd_migrate(args) -> None:
             for f in agent_files:
                 print(f"    {f}")
     else:
-        print("  No OpenClaw native memory files found in cwd or ~/.openclaw/.")
+        print("  No native memory files found in cwd or ~/.openmork/.")
         print("  If your files are elsewhere, copy them here before continuing,")
         print("  or seed them manually:  openmork honcho identity <path/to/file>")
 
